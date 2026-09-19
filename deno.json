@@ -1,0 +1,76 @@
+{
+  "name": "@algosail/ply",
+  "version": "0.0.1",
+  "license": "MIT",
+  "exports": {
+    ".": "./mod.ts",
+    "./shapes": "./shapes.ts",
+    "./classes": "./typeclasses.ts",
+    "./types": "./typerep.ts",
+    "./define": "./define.ts",
+    "./alt": "./classes/alt.ts",
+    "./applicative": "./classes/applicative.ts",
+    "./apply": "./classes/apply.ts",
+    "./bifunctor": "./classes/bifunctor.ts",
+    "./category": "./classes/category.ts",
+    "./chain": "./classes/chain.ts",
+    "./chainrec": "./classes/chainrec.ts",
+    "./comonad": "./classes/comonad.ts",
+    "./contravariant": "./classes/contravariant.ts",
+    "./decidable": "./classes/decidable.ts",
+    "./divisible": "./classes/divisible.ts",
+    "./extend": "./classes/extend.ts",
+    "./filterable": "./classes/filterable.ts",
+    "./foldable": "./classes/foldable.ts",
+    "./functor": "./classes/functor.ts",
+    "./group": "./classes/group.ts",
+    "./monad": "./classes/monad.ts",
+    "./monoid": "./classes/monoid.ts",
+    "./ord": "./classes/ord.ts",
+    "./plus": "./classes/plus.ts",
+    "./profunctor": "./classes/profunctor.ts",
+    "./semigroup": "./classes/semigroup.ts",
+    "./semigroupoid": "./classes/semigroupoid.ts",
+    "./setoid": "./classes/setoid.ts",
+    "./show": "./classes/show.ts",
+    "./traversable": "./classes/traversable.ts",
+    "./array": "./natives/array.ts",
+    "./bigint": "./natives/bigint.ts",
+    "./boolean": "./natives/boolean.ts",
+    "./date": "./natives/date.ts",
+    "./function": "./natives/function.ts",
+    "./map": "./natives/map.ts",
+    "./number": "./natives/number.ts",
+    "./record": "./natives/record.ts",
+    "./regexp": "./natives/regexp.ts",
+    "./set": "./natives/set.ts",
+    "./string": "./natives/string.ts",
+    "./strmap": "./natives/strmap.ts",
+    "./either": "./data/either.ts",
+    "./equivalence": "./data/equivalence.ts",
+    "./identity": "./data/identity.ts",
+    "./maybe": "./data/maybe.ts",
+    "./monoids": "./data/monoid.ts",
+    "./pair": "./data/pair.ts",
+    "./predicate": "./data/predicate.ts"
+  },
+  "publish": {
+    "exclude": ["**/*_test.ts"]
+  },
+  "tasks": {
+    "test": "deno test --doc",
+    "check": "deno fmt --check && deno lint && deno check **/*.ts"
+  },
+  "imports": {
+    "@std/assert": "jsr:@std/assert@^1",
+    "@algosail/ply": "./mod.ts"
+  },
+  "fmt": {
+    "semiColons": false,
+    "singleQuote": true,
+    "exclude": [".zed"]
+  },
+  "lint": {
+    "exclude": [".zed"]
+  }
+}
