@@ -1,6 +1,6 @@
 {
   "name": "@algosail/ply",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "license": "MIT",
   "exports": {
     ".": "./mod.ts",
@@ -55,7 +55,7 @@
     "./predicate": "./data/predicate.ts"
   },
   "publish": {
-    "exclude": ["**/*_test.ts"]
+    "exclude": ["**/*_test.ts", ".zed", ".github"]
   },
   "tasks": {
     "test": "deno test --doc",
