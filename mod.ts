@@ -27,8 +27,10 @@ export { bimap, mapLeft } from './classes/bifunctor.ts'
 export { id } from './classes/category.ts'
 //// Chain
 export { chain, join } from './classes/chain.ts'
+// Monad
+export type { Do } from './classes/monad.ts'
+export { fgo, go } from './classes/monad.ts'
 //// ChainRec
-// `Step` is what `done` and `loop` build and what `chainRec` is handed back.
 export type { Step } from './classes/chainrec.ts'
 export { chainRec, done, loop } from './classes/chainrec.ts'
 //// Comonad
