@@ -6,6 +6,7 @@
 
 import type { Shape } from '../core/shape.ts'
 import type { NativeTypeRep } from '../core/named.ts'
+import type { CheckableDict } from '../classes/checkable.ts'
 import type { MonoidDict } from '../classes/monoid.ts'
 import type { OrdDict } from '../classes/ord.ts'
 import type { SemigroupDict } from '../classes/semigroup.ts'
@@ -28,6 +29,7 @@ export interface StrShape extends Shape<'String'> {
  */
 export type StrDict =
   & NativeTypeRep<StrShape>
+  & CheckableDict<StrShape>
   & MonoidDict<StrShape>
   & OrdDict<StrShape>
   & SemigroupDict<StrShape>

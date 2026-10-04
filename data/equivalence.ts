@@ -6,14 +6,15 @@
 
 import type { Shape, Shaped } from '../core/shape.ts'
 import type { Satisfies } from '../core/kind.ts'
+import type { CheckableTypeRep } from '../classes/checkable.ts'
 import type { DecidableMethods } from '../classes/decidable.ts'
 import type { DecidableTypeRep } from '../classes/decidable.ts'
 import type { DivisibleTypeRep } from '../classes/divisible.ts'
-import type { Either } from './either.ts'
-import { either } from './either.ts'
 import type { MonoidTypeRep } from '../classes/monoid.ts'
 import type { SemigroupMethods } from '../classes/semigroup.ts'
+import type { Either } from './either.ts'
 import { equals } from '../classes/setoid.ts'
+import { either } from './either.ts'
 
 /** A callable equality rule for two values, adaptable with `contramap`. */
 export interface Equivalence<A> extends EquivalenceMethods<A> {
@@ -40,10 +41,13 @@ export type EquivalenceTypeRep = Satisfies<
   & MonoidTypeRep<EquivalenceShape, unknown>
   & DivisibleTypeRep<EquivalenceShape, unknown>
   & DecidableTypeRep<EquivalenceShape, unknown>
+  & CheckableTypeRep<EquivalenceShape>
 >
 
 /** Static operations provided by the `Equivalence` representative. */
 export interface EquivalenceStatics {
+  /** Checks whether an unknown value belongs to this type. */
+  is(value: unknown): value is Equivalence<unknown>
   /** Creates a rule that always returns `true`. */
   empty(): Equivalence<unknown>
   /** Creates a rule that always passes. */
@@ -90,20 +94,56 @@ export interface EquivalenceMethods<A>
 export function equivalence<A>(
   run: (a: A, b: A) => boolean,
 ): Equivalence<A> {
-  const self = ((a: A, b: A) => run(a, b)) as unknown as Equivalence<A>
-  return Object.setPrototypeOf(self, proto) as Equivalence<A>
+  return new Equivalence(run)
 }
 
-const proto = Object.assign(Object.create(Function.prototype), {
-  '@@type': 'Equivalence' as const,
-  _shape: undefined as unknown as EquivalenceShape,
-  contramap<A, X>(this: Equivalence<A>, f: (x: X) => A): Equivalence<X> {
-    return equivalence<X>((x, y) => this(f(x), f(y)))
-  },
+/**
+ * The equality-rule representative. `empty(Equivalence)` and
+ * `conquer(Equivalence)` create rules that consider every pair equal.
+ */
+export class Equivalence<A> implements EquivalenceMethods<A> {
+  /** The name used by generic ply operations. */
+  static readonly '@@type' = 'Equivalence' as const
+  /** The shape used for type inference; no runtime value is required. */
+  declare static readonly _shape: EquivalenceShape
 
+  static {
+    Object.setPrototypeOf(this.prototype, Function.prototype)
+    Object.defineProperty(this.prototype, '@@type', { value: 'Equivalence' })
+  }
+
+  /** Checks whether a value was created by this class. */
+  static is(value: unknown): value is Equivalence<unknown> {
+    return value instanceof Equivalence
+  }
+
+  /** Creates a rule that always returns true. */
+  static empty(): Equivalence<unknown> {
+    return equivalence<unknown>(() => true)
+  }
+  /** Creates a rule that always returns true. */
+  static conquer(): Equivalence<unknown> {
+    return equivalence<unknown>(() => true)
+  }
+  /** Creates a rule for an unreachable input using a function that cannot return. */
+  static lose<X>(absurd: (x: X) => never): Equivalence<X> {
+    return equivalence<X>((x) => absurd(x))
+  }
+
+  /** Creates a callable equality rule from a comparison function. */
+  constructor(run: (a: A, b: A) => boolean) {
+    const self = (a: A, b: A) => run(a, b)
+    return Object.setPrototypeOf(self, new.target.prototype)
+  }
+
+  /** Transforms both inputs before comparing them. */
+  contramap<X>(f: (x: X) => A): Equivalence<X> {
+    return equivalence<X>((x, y) => this(f(x), f(y)))
+  }
+
+  /** Splits both inputs and requires both comparisons to pass. */
   divide<C, X>(
-    this: Equivalence<unknown>,
-    split: (x: X) => readonly [unknown, C],
+    split: (x: X) => readonly [A, C],
     that: Equivalence<C>,
   ): Equivalence<X> {
     return equivalence<X>((x, y) => {
@@ -111,49 +151,27 @@ const proto = Object.assign(Object.create(Function.prototype), {
       const [by, cy] = split(y)
       return this(bx, by) && that(cx, cy)
     })
-  },
+  }
 
+  /** Compares inputs using the rule for their matching Left or Right branch. */
   choose<C, X>(
-    this: Equivalence<unknown>,
-    split: (x: X) => Either<unknown, C>,
+    split: (x: X) => Either<A, C>,
     that: Equivalence<C>,
   ): Equivalence<X> {
     return equivalence<X>((x, y) => {
       const ex = split(x)
       const ey = split(y)
-      return either((bx: unknown) =>
-        either((by: unknown) => this(bx, by))(() => false)(ey)
+      return either((bx: A) =>
+        either((by: A) => this(bx, by))(() => false)(ey)
       )((cx: C) => either(() => false)((cy: C) => that(cx, cy))(ey))(ex)
     })
-  },
+  }
 
-  concat<A>(this: Equivalence<A>, that: Equivalence<A>): Equivalence<A> {
+  /** Requires both equality rules to pass, stopping at the first failure. */
+  concat(that: Equivalence<A>): Equivalence<A> {
     return this.divide((a: A) => [a, a] as const, that)
-  },
-})
-
-/**
- * The equality-rule representative. `empty(Equivalence)` and
- * `conquer(Equivalence)` create rules that consider every pair equal.
- */
-export const Equivalence: EquivalenceTypeRep = {
-  '@@type': 'Equivalence' as const,
-  _shape: undefined as unknown as EquivalenceShape,
-
-  empty() {
-    return equivalence<unknown>(() => true)
-  },
-
-  conquer() {
-    return equivalence<unknown>(() => true)
-  },
-
-  lose<X>(absurd: (x: X) => never) {
-    return equivalence<X>((x) => absurd(x))
-  },
+  }
 }
-
-Object.defineProperty(proto, 'constructor', { value: Equivalence })
 
 /**
  * Creates an equality rule using ply's `equals`.

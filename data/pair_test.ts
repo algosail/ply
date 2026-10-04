@@ -33,6 +33,25 @@ import { Arr } from '../natives/array.ts'
 
 // Examples
 
+Deno.test('Pair: supports direct construction and a detached type guard', () => {
+  const value = new Pair('log', 42)
+  const { is } = Pair
+
+  assertEquals(Object.getPrototypeOf(value).constructor.name, 'Pair')
+  assertEquals(value, pair('log', 42))
+  assertEquals(is(value), true)
+  assertEquals(is(['log', 42]), false)
+})
+
+Deno.test('Pair: instances store both values and share their methods', () => {
+  const first = pair('a', 1)
+  const second = pair('b', 2)
+
+  assertEquals(Object.keys(first), ['fst', 'snd'])
+  assertEquals(first.map === second.map, true)
+  assertEquals(JSON.stringify(first), '{"fst":"a","snd":1}')
+})
+
 Deno.test('pair: creates a pair of values. map transforms the second value', () => {
   const p = pair('record', 42)
 

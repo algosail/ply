@@ -10,6 +10,7 @@ import type { NativeTypeRep } from '../core/named.ts'
 import type { ApplicativeDict } from '../classes/applicative.ts'
 import type { ApplyDict } from '../classes/apply.ts'
 import type { ChainDict } from '../classes/chain.ts'
+import type { CheckableDict } from '../classes/checkable.ts'
 import type { FilterableDict } from '../classes/filterable.ts'
 import type { FunctorDict } from '../classes/functor.ts'
 import type { ShowDict } from '../classes/show.ts'
@@ -37,6 +38,7 @@ export type SetTypeRep =
   & ApplicativeDict<SetShape>
   & ApplyDict<SetShape>
   & ChainDict<SetShape>
+  & CheckableDict<SetShape>
   & FilterableDict<SetShape>
   & FunctorDict<SetShape>
   & ShowDict<SetShape>

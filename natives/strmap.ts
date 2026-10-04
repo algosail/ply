@@ -8,6 +8,7 @@
 import type { NativeTypeRep } from '../core/named.ts'
 import type { Matchable, Shape } from '../core/shape.ts'
 import type { AltDict } from '../classes/alt.ts'
+import type { CheckableDict } from '../classes/checkable.ts'
 import type { FilterableDict } from '../classes/filterable.ts'
 import type { FoldableDict } from '../classes/foldable.ts'
 import type { FunctorDict } from '../classes/functor.ts'
@@ -51,6 +52,7 @@ export type StrMap<A> = Record<string, A>
 export type StrMapDict =
   & NativeTypeRep<StrMapShape>
   & AltDict<StrMapShape>
+  & CheckableDict<StrMapShape>
   & FilterableDict<StrMapShape>
   & FoldableDict<StrMapShape>
   & FunctorDict<StrMapShape>

@@ -17,14 +17,15 @@
 
 import type { Shape, Shaped } from '../core/shape.ts'
 import type { KindOf, Satisfies, ShapeOf, SlotAOf } from '../core/kind.ts'
-import type { Apply, ApplyMethods } from '../classes/apply.ts'
-import type { TraversableMethods } from '../classes/traversable.ts'
 import type { AltMethods } from '../classes/alt.ts'
 import type { ApplicativeTypeRep } from '../classes/applicative.ts'
+import type { Apply, ApplyMethods } from '../classes/apply.ts'
 import type { ChainMethods } from '../classes/chain.ts'
+import type { CheckableTypeRep } from '../classes/checkable.ts'
 import type { Filterable, FilterableMethods } from '../classes/filterable.ts'
 import type { FoldableMethods } from '../classes/foldable.ts'
 import type { FunctorMethods } from '../classes/functor.ts'
+import type { TraversableMethods } from '../classes/traversable.ts'
 import type { OrdMethods } from '../classes/ord.ts'
 import type { PlusTypeRep } from '../classes/plus.ts'
 import type { SetoidMethods } from '../classes/setoid.ts'
@@ -75,10 +76,13 @@ export type MaybeTypeRep = Satisfies<
   MaybeStatics & Shaped<MaybeShape>,
   & ApplicativeTypeRep<MaybeShape>
   & PlusTypeRep<MaybeShape>
+  & CheckableTypeRep<MaybeShape>
 >
 
 /** Static operations provided by the `Maybe` representative. */
 export interface MaybeStatics {
+  /** Checks whether an unknown value belongs to this type. */
+  is(value: unknown): value is Maybe<unknown>
   /** Creates a `Just` value. */
   of<A>(a: A): Maybe<A>
   /** Returns an empty alternative of this type. */
@@ -113,50 +117,82 @@ export interface MaybeMethods<A>
   match<B>(onNothing: () => B, onJust: (a: A) => B): B
 }
 
-type MaybeProto = Omit<
-  MaybeMethods<unknown>,
-  '_shape' | '_A' | 'constructor'
->
+/**
+ * The optional-value representative. Use `of(Maybe)` to create `Just`
+ * or `zero(Maybe)` to create `Nothing`.
+ *
+ * @example
+ * ```ts
+ * import * as P from '@algosail/ply'
+ *
+ * P.of(P.Maybe)(1) // => Just (1)
+ * P.zero(P.Maybe) // => Nothing
+ * ```
+ */
+export const Maybe: MaybeTypeRep = class<A, Tag extends 'just' | 'nothing'>
+  implements MaybeMethods<A> {
+  static readonly '@@type' = 'Maybe' as const
+  declare static readonly _shape: MaybeShape
 
-const proto: MaybeProto = {
-  '@@type': 'Maybe' as const,
+  static {
+    Object.defineProperty(this.prototype, '@@type', { value: 'Maybe' })
+  }
 
-  match<A, B>(this: Maybe<A>, onNothing: () => B, onJust: (a: A) => B): B {
+  private static readonly absent: Nothing<never> = Object.freeze(
+    new this<never, 'nothing'>('nothing'),
+  )
+
+  static is = (value: unknown): value is Maybe<unknown> => value instanceof this
+  static of = <A>(value: A): Maybe<A> => new this<A, 'just'>('just', value)
+  static zero = <A>(): Maybe<A> => this.absent
+
+  declare readonly '@@type': 'Maybe'
+  declare readonly _shape: MaybeShape
+  declare readonly _A?: (_: never) => A
+  declare readonly ['constructor']: MaybeTypeRep
+
+  readonly tag: Tag
+  declare readonly value: A
+  constructor(tag: Tag, value?: A) {
+    this.tag = tag
+    if (tag === 'just') this.value = value as A
+  }
+
+  match<B>(onNothing: () => B, onJust: (a: A) => B): B {
     return this.tag === 'just' ? onJust(this.value) : onNothing()
-  },
+  }
 
-  map<A, B>(this: Maybe<A>, f: (a: A) => B): Maybe<B> {
+  map<B>(f: (a: A) => B): Maybe<B> {
     return this.match<Maybe<B>>(() => nothing<B>(), (a) => just(f(a)))
-  },
+  }
 
-  ap<A, B>(this: Maybe<A>, ff: Maybe<(a: A) => B>): Maybe<B> {
+  ap<B>(ff: Maybe<(a: A) => B>): Maybe<B> {
     return ff.match<Maybe<B>>(
       () => nothing<B>(),
       (f) => this.match<Maybe<B>>(() => nothing<B>(), (a) => just(f(a))),
     )
-  },
+  }
 
-  chain<A, B>(this: Maybe<A>, f: (a: A) => Maybe<B>): Maybe<B> {
+  chain<B>(f: (a: A) => Maybe<B>): Maybe<B> {
     return this.match<Maybe<B>>(() => nothing<B>(), f)
-  },
+  }
 
-  alt<A>(this: Maybe<A>, that: Maybe<A>): Maybe<A> {
-    return this.match<Maybe<A>>(() => that, () => this as unknown as Maybe<A>)
-  },
+  alt(that: Maybe<A>): Maybe<A> {
+    return this.match<Maybe<A>>(() => that, () => this as Maybe<A>)
+  }
 
-  filter<A>(this: Maybe<A>, p: (a: A) => boolean): Maybe<A> {
+  filter(p: (a: A) => boolean): Maybe<A> {
     return this.match<Maybe<A>>(
       () => nothing<A>(),
-      (a) => p(a) ? (this as unknown as Maybe<A>) : nothing<A>(),
+      (a) => p(a) ? this as Maybe<A> : nothing<A>(),
     )
-  },
+  }
 
-  reduce<A, B>(this: Maybe<A>, f: (acc: B, a: A) => B, init: B): B {
+  reduce<B>(f: (acc: B, a: A) => B, init: B): B {
     return this.match(() => init, (a) => f(init, a))
-  },
+  }
 
-  traverse<A, G extends Apply<G>>(
-    this: Maybe<A>,
+  traverse<G extends Apply<G>>(
     T: ApplicativeTypeRep<ShapeOf<G>>,
     f: (a: A) => G,
   ): KindOf<G, Maybe<SlotAOf<G>>> {
@@ -170,30 +206,26 @@ const proto: MaybeProto = {
           Maybe<SlotAOf<G>>
         >,
     ) as KindOf<G, Maybe<SlotAOf<G>>>
-  },
+  }
 
-  equals<A>(this: Maybe<A>, that: Maybe<A>): boolean {
+  equals(that: Maybe<A>): boolean {
     return this.match(
       () => that.tag === 'nothing',
       (a) => that.match(() => false, (b) => equals(b as never)(a as never)),
     )
-  },
+  }
 
-  lte<A>(this: Maybe<A>, that: Maybe<A>): boolean {
+  lte(that: Maybe<A>): boolean {
     return this.match(
       () => true,
       (a) => that.match(() => false, (b) => lte(b as never)(a as never)),
     )
-  },
+  }
 
-  show<A>(this: Maybe<A>): string {
+  show(): string {
     return this.match(() => 'Nothing', (a) => `Just (${show(a)})`)
-  },
-}
-
-const make = <A>(
-  fields: { tag: 'just'; value: A } | { tag: 'nothing' },
-): Maybe<A> => Object.assign(Object.create(proto) as Maybe<A>, fields)
+  }
+} satisfies MaybeTypeRep
 
 /**
  * Wraps a present value in `Maybe`, including `null` or `undefined` if
@@ -208,7 +240,7 @@ const make = <A>(
  * ```
  */
 export function just<A>(a: A): Maybe<A> {
-  return make<A>({ tag: 'just', value: a })
+  return Maybe.of(a)
 }
 
 /**
@@ -224,35 +256,8 @@ export function just<A>(a: A): Maybe<A> {
  * ```
  */
 export function nothing<A>(): Maybe<A> {
-  return make<A>({ tag: 'nothing' })
+  return Maybe.zero<A>()
 }
-
-/**
- * The optional-value representative. Use `of(Maybe)` to create `Just`
- * or `zero(Maybe)` to create `Nothing`.
- *
- * @example
- * ```ts
- * import * as P from '@algosail/ply'
- *
- * P.of(P.Maybe)(1) // => Just (1)
- * P.zero(P.Maybe) // => Nothing
- * ```
- */
-export const Maybe: MaybeTypeRep = {
-  '@@type': 'Maybe' as const,
-  _shape: undefined as unknown as MaybeShape,
-
-  of<A>(a: A): Maybe<A> {
-    return just(a)
-  },
-
-  zero<A>(): Maybe<A> {
-    return nothing<A>()
-  },
-}
-
-Object.defineProperty(proto, 'constructor', { value: Maybe })
 
 /**
  * Transforms a `Just` value, or calls the fallback function for `Nothing`.
@@ -324,6 +329,23 @@ export function fromMaybe<A>(d: A): (m: Maybe<A>) => A {
  */
 export function fromMaybe_<A>(d: () => A): (m: Maybe<A>) => A {
   return (m) => m.match(d, (a) => a)
+}
+
+/**
+ * Replaces `null` and `undefined` with a value of your own, and leaves
+ * everything else — `0`, `false` and the empty string included — as it is.
+ *
+ * @example
+ * ```ts
+ * import * as P from '@algosail/ply'
+ *
+ * P.defaultTo('none')('a') // => 'a'
+ * P.defaultTo('none')(null) // => 'none'
+ * P.defaultTo(1)(0) // => 0
+ * ```
+ */
+export function defaultTo<A>(d: A): (a: A | null | undefined) => A {
+  return (a) => a === null || a === undefined ? d : a
 }
 
 /**

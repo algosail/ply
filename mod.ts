@@ -1,7 +1,6 @@
 /**
  * Functions for transforming collections, composing operations, and handling
  * optional values and errors.
- * Most functions take their configuration first and the value to process last.
  *
  * @example
  * ```ts
@@ -33,6 +32,8 @@ export { fgo, go } from './classes/monad.ts'
 //// ChainRec
 export type { Step } from './classes/chainrec.ts'
 export { chainRec, done, loop } from './classes/chainrec.ts'
+//// Checkable
+export { is } from './classes/checkable.ts'
 //// Comonad
 export { extract } from './classes/comonad.ts'
 //// Contravariant
@@ -62,6 +63,7 @@ export {
   forEach,
   head,
   intercalate,
+  isEmpty,
   last,
   none,
   reduce,
@@ -74,6 +76,7 @@ export { flip, map, voided, voidRight } from './classes/functor.ts'
 //// Group
 export { invert } from './classes/group.ts'
 //// Monoid
+export type { MonoidDict } from './classes/monoid.ts'
 export { empty, mconcat } from './classes/monoid.ts'
 //// Ord
 export { clamp, gt, gte, lt, lte, max, min } from './classes/ord.ts'
@@ -137,7 +140,10 @@ export {
   boolean,
   complement,
   ifElse,
+  isFalse,
+  isTrue,
   not,
+  onlyIf,
   or,
   unless,
   when,
@@ -145,6 +151,7 @@ export {
 //// Date
 export { Dates } from './natives/date.ts'
 //// Function
+export type { Nullary } from './core/shape.ts'
 export type { AnyFn } from './natives/function.ts'
 export {
   curry2,
@@ -155,9 +162,11 @@ export {
   I,
   K,
   on,
+  once,
   pipe,
   pipeK,
   T,
+  tap,
 } from './natives/function.ts'
 //// Map
 export {
@@ -264,6 +273,7 @@ export { Identity, identity } from './data/identity.ts'
 // `Just` and `Nothing` are what `isJust`/`isNothing` narrow to.
 export type { Just, MaybeMethods, MaybeStatics, Nothing } from './data/maybe.ts'
 export {
+  defaultTo,
   fromMaybe,
   fromMaybe_,
   fromNullable,
@@ -326,11 +336,28 @@ export {
 //// Predicate
 export type { PredicateMethods, PredicateStatics } from './data/predicate.ts'
 export {
+  allPass,
+  anyPass,
   Predicate,
   predicate,
+  predicateAnd,
   predicateNot,
   predicateOr,
 } from './data/predicate.ts'
+//// Tagged
+export type { Cases } from './data/tagged.ts'
+export { cases } from './data/tagged.ts'
+//// Ordering
+export type { Comparator, EQ, GT, LT } from './data/ordering.ts'
+export {
+  compare,
+  comparing,
+  isEQ,
+  isGT,
+  isLT,
+  Ordering,
+  sortWith,
+} from './data/ordering.ts'
 //// Equivalence
 export type {
   EquivalenceMethods,
@@ -355,3 +382,25 @@ export {
   RightUnion,
   Sum,
 } from './data/monoid.ts'
+
+// Utils
+//// Type Predicates
+export {
+  isArray,
+  isBigInt,
+  isBoolean,
+  isDate,
+  isEither,
+  isEquivalence,
+  isFunction,
+  isIdentity,
+  isMap,
+  isMaybe,
+  isNumber,
+  isPair,
+  isPredicate,
+  isRegexp,
+  isSet,
+  isString,
+  isStrMap,
+} from './utils/typepredicate.ts'

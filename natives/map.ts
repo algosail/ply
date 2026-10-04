@@ -6,6 +6,7 @@
 
 import type { Matchable, Shape } from '../core/shape.ts'
 import type { NativeTypeRep } from '../core/named.ts'
+import type { CheckableDict } from '../classes/checkable.ts'
 import type { FilterableDict } from '../classes/filterable.ts'
 import type { FunctorDict } from '../classes/functor.ts'
 import type { ShowDict } from '../classes/show.ts'
@@ -33,6 +34,7 @@ export interface MapShape extends Shape<'Map'>, Matchable {
  */
 export type MapsDict =
   & NativeTypeRep<MapShape>
+  & CheckableDict<MapShape>
   & FilterableDict<MapShape>
   & FunctorDict<MapShape>
   & ShowDict<MapShape>

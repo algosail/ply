@@ -10,6 +10,7 @@ import {
   forEach,
   head,
   intercalate,
+  isEmpty,
   last,
   none,
   reduce,
@@ -1106,3 +1107,15 @@ const foreign: [string, unknown][] = [
   ['String', 'abc'],
   ['Number', 42],
 ]
+
+Deno.test('isEmpty: holds nothing at all', () => {
+  assertEquals(isEmpty([]), true)
+  assertEquals(isEmpty([1]), false)
+  assertEquals(isEmpty({}), true)
+  assertEquals(isEmpty({ a: 1 }), false)
+})
+
+Deno.test('isEmpty: a wrapper with nothing in it is empty', () => {
+  assertEquals(isEmpty(nothing<number>()), true)
+  assertEquals(isEmpty(just(1)), false)
+})

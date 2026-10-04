@@ -32,6 +32,22 @@ import { sequence, traverse } from '../classes/traversable.ts'
 
 // Examples
 
+Deno.test('Maybe: values contain only their tag and payload', () => {
+  const first = just(1)
+  const second = just(2)
+
+  assertEquals(Object.keys(first), ['tag', 'value'])
+  assertEquals(Object.keys(nothing()), ['tag'])
+  assertEquals(first.map === second.map, true)
+  assertEquals(JSON.stringify(first), '{"tag":"just","value":1}')
+})
+
+Deno.test('nothing: shares one frozen value across type arguments', () => {
+  assertEquals(Object.is(nothing<number>(), nothing<string>()), true)
+  assertEquals(Object.isFrozen(nothing()), true)
+  assertEquals(Object.hasOwn(nothing(), 'value'), false)
+})
+
 Deno.test('just: stores a present value, including undefined', () => {
   const result = just(1)
 
@@ -154,6 +170,25 @@ Deno.test('Maybe: creates values and identifies their type', () => {
   const rep: unknown = just(1).constructor
 
   assertEquals(rep, Maybe)
+})
+
+Deno.test('Maybe: the constructor uses the public type name', () => {
+  assertEquals(Object.getPrototypeOf(just(1)).constructor.name, 'Maybe')
+  assertEquals(Object.getPrototypeOf(nothing()).constructor.name, 'Maybe')
+  assertEquals(just(1).constructor, Maybe)
+  assertEquals(nothing().constructor, Maybe)
+  assertEquals(Maybe.is(just(1)), true)
+  assertEquals(Maybe.is(nothing()), true)
+})
+
+Deno.test('Maybe: static functions work when passed separately', () => {
+  const { is, of, zero } = Maybe
+
+  assertEquals(of(42), just(42))
+  assertEquals(zero<number>(), nothing<number>())
+  assertEquals(is(of(42)), true)
+  assertEquals(is(zero()), true)
+  assertEquals(is(42), false)
 })
 
 Deno.test('map: transforms contained values', () => {

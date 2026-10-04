@@ -6,19 +6,20 @@
  */
 
 import type { Shape, Shaped } from '../core/shape.ts'
-import type { KindOf, ShapeOf, SlotAOf } from '../core/kind.ts'
-import type { Apply, ApplyMethods } from '../classes/apply.ts'
-import type { ChainMethods } from '../classes/chain.ts'
-import type { SemigroupoidMethods } from '../classes/semigroupoid.ts'
-import type { TraversableMethods } from '../classes/traversable.ts'
+import type { KindOf, Satisfies, ShapeOf, SlotAOf } from '../core/kind.ts'
 import type { ApplicativeTypeRep } from '../classes/applicative.ts'
+import type { Apply, ApplyMethods } from '../classes/apply.ts'
 import type { BifunctorMethods } from '../classes/bifunctor.ts'
-import type { ExtendMethods } from '../classes/extend.ts'
+import type { ChainMethods } from '../classes/chain.ts'
+import type { CheckableTypeRep } from '../classes/checkable.ts'
 import type { ComonadMethods } from '../classes/comonad.ts'
+import type { ExtendMethods } from '../classes/extend.ts'
 import type { FoldableMethods } from '../classes/foldable.ts'
 import type { FunctorMethods } from '../classes/functor.ts'
-import type { OrdMethods } from '../classes/ord.ts'
 import type { SemigroupMethods } from '../classes/semigroup.ts'
+import type { SemigroupoidMethods } from '../classes/semigroupoid.ts'
+import type { TraversableMethods } from '../classes/traversable.ts'
+import type { OrdMethods } from '../classes/ord.ts'
 import type { SetoidMethods } from '../classes/setoid.ts'
 import type { ShowMethods } from '../classes/show.ts'
 import { map } from '../classes/functor.ts'
@@ -26,17 +27,6 @@ import { lte } from '../classes/ord.ts'
 import { concat } from '../classes/semigroup.ts'
 import { equals } from '../classes/setoid.ts'
 import { show } from '../classes/show.ts'
-
-/**
- * Two values kept together. `map` acts on the second; `bimap` acts on both.
- * `chain` and `ap` combine the first values, which must support `concat`.
- */
-export interface Pair<L, R> extends PairMethods<L, R> {
-  /** The first value. */
-  readonly fst: L
-  /** The second value. */
-  readonly snd: R
-}
 
 /** The shape for Pair. Use it with `Kind` when declaring generic helpers. */
 export interface PairShape extends Shape<'Pair'> {
@@ -50,13 +40,18 @@ export interface PairShape extends Shape<'Pair'> {
  * The type of the `Pair` representative.
  * Use it when accepting or forwarding this representative in a helper.
  */
-export type PairTypeRep = PairStatics & Shaped<PairShape>
+export type PairTypeRep = Satisfies<
+  PairStatics & Shaped<PairShape>,
+  CheckableTypeRep<PairShape>
+>
 
 /**
- * No static constructors are required for `Pair`; create values with `pair`.
+ * Static operations provided by the `Pair` representative.
  */
-// deno-lint-ignore no-empty-interface
-export interface PairStatics {}
+export interface PairStatics {
+  /** Checks whether an unknown value belongs to this type. */
+  is(value: unknown): value is Pair<unknown, unknown>
+}
 
 /**
  * Methods available on `Pair` values.
@@ -89,63 +84,101 @@ export interface PairMethods<L, R>
   readonly constructor: PairTypeRep
 }
 
-type PairProto = Omit<
-  Pair<unknown, unknown>,
-  '_shape' | '_A' | '_B' | 'fst' | 'snd' | 'constructor'
->
+/**
+ * Two values kept together. `map` acts on the second; `bimap` acts on both.
+ * `chain` and `ap` combine the first values, which must support `concat`.
+ */
+export class Pair<L, R> implements PairMethods<L, R> {
+  /** The name used by generic ply operations. */
+  static readonly '@@type' = 'Pair' as const
+  /** The shape used for type inference; no runtime value is required. */
+  declare static readonly _shape: PairShape
 
-const proto: PairProto = {
-  '@@type': 'Pair' as const,
+  static {
+    Object.defineProperty(this.prototype, '@@type', { value: 'Pair' })
+  }
 
-  map<L, R, B>(this: Pair<L, R>, f: (a: R) => B): Pair<L, B> {
+  /** Checks whether a value was created by this class. */
+  static is(value: unknown): value is Pair<unknown, unknown> {
+    return value instanceof Pair
+  }
+
+  /** The name used by generic ply operations. */
+  declare readonly '@@type': 'Pair'
+  /** The shape used for type inference; no runtime value is required. */
+  declare readonly _shape: PairShape
+  /** The contained type used for inference; no runtime member is required. */
+  declare readonly _A?: (_: never) => R
+  /** The secondary type used for inference; no runtime member is required. */
+  declare _B?: PairMethods<L, R>['_B']
+  /** The representative used by generic ply operations. */
+  declare readonly ['constructor']: PairTypeRep
+
+  /** The first value. */
+  readonly fst: L
+  /** The second value. */
+  readonly snd: R
+  /** Keeps two values together. */
+  constructor(fst: L, snd: R) {
+    this.fst = fst
+    this.snd = snd
+  }
+
+  /** Transforms the second value. */
+  map<B>(f: (a: R) => B): Pair<L, B> {
     return pair(this.fst, f(this.snd))
-  },
+  }
 
-  ap<L, R, B>(this: Pair<L, R>, ff: Pair<L, (a: R) => B>): Pair<L, B> {
+  /** Applies the supplied pair’s function and combines the first values. */
+  ap<B>(ff: Pair<L, (a: R) => B>): Pair<L, B> {
     return pair(
       concat(ff.fst as never)(this.fst as never) as L,
       ff.snd(this.snd),
     )
-  },
+  }
 
-  chain<L, R, B>(this: Pair<L, R>, f: (a: R) => Pair<L, B>): Pair<L, B> {
+  /** Continues with a new pair, combining the first values. */
+  chain<B>(f: (a: R) => Pair<L, B>): Pair<L, B> {
     const that = f(this.snd)
     return pair(
       concat(this.fst as never)(that.fst as never) as L,
       that.snd,
     )
-  },
+  }
 
-  compose<L, R, K>(this: Pair<L, R>, that: Pair<R, K>): Pair<L, K> {
+  /** Keeps this pair’s first value and the other pair’s second value. */
+  compose<K>(that: Pair<R, K>): Pair<L, K> {
     return pair(this.fst, that.snd)
-  },
+  }
 
-  extend<L, R, B>(this: Pair<L, R>, f: (w: Pair<L, R>) => B): Pair<L, B> {
+  /** Transforms the whole pair, preserving its first value. */
+  extend<B>(f: (w: Pair<L, R>) => B): Pair<L, B> {
     return pair(this.fst, f(this))
-  },
+  }
 
-  extract<L, R>(this: Pair<L, R>): R {
+  /** Returns the second value. */
+  extract(): R {
     return this.snd
-  },
+  }
 
-  bimap<L, R, M, B>(
-    this: Pair<L, R>,
+  /** Transforms both values with their respective functions. */
+  bimap<M, B>(
     f: (l: L) => M,
     g: (a: R) => B,
   ): Pair<M, B> {
     return pair(f(this.fst), g(this.snd))
-  },
+  }
 
-  reduce<L, R, Acc>(
-    this: Pair<L, R>,
+  /** Calls the function with the initial accumulator and the second value. */
+  reduce<Acc>(
     f: (acc: Acc, a: R) => Acc,
     init: Acc,
   ): Acc {
     return f(init, this.snd)
-  },
+  }
 
-  traverse<L, R, G extends Apply<G>>(
-    this: Pair<L, R>,
+  /** Transforms the second value with a wrapped computation and collects the result. */
+  traverse<G extends Apply<G>>(
     _T: ApplicativeTypeRep<ShapeOf<G>>,
     f: (a: R) => G,
   ): KindOf<G, Pair<L, SlotAOf<G>>> {
@@ -154,29 +187,33 @@ const proto: PairProto = {
       G,
       Pair<L, SlotAOf<G>>
     >
-  },
+  }
 
-  concat<L, R>(this: Pair<L, R>, that: Pair<L, R>): Pair<L, R> {
+  /** Combines the first values and the second values. */
+  concat(that: Pair<L, R>): Pair<L, R> {
     return pair(
       concat(this.fst as never)(that.fst as never) as L,
       concat(this.snd as never)(that.snd as never) as R,
     )
-  },
+  }
 
-  equals<L, R>(this: Pair<L, R>, that: Pair<L, R>): boolean {
+  /** Compares the contained values for equality. */
+  equals(that: Pair<L, R>): boolean {
     return equals(that.fst as never)(this.fst as never) &&
       equals(that.snd as never)(this.snd as never)
-  },
+  }
 
-  lte<L, R>(this: Pair<L, R>, that: Pair<L, R>): boolean {
+  /** Checks whether this value is less than or equal to the other. */
+  lte(that: Pair<L, R>): boolean {
     return equals(that.fst as never)(this.fst as never)
       ? lte(that.snd as never)(this.snd as never)
       : lte(that.fst as never)(this.fst as never)
-  },
+  }
 
-  show<L, R>(this: Pair<L, R>): string {
+  /** Returns a readable string representation. */
+  show(): string {
     return `Pair (${show(this.fst)}) (${show(this.snd)})`
-  },
+  }
 }
 
 /**
@@ -191,16 +228,8 @@ const proto: PairProto = {
  * ```
  */
 export function pair<L, R>(fst: L, snd: R): Pair<L, R> {
-  return Object.assign(Object.create(proto) as Pair<L, R>, { fst, snd })
+  return new Pair(fst, snd)
 }
-
-/** The representative identifying ply pairs. Create values with `pair`. */
-export const Pair: PairTypeRep = {
-  '@@type': 'Pair' as const,
-  _shape: undefined as unknown as PairShape,
-}
-
-Object.defineProperty(proto, 'constructor', { value: Pair })
 
 /**
  * Returns the first value of a pair.

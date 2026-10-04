@@ -5,6 +5,8 @@ import {
   boolean,
   complement,
   ifElse,
+  isFalse,
+  isTrue,
   not,
   or,
   unless,
@@ -172,4 +174,9 @@ Deno.test('the ifElse branches are not evaluated up front', () => {
 
   assertEquals(ifElse((n: number) => n > 0)((n) => n)(boom)(1), 1)
   assertThrows(() => ifElse((n: number) => n > 0)(boom)((n) => n)(1))
+})
+
+Deno.test('isTrue and isFalse ask about the value, not its truthiness', () => {
+  assertEquals([isTrue(true), isTrue(1), isTrue('yes')], [true, false, false])
+  assertEquals([isFalse(false), isFalse(0), isFalse('')], [true, false, false])
 })

@@ -7,9 +7,10 @@
  * @module
  */
 
-export type { Kind, Shape, Shaped, Widened } from './core/shape.ts'
+export type { Kind, Nullary, Shape, Shaped, Widened } from './core/shape.ts'
 export type {
   KindOf,
+  MemberOf,
   Satisfies,
   ShapeOf,
   SlotAOf,
@@ -17,12 +18,15 @@ export type {
 } from './core/kind.ts'
 
 export type { AltMethods } from './classes/alt.ts'
+export type { MonoidDict } from './classes/monoid.ts'
+export type { SemigroupDict } from './classes/semigroup.ts'
 export type { ApplicativeTypeRep } from './classes/applicative.ts'
 export type { ApplyMethods } from './classes/apply.ts'
 export type { BifunctorMethods } from './classes/bifunctor.ts'
 export type { CategoryTypeRep } from './classes/category.ts'
 export type { ChainMethods } from './classes/chain.ts'
 export type { ChainRecTypeRep } from './classes/chainrec.ts'
+export type { CheckableTypeRep } from './classes/checkable.ts'
 export type { ComonadMethods } from './classes/comonad.ts'
 export type { ContravariantMethods } from './classes/contravariant.ts'
 export type { DecidableMethods } from './classes/decidable.ts'

@@ -7,6 +7,7 @@
 
 import type { Shape } from '../core/shape.ts'
 import type { NativeTypeRep } from '../core/named.ts'
+import type { CheckableDict } from '../classes/checkable.ts'
 import type { SetoidDict } from '../classes/setoid.ts'
 import type { ShowDict } from '../classes/show.ts'
 import type { Maybe } from '../data/maybe.ts'
@@ -27,6 +28,7 @@ export interface ReShape extends Shape<'RegExp'> {
  */
 export type ReTypeRep =
   & NativeTypeRep<ReShape>
+  & CheckableDict<ReShape>
   & SetoidDict<ReShape>
   & ShowDict<ReShape>
 

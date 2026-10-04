@@ -9,8 +9,8 @@ import type { MatchableIn, SlotAOf, SlotBOf } from '../core/kind.ts'
 import type { Instances } from '../core/named.ts'
 import type { ArrayShape } from '../natives/array.ts'
 import type { StrMapShape } from '../natives/strmap.ts'
-import type { MonoidDict } from './monoid.ts'
 import type { Maybe } from '../data/maybe.ts'
+import type { MonoidDict } from './monoid.ts'
 import { dispatch, lazily } from '../core/instance.ts'
 import { Arr } from '../natives/array.ts'
 import { StrMap } from '../natives/strmap.ts'
@@ -267,6 +267,22 @@ export function last(fa: Foldable<unknown, unknown>): Maybe<unknown> {
  */
 export function size(fa: Foldable<unknown, unknown>): number {
   return reduceUntyped(fa)((acc: number) => acc + 1, 0) as number
+}
+
+/**
+ * Checks whether a collection contains no values.
+ *
+ * @example
+ * ```ts
+ * import * as P from '@algosail/ply'
+ *
+ * P.isEmpty([]) // => true
+ * P.isEmpty([1]) // => false
+ * P.isEmpty({}) // => true
+ * ```
+ */
+export function isEmpty(fa: Foldable<unknown, unknown>): boolean {
+  return size(fa) === 0
 }
 
 /**

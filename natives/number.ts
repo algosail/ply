@@ -6,6 +6,7 @@
 
 import type { Shape } from '../core/shape.ts'
 import type { NativeTypeRep } from '../core/named.ts'
+import type { CheckableDict } from '../classes/checkable.ts'
 import type { Foldable } from '../classes/foldable.ts'
 import type { OrdDict } from '../classes/ord.ts'
 import type { SetoidDict } from '../classes/setoid.ts'
@@ -29,6 +30,7 @@ export interface NumShape extends Shape<'Number'> {
  */
 export type NumTypeRep =
   & NativeTypeRep<NumShape>
+  & CheckableDict<NumShape>
   & OrdDict<NumShape>
   & SetoidDict<NumShape>
   & ShowDict<NumShape>

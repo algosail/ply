@@ -6,6 +6,7 @@
 
 import type { Shape } from '../core/shape.ts'
 import type { NativeTypeRep } from '../core/named.ts'
+import type { CheckableDict } from '../classes/checkable.ts'
 import type { OrdDict } from '../classes/ord.ts'
 import type { SetoidDict } from '../classes/setoid.ts'
 import type { ShowDict } from '../classes/show.ts'
@@ -24,6 +25,7 @@ export interface BoolShape extends Shape<'Boolean'> {
  */
 export type BoolDict =
   & NativeTypeRep<BoolShape>
+  & CheckableDict<BoolShape>
   & OrdDict<BoolShape>
   & SetoidDict<BoolShape>
   & ShowDict<BoolShape>
@@ -184,4 +186,49 @@ export function unless<A>(
   pred: (a: A) => boolean,
 ): (f: (a: A) => A) => (x: A) => A {
   return (f) => (x) => pred(x) ? x : f(x)
+}
+
+/**
+ * Whether a value is `true` itself, rather than merely truthy.
+ *
+ * @example
+ * ```ts
+ * import * as P from '@algosail/ply'
+ *
+ * P.isTrue(true) // => true
+ * P.isTrue(1) // => false
+ * ```
+ */
+export function isTrue(x: unknown): x is true {
+  return x === true
+}
+
+/**
+ * Whether a value is `false` itself, rather than merely falsy.
+ *
+ * @example
+ * ```ts
+ * import * as P from '@algosail/ply'
+ *
+ * P.isFalse(false) // => true
+ * P.isFalse(0) // => false
+ * ```
+ */
+export function isFalse(x: unknown): x is false {
+  return x === false
+}
+
+/**
+ * Applies the function when the flag is true; otherwise returns the input unchanged.
+ *
+ * @example
+ * ```ts
+ * import * as P from '@algosail/ply'
+ *
+ * P.onlyIf(true)((n: number) => n + 1)(1) // => 2
+ * P.onlyIf(false)((n: number) => n + 1)(1) // => 1
+ * ```
+ */
+export function onlyIf(yes: boolean): <A>(f: (a: A) => A) => (a: A) => A {
+  return <A>(f: (a: A) => A) => (a: A): A => yes ? f(a) : a
 }

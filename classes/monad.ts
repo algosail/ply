@@ -83,13 +83,8 @@ export type _MonadUnderApplicative = Assert<
 export type _MonadUnderChain = Assert<SubclassOf<MonadShapes, ChainShapes>>
 
 /**
- * A do-block: the generator body {@link go} or {@link fgo} runs, yielding
- * values of shape `S` and returning an unwrapped result of type `A`.
- *
- * Annotate each variable assigned from `yield`; TypeScript does not infer its
- * type. The shape is the one for the wrapper being worked in, and the shapes
- * live in `@algosail/ply/shapes`. A body that recurses does so with `yield*`,
- * which keeps it inside the run already going instead of starting a second one.
+ * A generator body for {@link go} or {@link fgo}, yielding values of shape `S`
+ * and returning an unwrapped result of type `A`.
  *
  * @example
  * ```ts

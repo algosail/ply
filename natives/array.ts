@@ -16,6 +16,7 @@ import type {
 import type { ApplyDict, ApplyMethods } from '../classes/apply.ts'
 import type { ChainDict } from '../classes/chain.ts'
 import type { ChainRecDict, Step } from '../classes/chainrec.ts'
+import type { CheckableDict } from '../classes/checkable.ts'
 import type { FilterableDict } from '../classes/filterable.ts'
 import type { FoldableDict } from '../classes/foldable.ts'
 import type { FunctorDict } from '../classes/functor.ts'
@@ -60,6 +61,7 @@ export type ArrDict =
   & ApplyDict<ArrayShape>
   & ChainDict<ArrayShape>
   & ChainRecDict<ArrayShape>
+  & CheckableDict<ArrayShape>
   & FilterableDict<ArrayShape>
   & FoldableDict<ArrayShape>
   & FunctorDict<ArrayShape>

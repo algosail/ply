@@ -16,7 +16,6 @@ import { Num } from '../natives/number.ts'
 import { Sets } from '../natives/set.ts'
 import { Str } from '../natives/string.ts'
 import { StrMap } from '../natives/strmap.ts'
-import { hasName } from './named.ts'
 
 /** Accepts a table of operations keyed by native type name. */
 export type NativeTable = object
@@ -98,7 +97,10 @@ const natives = () =>
 export function nameOf(x: unknown): string {
   if (x === null) return 'Null'
   if (x === undefined) return 'Undefined'
-  if (hasName(x)) return x['@@type']
+  if ((typeof x === 'object' || typeof x === 'function') && '@@type' in x) {
+    const named = (x as { readonly '@@type': unknown })['@@type']
+    if (typeof named === 'string') return named
+  }
   for (const t of natives()) if (t.is(x)) return t['@@type']
   return 'Unknown'
 }

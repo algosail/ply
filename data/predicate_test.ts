@@ -1,10 +1,44 @@
 import { assertEquals } from '@std/assert'
-import { Predicate, predicate, predicateNot, predicateOr } from './predicate.ts'
+import {
+  allPass,
+  anyPass,
+  Predicate,
+  predicate,
+  predicateNot,
+  predicateOr,
+} from './predicate.ts'
 import { contramap } from '../classes/contravariant.ts'
 import { concat } from '../classes/semigroup.ts'
 import { empty } from '../classes/monoid.ts'
 
 // Examples
+
+Deno.test('Predicate: uses its public name and supports detached static functions', () => {
+  const { is, empty, conquer } = Predicate
+  const rule = new Predicate<number>(Number.isFinite)
+
+  assertEquals(Object.getPrototypeOf(rule).constructor.name, 'Predicate')
+  assertEquals(rule(42), true)
+  assertEquals(is(rule), true)
+  assertEquals(is(Number.isFinite), false)
+  assertEquals(empty()('anything'), true)
+  assertEquals(conquer()('anything'), true)
+})
+
+Deno.test('Predicate: preserves call, apply, and bind', () => {
+  function positive(value: number): boolean {
+    return value > 0
+  }
+  const rule = predicate(positive)
+  const bound = rule.bind(null)
+
+  assertEquals(rule instanceof Function, true)
+  assertEquals(rule.call(null, 1), true)
+  assertEquals(rule.apply(null, [-1]), false)
+  assertEquals(bound(2), true)
+  assertEquals(Object.keys(rule), [])
+  assertEquals(rule.contramap === predicate(positive).contramap, true)
+})
 
 Deno.test('predicate: creates a callable rule with the Predicate representative', () => {
   assertEquals(isLong('abcd'), true)
@@ -103,3 +137,27 @@ const isLong = predicate<string>((s) => s.length > 3)
 const startsA = predicate<string>((s) => s.startsWith('a'))
 
 const probes = ['', 'a', 'abcd', 'zzzz', 'abcdef']
+
+Deno.test('allPass: every rule, and an empty list passes', () => {
+  const short = predicate((s: string) => s.length < 4)
+  const startsA = predicate((s: string) => s.startsWith('a'))
+
+  assertEquals(allPass([short, startsA])('abc'), true)
+  assertEquals(allPass([short, startsA])('bcd'), false)
+  assertEquals(allPass<string>([])('anything'), true)
+})
+
+Deno.test('anyPass: one rule is enough, and an empty list fails', () => {
+  const short = predicate((s: string) => s.length < 4)
+  const startsA = predicate((s: string) => s.startsWith('a'))
+
+  assertEquals(anyPass([short, startsA])('abcde'), true)
+  assertEquals(anyPass([short, startsA])('bcdef'), false)
+  assertEquals(anyPass<string>([])('anything'), false)
+})
+
+Deno.test('allPass and anyPass give back a Predicate, not a bare function', () => {
+  const any = anyPass([predicate((n: number) => n > 0)])
+  assertEquals(any.constructor, Predicate)
+  assertEquals(any['@@type'], 'Predicate')
+})

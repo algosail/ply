@@ -1,6 +1,6 @@
 {
   "name": "@algosail/ply",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "license": "MIT",
   "exports": {
     ".": "./mod.ts",
@@ -15,6 +15,7 @@
     "./category": "./classes/category.ts",
     "./chain": "./classes/chain.ts",
     "./chainrec": "./classes/chainrec.ts",
+    "./checkable": "./classes/checkable.ts",
     "./comonad": "./classes/comonad.ts",
     "./contravariant": "./classes/contravariant.ts",
     "./decidable": "./classes/decidable.ts",

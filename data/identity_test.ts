@@ -13,6 +13,24 @@ import { concat } from '../classes/semigroup.ts'
 
 // Examples
 
+Deno.test('Identity: uses its public name and supports detached static functions', () => {
+  const { is, of } = Identity
+
+  assertEquals(Object.getPrototypeOf(of(42)).constructor.name, 'Identity')
+  assertEquals(of(42), identity(42))
+  assertEquals(is(of(42)), true)
+  assertEquals(is(42), false)
+})
+
+Deno.test('Identity: instances store the payload and share their methods', () => {
+  const first = identity(1)
+  const second = identity(2)
+
+  assertEquals(Object.keys(first), ['value'])
+  assertEquals(first.map === second.map, true)
+  assertEquals(JSON.stringify(first), '{"value":1}')
+})
+
 Deno.test('identity: wraps a value so it can be used with operations such as map and chain', () => {
   const w = identity(1)
 

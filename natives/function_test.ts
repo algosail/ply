@@ -8,9 +8,11 @@ import {
   I,
   K,
   on,
+  once,
   pipe,
   pipeK,
   T,
+  tap,
 } from './function.ts'
 import { add, sub } from './number.ts'
 import type { Maybe } from '../data/maybe.ts'
@@ -672,6 +674,36 @@ Deno.test('pipeK: the input must use the wrapper of the steps', () => {
   const _array = () => pipeK(steps)([1, 2])
 
   assertEquals(typeof _array, 'function')
+})
+
+Deno.test('tap: runs the effect and hands the value on unchanged', () => {
+  const seen: number[] = []
+  assertEquals(map(tap((n: number) => seen.push(n)))([1, 2, 3]), [1, 2, 3])
+  assertEquals(seen, [1, 2, 3])
+})
+
+Deno.test('tap: what the effect returns is thrown away', () => {
+  assertEquals(tap((n: number) => n * 2)(3), 3)
+})
+
+Deno.test('once: runs at most once and keeps that answer', () => {
+  let calls = 0
+  const next = once((n: number) => (calls += 1, n + 1))
+
+  assertEquals(next(1), 2)
+  assertEquals(next(9), 2, 'the later arguments are not looked at')
+  assertEquals(calls, 1)
+})
+
+Deno.test('once: an answer of undefined is still an answer', () => {
+  let calls = 0
+  const nothing = once(() => {
+    calls += 1
+  })
+
+  nothing()
+  nothing()
+  assertEquals(calls, 1)
 })
 
 type Exact<A, B> = (<T>() => T extends A ? 1 : 2) extends

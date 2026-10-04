@@ -52,6 +52,20 @@ Deno.test('nameOf: every native is recognized by value', () => {
   for (const [x, name] of pairs) assertEquals(nameOf(x), name, name)
 })
 
+Deno.test('nameOf: reads a name once, and never one a proxy lacks', () => {
+  let reads = 0
+  const counting: ProxyHandler<object> = {
+    get(target, key) {
+      if (key === '@@type') reads++
+      return Reflect.get(target, key)
+    },
+  }
+  assertEquals(nameOf(new Proxy({ a: 1 }, counting)), 'StrMap')
+  assertEquals(reads, 0)
+  assertEquals(nameOf(new Proxy(just(1), counting)), 'Maybe')
+  assertEquals(reads, 1)
+})
+
 Deno.test('nameOf: an unfamiliar value is Unknown', () => {
   assertEquals(nameOf(Symbol('s')), 'Unknown')
   assertEquals(nameOf(new WeakMap()), 'Unknown')

@@ -29,6 +29,8 @@ import type { StrMapShape } from '../natives/strmap.ts'
 import type { StrShape } from '../natives/string.ts'
 import type { Either } from '../data/either.ts'
 import type { Pair } from '../data/pair.ts'
+import type { Predicate, PredicateShape } from '../data/predicate.ts'
+import type { Equivalence, EquivalenceShape } from '../data/equivalence.ts'
 import { nameOf } from './instance.ts'
 import { just } from '../data/maybe.ts'
 
@@ -120,6 +122,10 @@ interface ThreadingShape extends Shape<'Threading'>, Widened {
 }
 
 export type _MemberOfInInputPosition = [
+  Assert<Exact<MemberOf<PredicateShape>, Predicate<never>>>,
+  Assert<Exact<MemberOf<EquivalenceShape>, Equivalence<never>>>,
+  Assert<Predicate<string> extends MemberOf<PredicateShape> ? true : false>,
+  Assert<Equivalence<string> extends MemberOf<EquivalenceShape> ? true : false>,
   Assert<Exact<MemberOf<ThreadingShape>, (s: never) => unknown>>,
   Assert<
     Exact<Kind<ThreadingShape, unknown, unknown>, (s: unknown) => unknown>

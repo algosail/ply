@@ -6,6 +6,33 @@ import { empty } from '../classes/monoid.ts'
 
 // Examples
 
+Deno.test('Equivalence: uses its public name and supports detached static functions', () => {
+  const { is, empty, conquer } = Equivalence
+  const rule = new Equivalence<number>(Object.is)
+
+  assertEquals(Object.getPrototypeOf(rule).constructor.name, 'Equivalence')
+  assertEquals(rule(42, 42), true)
+  assertEquals(is(rule), true)
+  assertEquals(is(Object.is), false)
+  assertEquals(empty()(1, 'anything'), true)
+  assertEquals(conquer()(1, 'anything'), true)
+})
+
+Deno.test('Equivalence: preserves call, apply, and bind', () => {
+  function sameSize(first: string, second: string): boolean {
+    return first.length === second.length
+  }
+  const rule = equivalence(sameSize)
+  const bound = rule.bind(null, 'ab')
+
+  assertEquals(rule instanceof Function, true)
+  assertEquals(rule.call(null, 'ab', 'cd'), true)
+  assertEquals(rule.apply(null, ['ab', 'c']), false)
+  assertEquals(bound('cd'), true)
+  assertEquals(Object.keys(rule), [])
+  assertEquals(rule.contramap === equivalence(sameSize).contramap, true)
+})
+
 Deno.test('equivalence: creates a callable comparison with the Equivalence representative', () => {
   assertEquals(sameLength('ab', 'cd'), true)
   assertEquals(sameLength('ab', 'xyz'), false)

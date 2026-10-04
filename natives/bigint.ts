@@ -6,6 +6,7 @@
 
 import type { Shape } from '../core/shape.ts'
 import type { NativeTypeRep } from '../core/named.ts'
+import type { CheckableDict } from '../classes/checkable.ts'
 import type { OrdDict } from '../classes/ord.ts'
 import type { SetoidDict } from '../classes/setoid.ts'
 import type { ShowDict } from '../classes/show.ts'
@@ -24,6 +25,7 @@ export interface BigShape extends Shape<'BigInt'> {
  */
 export type BigDict =
   & NativeTypeRep<BigShape>
+  & CheckableDict<BigShape>
   & OrdDict<BigShape>
   & SetoidDict<BigShape>
   & ShowDict<BigShape>

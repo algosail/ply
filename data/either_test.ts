@@ -33,6 +33,32 @@ import { traverse } from '../classes/traversable.ts'
 
 // Examples
 
+Deno.test('Either: uses its public name and supports detached static functions', () => {
+  const { is, of, left: fail } = Either
+  const failure = fail<string, number>('error')
+
+  assertEquals(Object.getPrototypeOf(failure).constructor.name, 'Either')
+  assertEquals(Object.getPrototypeOf(of(42)).constructor.name, 'Either')
+  assertEquals(failure, left<string, number>('error'))
+  assertEquals(of(42), right(42))
+  assertEquals(is(failure), true)
+  assertEquals(is(of(42)), true)
+  assertEquals(is(42), false)
+})
+
+Deno.test('Either: both branches contain only their tag and payload', () => {
+  const failure = left<string, number>('missing')
+  const success = right<string, number>(42)
+
+  assertEquals(Object.keys(failure), ['tag', 'value'])
+  assertEquals(Object.keys(success), ['tag', 'value'])
+  assertEquals(failure.map === success.map, true)
+  assertEquals(failure.constructor, Either)
+  assertEquals(success.constructor, Either)
+  assertEquals(JSON.stringify(failure), '{"tag":"left","value":"missing"}')
+  assertEquals(JSON.stringify(success), '{"tag":"right","value":42}')
+})
+
 Deno.test('left: creates an Either containing an error or alternative value', () => {
   const e = left<string, number>('err')
 

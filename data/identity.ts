@@ -7,14 +7,15 @@
 
 import type { Shape, Shaped } from '../core/shape.ts'
 import type { KindOf, Satisfies, ShapeOf, SlotAOf } from '../core/kind.ts'
-import type { Apply, ApplyMethods } from '../classes/apply.ts'
-import type { TraversableMethods } from '../classes/traversable.ts'
 import type { ApplicativeTypeRep } from '../classes/applicative.ts'
+import type { Apply, ApplyMethods } from '../classes/apply.ts'
 import type { ChainMethods } from '../classes/chain.ts'
-import type { ExtendMethods } from '../classes/extend.ts'
+import type { CheckableTypeRep } from '../classes/checkable.ts'
 import type { ComonadMethods } from '../classes/comonad.ts'
+import type { ExtendMethods } from '../classes/extend.ts'
 import type { FoldableMethods } from '../classes/foldable.ts'
 import type { FunctorMethods } from '../classes/functor.ts'
+import type { TraversableMethods } from '../classes/traversable.ts'
 import type { OrdMethods } from '../classes/ord.ts'
 import type { SetoidMethods } from '../classes/setoid.ts'
 import type { ShowMethods } from '../classes/show.ts'
@@ -22,15 +23,6 @@ import { map } from '../classes/functor.ts'
 import { equals } from '../classes/setoid.ts'
 import { lte } from '../classes/ord.ts'
 import { show } from '../classes/show.ts'
-
-/**
- * A single wrapped value. Use `map` to transform it and `extract` to unwrap
- * it.
- */
-export interface Identity<A> extends IdentityMethods<A> {
-  /** The contained value. */
-  readonly value: A
-}
 
 /**
  * The shape for Identity. Use it with `Kind` when declaring generic helpers.
@@ -46,11 +38,14 @@ export interface IdentityShape extends Shape<'Identity'> {
  */
 export type IdentityTypeRep = Satisfies<
   IdentityStatics & Shaped<IdentityShape>,
-  ApplicativeTypeRep<IdentityShape>
+  & ApplicativeTypeRep<IdentityShape>
+  & CheckableTypeRep<IdentityShape>
 >
 
 /** Static operations provided by the `Identity` representative. */
 export interface IdentityStatics {
+  /** Checks whether an unknown value belongs to this type. */
+  is(value: unknown): value is Identity<unknown>
   /** Creates an `Identity` value. */
   of<A>(a: A): Identity<A>
 }
@@ -81,44 +76,80 @@ export interface IdentityMethods<A>
   readonly constructor: IdentityTypeRep
 }
 
-type IdentityProto = Omit<
-  Identity<unknown>,
-  '_shape' | '_A' | 'value' | 'constructor'
->
+/**
+ * A single wrapped value. Use `map` to transform it and `extract` to unwrap
+ * it.
+ */
+export class Identity<A> implements IdentityMethods<A> {
+  /** The name used by generic ply operations. */
+  static readonly '@@type' = 'Identity' as const
+  /** The shape used for type inference; no runtime value is required. */
+  declare static readonly _shape: IdentityShape
 
-const proto: IdentityProto = {
-  '@@type': 'Identity' as const,
+  static {
+    Object.defineProperty(this.prototype, '@@type', { value: 'Identity' })
+  }
 
-  map<A, B>(this: Identity<A>, f: (a: A) => B): Identity<B> {
+  /** Checks whether a value was created by this class. */
+  static is(value: unknown): value is Identity<unknown> {
+    return value instanceof Identity
+  }
+  /** Wraps a value in this type. */
+  static of<A>(value: A): Identity<A> {
+    return identity(value)
+  }
+
+  /** The name used by generic ply operations. */
+  declare readonly '@@type': 'Identity'
+  /** The shape used for type inference; no runtime value is required. */
+  declare readonly _shape: IdentityShape
+  /** The contained type used for inference; no runtime member is required. */
+  declare readonly _A?: (_: never) => A
+  /** The representative used by generic ply operations. */
+  declare readonly ['constructor']: IdentityTypeRep
+
+  /** The contained value. */
+  readonly value: A
+  /** Wraps a value for use with map, chain, and traverse. */
+  constructor(value: A) {
+    this.value = value
+  }
+
+  /** Transforms the contained value. */
+  map<B>(f: (a: A) => B): Identity<B> {
     return identity(f(this.value))
-  },
+  }
 
-  ap<A, B>(this: Identity<A>, ff: Identity<(a: A) => B>): Identity<B> {
+  /** Applies a wrapped function to the contained value. */
+  ap<B>(ff: Identity<(a: A) => B>): Identity<B> {
     return identity(ff.value(this.value))
-  },
+  }
 
-  chain<A, B>(this: Identity<A>, f: (a: A) => Identity<B>): Identity<B> {
+  /** Continues with the wrapped computation returned by the function. */
+  chain<B>(f: (a: A) => Identity<B>): Identity<B> {
     return f(this.value)
-  },
+  }
 
-  extend<A, B>(this: Identity<A>, f: (w: Identity<A>) => B): Identity<B> {
+  /** Transforms the whole wrapper and wraps the result. */
+  extend<B>(f: (w: Identity<A>) => B): Identity<B> {
     return identity(f(this))
-  },
+  }
 
-  extract<A>(this: Identity<A>): A {
+  /** Returns the contained value. */
+  extract(): A {
     return this.value
-  },
+  }
 
-  reduce<A, Acc>(
-    this: Identity<A>,
+  /** Calls the function with the initial accumulator and the contained value. */
+  reduce<Acc>(
     f: (acc: Acc, a: A) => Acc,
     init: Acc,
   ): Acc {
     return f(init, this.value)
-  },
+  }
 
-  traverse<A, G extends Apply<G>>(
-    this: Identity<A>,
+  /** Transforms the value with a wrapped computation and collects the result. */
+  traverse<G extends Apply<G>>(
     _T: ApplicativeTypeRep<ShapeOf<G>>,
     f: (a: A) => G,
   ): KindOf<G, Identity<SlotAOf<G>>> {
@@ -126,19 +157,22 @@ const proto: IdentityProto = {
       G,
       Identity<SlotAOf<G>>
     >
-  },
+  }
 
-  equals<A>(this: Identity<A>, that: Identity<A>): boolean {
+  /** Compares the contained values for equality. */
+  equals(that: Identity<A>): boolean {
     return equals(that.value as never)(this.value as never)
-  },
+  }
 
-  lte<A>(this: Identity<A>, that: Identity<A>): boolean {
+  /** Checks whether this value is less than or equal to the other. */
+  lte(that: Identity<A>): boolean {
     return lte(that.value as never)(this.value as never)
-  },
+  }
 
-  show<A>(this: Identity<A>): string {
+  /** Returns a readable string representation. */
+  show(): string {
     return `Identity (${show(this.value)})`
-  },
+  }
 }
 
 /**
@@ -155,19 +189,5 @@ const proto: IdentityProto = {
  * ```
  */
 export function identity<A>(value: A): Identity<A> {
-  return Object.assign(Object.create(proto) as Identity<A>, {
-    value,
-  })
+  return new Identity(value)
 }
-
-/**
- * The single-value representative. Pass it to `of` or `traverse` to choose
- * `Identity`.
- */
-export const Identity: IdentityTypeRep = {
-  '@@type': 'Identity' as const,
-  _shape: undefined as unknown as IdentityShape,
-  of: identity,
-}
-
-Object.defineProperty(proto, 'constructor', { value: Identity })

@@ -17,6 +17,7 @@ import type { ApplicativeDict } from '../classes/applicative.ts'
 import type { ApplyDict } from '../classes/apply.ts'
 import type { CategoryDict } from '../classes/category.ts'
 import type { Chain, ChainDict } from '../classes/chain.ts'
+import type { CheckableDict } from '../classes/checkable.ts'
 import type { ContravariantDict } from '../classes/contravariant.ts'
 import type { Foldable } from '../classes/foldable.ts'
 import type { FunctorDict } from '../classes/functor.ts'
@@ -55,6 +56,7 @@ export type FnDict =
   & ApplyDict<FnShape>
   & CategoryDict<FnShape>
   & ChainDict<FnShape>
+  & CheckableDict<FnShape>
   & ContravariantDict<FnShape>
   & FunctorDict<FnShape>
   & ProfunctorDict<FnShape>
@@ -124,16 +126,18 @@ export function I<A>(a: A): A {
 
 /**
  * Creates a function that always returns the supplied value.
+ * The returned function accepts an optional argument.
  *
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
  *
  * P.K('foo')('bar') // => 'foo'
+ * P.K('foo')() // => 'foo'
  * P.map(P.K(42))([0, 1, 2, 3, 4]) // => [42, 42, 42, 42, 42]
  * ```
  */
-export function K<A>(a: A): (_b: unknown) => A {
+export function K<A>(a: A): (_b?: unknown) => A {
   return (_b) => a
 }
 
@@ -151,6 +155,52 @@ export function K<A>(a: A): (_b: unknown) => A {
  */
 export function T<A>(a: A): <B>(f: Fn<A, B>) => B {
   return (f) => f(a)
+}
+
+/**
+ * Calls a function for its side effects, then returns the input unchanged.
+ *
+ * @example
+ * ```ts
+ * import * as P from '@algosail/ply'
+ *
+ * const seen: number[] = []
+ * P.map(P.tap((n: number) => seen.push(n)))([1, 2, 3]) // => [1, 2, 3]
+ * seen // => [1, 2, 3]
+ * ```
+ */
+export function tap<A>(f: (a: A) => unknown): (a: A) => A {
+  return (a) => {
+    f(a)
+    return a
+  }
+}
+
+/**
+ * Calls the function at most once and reuses its result, ignoring later arguments.
+ * If the first call throws, that call rethrows and later calls return `undefined`.
+ *
+ * @example
+ * ```ts
+ * import * as P from '@algosail/ply'
+ *
+ * const next = P.once((n: number) => n + 1)
+ * next(1) // => 2
+ * next(9) // => 2
+ * ```
+ */
+export function once<Args extends unknown[], B>(
+  f: (...args: Args) => B,
+): (...args: Args) => B {
+  let called = false
+  let answer: B
+  return (...args) => {
+    if (!called) {
+      called = true
+      answer = f(...args)
+    }
+    return answer
+  }
 }
 
 /**

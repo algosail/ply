@@ -162,6 +162,8 @@ export type KindOf<F, A, B = SlotBOf<F>> = F extends Shaped<Shape>
 
 /**
  * Accepts any value described by a shape, regardless of its type arguments.
+ * Uses `never` for unknown input types so callable values cannot be called
+ * with an unchecked argument.
  *
  * @example
  * ```ts
@@ -177,7 +179,7 @@ export type KindOf<F, A, B = SlotBOf<F>> = F extends Shaped<Shape>
  */
 export type MemberOf<L extends Shape> = L extends Widened
   ? KindLike<L, unknown, unknown>
-  : Kind<L, unknown, unknown>
+  : Kind<L, unknown, L['slotBVariance'] extends 'in' ? never : unknown>
 
 type AtBy<S, A, B> = [S] extends [never] ? never
   : [S] extends [Shape] ? Kind<S, A, B>

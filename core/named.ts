@@ -9,10 +9,10 @@ import type { Shape, Shaped } from './shape.ts'
 
 /** Names a type and provides an `is` function to recognize its values. */
 export type NamedGuard<A = unknown> = {
+  /** Checks whether an unknown value belongs to this type. */
+  is(value: unknown): value is A
   /** The name used to recognize this type in ply operations. */
   readonly '@@type': string
-  /** Checks whether an unknown value belongs to this type. */
-  readonly is: (x: unknown) => x is A
 }
 
 /**

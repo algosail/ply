@@ -19,12 +19,13 @@
 
 import type { Shape, Shaped } from '../core/shape.ts'
 import type { KindOf, Satisfies, ShapeOf, SlotAOf } from '../core/kind.ts'
-import type { Apply, ApplyMethods } from '../classes/apply.ts'
-import type { TraversableMethods } from '../classes/traversable.ts'
 import type { AltMethods } from '../classes/alt.ts'
 import type { ApplicativeTypeRep } from '../classes/applicative.ts'
+import type { Apply, ApplyMethods } from '../classes/apply.ts'
 import type { BifunctorMethods } from '../classes/bifunctor.ts'
 import type { ChainMethods } from '../classes/chain.ts'
+import type { CheckableTypeRep } from '../classes/checkable.ts'
+import type { TraversableMethods } from '../classes/traversable.ts'
 import type { Filterable } from '../classes/filterable.ts'
 import type { FoldableMethods } from '../classes/foldable.ts'
 import type { FunctorMethods } from '../classes/functor.ts'
@@ -77,11 +78,16 @@ export interface EitherShape extends Shape<'Either'> {
  */
 export type EitherTypeRep = Satisfies<
   EitherStatics & Shaped<EitherShape>,
-  ApplicativeTypeRep<EitherShape, unknown>
+  & ApplicativeTypeRep<EitherShape, unknown>
+  & CheckableTypeRep<EitherShape>
 >
 
 /** Static operations provided by the `Either` representative. */
 export interface EitherStatics {
+  /** Checks whether an unknown value belongs to this type. */
+  is(value: unknown): value is Either<unknown, unknown>
+  /** Creates a `Left` value. */
+  left<E, A>(e: E): Either<E, A>
   /** Creates a `Right` value. */
   of<E, A>(a: A): Either<E, A>
 }
@@ -117,46 +123,81 @@ export interface EitherMethods<E, A>
   match<B>(onLeft: (e: E) => B, onRight: (a: A) => B): B
 }
 
-type EitherProto = Omit<
-  EitherMethods<unknown, unknown>,
-  '_shape' | '_A' | '_B' | 'constructor'
->
+/**
+ * The result representative. Use `Either.left` to create `Left`,
+ * `of(Either)` to create `Right`, or `traverse(Either)` to collect results.
+ *
+ * @example
+ * ```ts
+ * import * as P from '@algosail/ply'
+ *
+ * P.Either.left('missing') // => Left ("missing")
+ * P.of(P.Either)(1) // => Right (1)
+ * ```
+ */
+export const Either: EitherTypeRep = class<E, A, Tag extends 'left' | 'right'>
+  implements EitherMethods<E, A> {
+  static readonly '@@type' = 'Either' as const
+  declare static readonly _shape: EitherShape
 
-const proto: EitherProto = {
-  '@@type': 'Either' as const,
+  static {
+    Object.defineProperty(this.prototype, '@@type', { value: 'Either' })
+  }
 
-  match<E, A, B>(
-    this: Either<E, A>,
+  static is = (value: unknown): value is Either<unknown, unknown> =>
+    value instanceof this
+
+  static of = <E, A>(value: A): Either<E, A> =>
+    new this<E, A, 'right'>('right', value)
+
+  static left = <E, A>(error: E): Either<E, A> =>
+    new this<E, A, 'left'>('left', error)
+
+  declare readonly '@@type': 'Either'
+  declare readonly _shape: EitherShape
+  declare readonly _A?: (_: never) => A
+  declare _B?: EitherMethods<E, A>['_B']
+  declare readonly ['constructor']: EitherTypeRep
+
+  readonly tag: Tag
+  readonly value: Tag extends 'left' ? E : A
+  constructor(tag: Tag, value: Tag extends 'left' ? E : A) {
+    this.tag = tag
+    this.value = value
+  }
+
+  match<B>(
     onLeft: (e: E) => B,
     onRight: (a: A) => B,
   ): B {
-    return this.tag === 'left' ? onLeft(this.value) : onRight(this.value)
-  },
+    return this.tag === 'left'
+      ? onLeft(this.value as E)
+      : onRight(this.value as A)
+  }
 
-  map<E, A, B>(this: Either<E, A>, f: (a: A) => B): Either<E, B> {
+  map<B>(f: (a: A) => B): Either<E, B> {
     return this.match<Either<E, B>>((e) => left(e), (a) => right(f(a)))
-  },
+  }
 
-  ap<E, A, B>(this: Either<E, A>, ff: Either<E, (a: A) => B>): Either<E, B> {
+  ap<B>(ff: Either<E, (a: A) => B>): Either<E, B> {
     return ff.match<Either<E, B>>(
       (e) => left(e),
       (f) => this.match<Either<E, B>>((e) => left(e), (a) => right(f(a))),
     )
-  },
+  }
 
-  chain<E, A, B>(this: Either<E, A>, f: (a: A) => Either<E, B>): Either<E, B> {
+  chain<B>(f: (a: A) => Either<E, B>): Either<E, B> {
     return this.match<Either<E, B>>((e) => left(e), f)
-  },
+  }
 
-  alt<E, A>(this: Either<E, A>, that: Either<E, A>): Either<E, A> {
+  alt(that: Either<E, A>): Either<E, A> {
     return this.match<Either<E, A>>(
       () => that,
-      () => this as unknown as Either<E, A>,
+      () => this as Either<E, A>,
     )
-  },
+  }
 
-  bimap<E, A, M, B>(
-    this: Either<E, A>,
+  bimap<M, B>(
     f: (e: E) => M,
     g: (a: A) => B,
   ): Either<M, B> {
@@ -164,18 +205,16 @@ const proto: EitherProto = {
       (e) => left(f(e)),
       (a) => right(g(a)),
     )
-  },
+  }
 
-  reduce<E, A, Acc>(
-    this: Either<E, A>,
+  reduce<Acc>(
     f: (acc: Acc, a: A) => Acc,
     init: Acc,
   ): Acc {
     return this.match(() => init, (a) => f(init, a))
-  },
+  }
 
-  traverse<E, A, G extends Apply<G>>(
-    this: Either<E, A>,
+  traverse<G extends Apply<G>>(
     T: ApplicativeTypeRep<ShapeOf<G>>,
     f: (a: A) => G,
   ): KindOf<G, Either<E, SlotAOf<G>>> {
@@ -186,9 +225,9 @@ const proto: EitherProto = {
           f(a),
         ) as KindOf<G, Either<E, SlotAOf<G>>>,
     ) as KindOf<G, Either<E, SlotAOf<G>>>
-  },
+  }
 
-  concat<E, A>(this: Either<E, A>, that: Either<E, A>): Either<E, A> {
+  concat(that: Either<E, A>): Either<E, A> {
     return this.match(
       (thisError) =>
         that.match(
@@ -198,14 +237,14 @@ const proto: EitherProto = {
         ),
       (thisValue) =>
         that.match(
-          () => this as unknown as Either<E, A>,
+          () => this as Either<E, A>,
           (thatValue) =>
             right(concat(thisValue as never)(thatValue as never) as A),
         ),
     )
-  },
+  }
 
-  equals<E, A>(this: Either<E, A>, that: Either<E, A>): boolean {
+  equals(that: Either<E, A>): boolean {
     return this.match(
       (thisError) =>
         that.match(
@@ -218,9 +257,9 @@ const proto: EitherProto = {
           (thatValue) => equals(thatValue as never)(thisValue as never),
         ),
     )
-  },
+  }
 
-  lte<E, A>(this: Either<E, A>, that: Either<E, A>): boolean {
+  lte(that: Either<E, A>): boolean {
     return this.match(
       (thisError) =>
         that.match(
@@ -233,19 +272,15 @@ const proto: EitherProto = {
           (thatValue) => lte(thatValue as never)(thisValue as never),
         ),
     )
-  },
+  }
 
-  show<E, A>(this: Either<E, A>): string {
+  show(): string {
     return this.match(
       (e) => `Left (${show(e)})`,
       (a) => `Right (${show(a)})`,
     )
-  },
-}
-
-const make = <E, A>(
-  fields: Pick<Either<E, A>, 'tag' | 'value'>,
-): Either<E, A> => Object.assign(Object.create(proto) as Either<E, A>, fields)
+  }
+} satisfies EitherTypeRep
 
 /**
  * Creates an `Either` containing an error or alternative value.
@@ -259,7 +294,7 @@ const make = <E, A>(
  * ```
  */
 export function left<E, A>(e: E): Either<E, A> {
-  return make<E, A>({ tag: 'left', value: e })
+  return Either.left<E, A>(e)
 }
 
 /**
@@ -273,30 +308,8 @@ export function left<E, A>(e: E): Either<E, A> {
  * ```
  */
 export function right<E, A>(a: A): Either<E, A> {
-  return make<E, A>({ tag: 'right', value: a })
+  return Either.of<E, A>(a)
 }
-
-/**
- * The result representative. Use `of(Either)` to create `Right`
- * or `traverse(Either)` to collect results.
- *
- * @example
- * ```ts
- * import * as P from '@algosail/ply'
- *
- * P.of(P.Either)(1) // => Right (1)
- * ```
- */
-export const Either: EitherTypeRep = {
-  '@@type': 'Either' as const,
-  _shape: undefined as unknown as EitherShape,
-
-  of(a) {
-    return right(a)
-  },
-}
-
-Object.defineProperty(proto, 'constructor', { value: Either })
 
 /**
  * Checks for `Left` and narrows the type to its error value.
