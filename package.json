@@ -1,0 +1,292 @@
+{
+  "name": "@algosail/ply",
+  "version": "0.1.0",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/algosail/ply.git"
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=22.7"
+  },
+  "exports": {
+    ".": {
+      "workerd": "./src/mod.ts",
+      "types": "./dist/mod.d.ts",
+      "default": "./dist/mod.js"
+    },
+    "./shapes": {
+      "workerd": "./src/shapes.ts",
+      "types": "./dist/shapes.d.ts",
+      "default": "./dist/shapes.js"
+    },
+    "./classes": {
+      "workerd": "./src/typeclasses.ts",
+      "types": "./dist/typeclasses.d.ts",
+      "default": "./dist/typeclasses.js"
+    },
+    "./types": {
+      "workerd": "./src/typerep.ts",
+      "types": "./dist/typerep.d.ts",
+      "default": "./dist/typerep.js"
+    },
+    "./define": {
+      "workerd": "./src/define.ts",
+      "types": "./dist/define.d.ts",
+      "default": "./dist/define.js"
+    },
+    "./alt": {
+      "workerd": "./src/classes/alt.ts",
+      "types": "./dist/classes/alt.d.ts",
+      "default": "./dist/classes/alt.js"
+    },
+    "./applicative": {
+      "workerd": "./src/classes/applicative.ts",
+      "types": "./dist/classes/applicative.d.ts",
+      "default": "./dist/classes/applicative.js"
+    },
+    "./apply": {
+      "workerd": "./src/classes/apply.ts",
+      "types": "./dist/classes/apply.d.ts",
+      "default": "./dist/classes/apply.js"
+    },
+    "./bifunctor": {
+      "workerd": "./src/classes/bifunctor.ts",
+      "types": "./dist/classes/bifunctor.d.ts",
+      "default": "./dist/classes/bifunctor.js"
+    },
+    "./category": {
+      "workerd": "./src/classes/category.ts",
+      "types": "./dist/classes/category.d.ts",
+      "default": "./dist/classes/category.js"
+    },
+    "./chain": {
+      "workerd": "./src/classes/chain.ts",
+      "types": "./dist/classes/chain.d.ts",
+      "default": "./dist/classes/chain.js"
+    },
+    "./chainrec": {
+      "workerd": "./src/classes/chainrec.ts",
+      "types": "./dist/classes/chainrec.d.ts",
+      "default": "./dist/classes/chainrec.js"
+    },
+    "./checkable": {
+      "workerd": "./src/classes/checkable.ts",
+      "types": "./dist/classes/checkable.d.ts",
+      "default": "./dist/classes/checkable.js"
+    },
+    "./comonad": {
+      "workerd": "./src/classes/comonad.ts",
+      "types": "./dist/classes/comonad.d.ts",
+      "default": "./dist/classes/comonad.js"
+    },
+    "./contravariant": {
+      "workerd": "./src/classes/contravariant.ts",
+      "types": "./dist/classes/contravariant.d.ts",
+      "default": "./dist/classes/contravariant.js"
+    },
+    "./decidable": {
+      "workerd": "./src/classes/decidable.ts",
+      "types": "./dist/classes/decidable.d.ts",
+      "default": "./dist/classes/decidable.js"
+    },
+    "./divisible": {
+      "workerd": "./src/classes/divisible.ts",
+      "types": "./dist/classes/divisible.d.ts",
+      "default": "./dist/classes/divisible.js"
+    },
+    "./extend": {
+      "workerd": "./src/classes/extend.ts",
+      "types": "./dist/classes/extend.d.ts",
+      "default": "./dist/classes/extend.js"
+    },
+    "./filterable": {
+      "workerd": "./src/classes/filterable.ts",
+      "types": "./dist/classes/filterable.d.ts",
+      "default": "./dist/classes/filterable.js"
+    },
+    "./foldable": {
+      "workerd": "./src/classes/foldable.ts",
+      "types": "./dist/classes/foldable.d.ts",
+      "default": "./dist/classes/foldable.js"
+    },
+    "./functor": {
+      "workerd": "./src/classes/functor.ts",
+      "types": "./dist/classes/functor.d.ts",
+      "default": "./dist/classes/functor.js"
+    },
+    "./group": {
+      "workerd": "./src/classes/group.ts",
+      "types": "./dist/classes/group.d.ts",
+      "default": "./dist/classes/group.js"
+    },
+    "./monad": {
+      "workerd": "./src/classes/monad.ts",
+      "types": "./dist/classes/monad.d.ts",
+      "default": "./dist/classes/monad.js"
+    },
+    "./monoid": {
+      "workerd": "./src/classes/monoid.ts",
+      "types": "./dist/classes/monoid.d.ts",
+      "default": "./dist/classes/monoid.js"
+    },
+    "./ord": {
+      "workerd": "./src/classes/ord.ts",
+      "types": "./dist/classes/ord.d.ts",
+      "default": "./dist/classes/ord.js"
+    },
+    "./plus": {
+      "workerd": "./src/classes/plus.ts",
+      "types": "./dist/classes/plus.d.ts",
+      "default": "./dist/classes/plus.js"
+    },
+    "./profunctor": {
+      "workerd": "./src/classes/profunctor.ts",
+      "types": "./dist/classes/profunctor.d.ts",
+      "default": "./dist/classes/profunctor.js"
+    },
+    "./semigroup": {
+      "workerd": "./src/classes/semigroup.ts",
+      "types": "./dist/classes/semigroup.d.ts",
+      "default": "./dist/classes/semigroup.js"
+    },
+    "./semigroupoid": {
+      "workerd": "./src/classes/semigroupoid.ts",
+      "types": "./dist/classes/semigroupoid.d.ts",
+      "default": "./dist/classes/semigroupoid.js"
+    },
+    "./setoid": {
+      "workerd": "./src/classes/setoid.ts",
+      "types": "./dist/classes/setoid.d.ts",
+      "default": "./dist/classes/setoid.js"
+    },
+    "./show": {
+      "workerd": "./src/classes/show.ts",
+      "types": "./dist/classes/show.d.ts",
+      "default": "./dist/classes/show.js"
+    },
+    "./traversable": {
+      "workerd": "./src/classes/traversable.ts",
+      "types": "./dist/classes/traversable.d.ts",
+      "default": "./dist/classes/traversable.js"
+    },
+    "./array": {
+      "workerd": "./src/natives/array.ts",
+      "types": "./dist/natives/array.d.ts",
+      "default": "./dist/natives/array.js"
+    },
+    "./bigint": {
+      "workerd": "./src/natives/bigint.ts",
+      "types": "./dist/natives/bigint.d.ts",
+      "default": "./dist/natives/bigint.js"
+    },
+    "./boolean": {
+      "workerd": "./src/natives/boolean.ts",
+      "types": "./dist/natives/boolean.d.ts",
+      "default": "./dist/natives/boolean.js"
+    },
+    "./date": {
+      "workerd": "./src/natives/date.ts",
+      "types": "./dist/natives/date.d.ts",
+      "default": "./dist/natives/date.js"
+    },
+    "./function": {
+      "workerd": "./src/natives/function.ts",
+      "types": "./dist/natives/function.d.ts",
+      "default": "./dist/natives/function.js"
+    },
+    "./map": {
+      "workerd": "./src/natives/map.ts",
+      "types": "./dist/natives/map.d.ts",
+      "default": "./dist/natives/map.js"
+    },
+    "./number": {
+      "workerd": "./src/natives/number.ts",
+      "types": "./dist/natives/number.d.ts",
+      "default": "./dist/natives/number.js"
+    },
+    "./record": {
+      "workerd": "./src/natives/record.ts",
+      "types": "./dist/natives/record.d.ts",
+      "default": "./dist/natives/record.js"
+    },
+    "./regexp": {
+      "workerd": "./src/natives/regexp.ts",
+      "types": "./dist/natives/regexp.d.ts",
+      "default": "./dist/natives/regexp.js"
+    },
+    "./set": {
+      "workerd": "./src/natives/set.ts",
+      "types": "./dist/natives/set.d.ts",
+      "default": "./dist/natives/set.js"
+    },
+    "./string": {
+      "workerd": "./src/natives/string.ts",
+      "types": "./dist/natives/string.d.ts",
+      "default": "./dist/natives/string.js"
+    },
+    "./strmap": {
+      "workerd": "./src/natives/strmap.ts",
+      "types": "./dist/natives/strmap.d.ts",
+      "default": "./dist/natives/strmap.js"
+    },
+    "./either": {
+      "workerd": "./src/data/either.ts",
+      "types": "./dist/data/either.d.ts",
+      "default": "./dist/data/either.js"
+    },
+    "./equivalence": {
+      "workerd": "./src/data/equivalence.ts",
+      "types": "./dist/data/equivalence.d.ts",
+      "default": "./dist/data/equivalence.js"
+    },
+    "./identity": {
+      "workerd": "./src/data/identity.ts",
+      "types": "./dist/data/identity.d.ts",
+      "default": "./dist/data/identity.js"
+    },
+    "./maybe": {
+      "workerd": "./src/data/maybe.ts",
+      "types": "./dist/data/maybe.d.ts",
+      "default": "./dist/data/maybe.js"
+    },
+    "./monoids": {
+      "workerd": "./src/data/monoid.ts",
+      "types": "./dist/data/monoid.d.ts",
+      "default": "./dist/data/monoid.js"
+    },
+    "./pair": {
+      "workerd": "./src/data/pair.ts",
+      "types": "./dist/data/pair.d.ts",
+      "default": "./dist/data/pair.js"
+    },
+    "./predicate": {
+      "workerd": "./src/data/predicate.ts",
+      "types": "./dist/data/predicate.d.ts",
+      "default": "./dist/data/predicate.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "check": "tsc -p tsconfig.json",
+    "lint": "eslint .",
+    "prepare": "tsc -p tsconfig.build.json",
+    "test": "node --disable-warning=ExperimentalWarning --experimental-transform-types --test test/classes/*_test.ts test/core/*_test.ts test/data/*_test.ts test/natives/*_test.ts test/utils/*_test.ts"
+  },
+  "devDependencies": {
+    "@babel/core": "^8.0.7",
+    "@babel/eslint-parser": "^8.0.7",
+    "@stylistic/eslint-plugin": "^5.10.0",
+    "@types/node": "^24.7.0",
+    "eslint": "^10.12.0",
+    "typescript": "^7.0.2"
+  }
+}
