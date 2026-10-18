@@ -1,80 +1,80 @@
+import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { assertEquals, assertThrows } from '../assert.ts'
-import type { Shape, Widened } from '../../src/core/shape.ts'
 import type { ApplicativeTypeRep } from '../../src/classes/applicative.ts'
 import type { ApplyMethods } from '../../src/classes/apply.ts'
 import type { FunctorMethods } from '../../src/classes/functor.ts'
-import { sequence, traversableNatives, traverse } from '../../src/classes/traversable.ts'
-import { map } from '../../src/classes/functor.ts'
+import type { Shape, Widened } from '../../src/core/shape.ts'
 import { foldMap, toArray } from '../../src/classes/foldable.ts'
-import { Arr } from '../../src/natives/array.ts'
-import { Concat } from '../../src/data/monoid.ts'
+import { map } from '../../src/classes/functor.ts'
+import { sequence, traversableNatives, traverse } from '../../src/classes/traversable.ts'
+import { Either, left, right } from '../../src/data/either.ts'
 import { Identity, identity } from '../../src/data/identity.ts'
 import { just, Maybe, nothing } from '../../src/data/maybe.ts'
-import { Either, left, right } from '../../src/data/either.ts'
+import { Concat } from '../../src/data/monoid.ts'
 import { pair } from '../../src/data/pair.ts'
+import { Arr } from '../../src/natives/array.ts'
 
 test ('traverse: transforms values into a chosen wrapper and collects them inside one result', () => {
-  assertEquals (traverse (Maybe) (ok) ([1, 2, 3]), just ([1, 2, 3]))
-  assertEquals (traverse (Maybe) (ok) (just (1)), just (just (1)))
-  assertEquals (
+  assert.deepStrictEqual (traverse (Maybe) (ok) ([1, 2, 3]), just ([1, 2, 3]))
+  assert.deepStrictEqual (traverse (Maybe) (ok) (just (1)), just (just (1)))
+  assert.deepStrictEqual (
     traverse (Maybe) (ok) (right<string, number> (1)),
     just (right<string, number> (1)),
   )
-  assertEquals (traverse (Maybe) (ok) (identity (1)), just (identity (1)))
-  assertEquals (
+  assert.deepStrictEqual (traverse (Maybe) (ok) (identity (1)), just (identity (1)))
+  assert.deepStrictEqual (
     traverse (Maybe) (ok) (pair ('log', 1)),
     just (pair ('log', 1)),
   )
 })
 
 test ('traverse: any Nothing or Left makes the result fail', () => {
-  assertEquals (traverse (Maybe) (small) ([1, 2, 3]), nothing ())
-  assertEquals (traverse (Maybe) (small) (just (5)), nothing ())
+  assert.deepStrictEqual (traverse (Maybe) (small) ([1, 2, 3]), nothing ())
+  assert.deepStrictEqual (traverse (Maybe) (small) (just (5)), nothing ())
 })
 
 test ('traverse: the effects go left to right across supported types', () => {
-  assertEquals (journal ([1, 2, 3]), '123')
-  assertEquals (journal (just (1)), '1')
-  assertEquals (journal (identity (1)), '1')
-  assertEquals (journal (pair ('log', 1)), '1')
-  assertEquals (journal (nothing<number> ()), '')
-  assertEquals (journal (left<string, number> ('error')), '')
+  assert.deepStrictEqual (journal ([1, 2, 3]), '123')
+  assert.deepStrictEqual (journal (just (1)), '1')
+  assert.deepStrictEqual (journal (identity (1)), '1')
+  assert.deepStrictEqual (journal (pair ('log', 1)), '1')
+  assert.deepStrictEqual (journal (nothing<number> ()), '')
+  assert.deepStrictEqual (journal (left<string, number> ('error')), '')
 })
 
 test ('traverse: preserves the first Left error', () => {
   const boom = (n: number) =>
     n < 0 ? left<string, number> ('err' + n) : right<string, number> (n)
 
-  assertEquals (
+  assert.deepStrictEqual (
     traverse (Either) (boom) ([-1, 2, -3]),
     left<string, number[]> ('err-1'),
   )
-  assertEquals (
+  assert.deepStrictEqual (
     traverse (Either) (boom) ([1, -2, -3]),
     left<string, number[]> ('err-2'),
   )
-  assertEquals (
+  assert.deepStrictEqual (
     traverse (Either) (boom) ([1, 2, -3]),
     left<string, number[]> ('err-3'),
   )
 })
 
 test ('sequence: turns a collection of wrapped values into one wrapped collection', () => {
-  assertEquals (sequence (Maybe) ([just (1), just (2)]), just ([1, 2]))
-  assertEquals (
+  assert.deepStrictEqual (sequence (Maybe) ([just (1), just (2)]), just ([1, 2]))
+  assert.deepStrictEqual (
     sequence (Maybe) ([just (1), nothing<number> ()]),
     nothing (),
   )
-  assertEquals (sequence (Maybe) (identity (just (1))), just (identity (1)))
-  assertEquals (
+  assert.deepStrictEqual (sequence (Maybe) (identity (just (1))), just (identity (1)))
+  assert.deepStrictEqual (
     sequence (Either) (identity (right<string, number> (1))),
     right<string, Identity<number>> (identity (1)),
   )
 })
 
 test ('sequence: the Array applicative gives the product', () => {
-  assertEquals (sequence (Arr) ([[1, 2], [3, 4]]), [
+  assert.deepStrictEqual (sequence (Arr) ([[1, 2], [3, 4]]), [
     [1, 3],
     [1, 4],
     [2, 3],
@@ -82,36 +82,36 @@ test ('sequence: the Array applicative gives the product', () => {
   ])
   const triple = sequence (Arr) ([[1, 2], [3, 4], [5, 6]])
 
-  assertEquals (triple.length, 8)
-  assertEquals (triple[0], [1, 3, 5])
-  assertEquals (triple[1], [1, 3, 6])
+  assert.deepStrictEqual (triple.length, 8)
+  assert.deepStrictEqual (triple[0], [1, 3, 5])
+  assert.deepStrictEqual (triple[1], [1, 3, 6])
 })
 
 test ('sequence: the native applicative Arr is accepted with no cast', () => {
   const collapsed: number[][] = sequence (Arr) ([[1, 2]])
 
-  assertEquals (collapsed, [[1], [2]])
+  assert.deepStrictEqual (collapsed, [[1], [2]])
 })
 
 test ('traverse: into the Array applicative it passes from every type', () => {
   const both = (n: number) => [n, -n]
 
-  assertEquals (traverse (Arr) (both) ([1, 2]), [
+  assert.deepStrictEqual (traverse (Arr) (both) ([1, 2]), [
     [1, 2],
     [1, -2],
     [-1, 2],
     [-1, -2],
   ])
-  assertEquals (traverse (Arr) (both) (pair ('x', 1)), [
+  assert.deepStrictEqual (traverse (Arr) (both) (pair ('x', 1)), [
     pair ('x', 1),
     pair ('x', -1),
   ])
-  assertEquals (traverse (Arr) (both) (identity (1)), [
+  assert.deepStrictEqual (traverse (Arr) (both) (identity (1)), [
     identity (1),
     identity (-1),
   ])
-  assertEquals (traverse (Arr) (both) (just (1)), [just (1), just (-1)])
-  assertEquals (
+  assert.deepStrictEqual (traverse (Arr) (both) (just (1)), [just (1), just (-1)])
+  assert.deepStrictEqual (
     traverse (Arr) (both) (right<string, number> (1)),
     [right<string, number> (1), right<string, number> (-1)],
   )
@@ -124,7 +124,7 @@ test ('sequence takes a type whose slot is in input position', () => {
     number[]
   >
 
-  assertEquals (both.run (3), [[6, 8], 5])
+  assert.deepStrictEqual (both.run (3), [[6, 8], 5])
 
   function labelAndAdvance(n: number) {
     return threaded<number, string> ((s) => [`${n}`, s + 1])
@@ -136,13 +136,13 @@ test ('sequence takes a type whose slot is in input position', () => {
     3,
   ]) as unknown as Threaded<number, string[]>
 
-  assertEquals (labelled.run (0), [['1', '2', '3'], 3])
+  assert.deepStrictEqual (labelled.run (0), [['1', '2', '3'], 3])
 })
 
 test ('traverse: the order coincides with the Foldable traversal', () => {
   for (const [name, ta] of Object.entries (samplesByType)) {
-    assertEquals (journal (ta), foldMap (Concat) (String) (ta), name)
-    assertEquals (
+    assert.deepStrictEqual (journal (ta), foldMap (Concat) (String) (ta), name)
+    assert.deepStrictEqual (
       journal (ta),
       (toArray (ta) as number[]).join (''),
       name,
@@ -152,7 +152,7 @@ test ('traverse: the order coincides with the Foldable traversal', () => {
 
 test ('traverse: identity law', () => {
   for (const [name, ta] of Object.entries (samplesByType)) {
-    assertEquals (
+    assert.deepStrictEqual (
       traverse (Identity) (identity) (ta),
       identity (ta),
       name,
@@ -164,7 +164,7 @@ test ('traverse: the naturality law', () => {
   const t = (m: unknown): unknown[] => toArray (m as never)
   for (const [name, ta] of Object.entries (samplesByType)) {
     for (const f of [ok, small]) {
-      assertEquals (
+      assert.deepStrictEqual (
         t (traverse (Maybe) (f) (ta as never)),
         traverse (Arr) (((a: number) => t (f (a))) as never) (ta as never),
         `${name} / ${f === ok ? 'no refusal' : 'with a refusal'}`,
@@ -176,7 +176,7 @@ test ('traverse: the naturality law', () => {
 test ('traverse: agrees with map', () => {
   const f = (n: number) => n * 10
   for (const [name, ta] of Object.entries (samplesByType)) {
-    assertEquals (
+    assert.deepStrictEqual (
       traverse (Identity) ((n: number) => identity (f (n))) (ta),
       identity (map (f) (ta)),
       name,
@@ -188,7 +188,7 @@ test ('sequence: coincides with traverse of the identity across supported types'
   for (const [name, ta] of Object.entries (samplesByType)) {
     const tb = map (ok) (ta)
 
-    assertEquals (
+    assert.deepStrictEqual (
       sequence (Maybe) (tb),
       traverse (Maybe) ((m: Maybe<number>) => m) (tb),
       name,
@@ -204,16 +204,16 @@ test ('traverse: wraps an empty structure without calling the callback', () => {
     return nothing<number> ()
   }
 
-  assertEquals (
+  assert.deepStrictEqual (
     traverse (Maybe) (recordVisit) (nothing<number> ()),
     just (nothing ()),
   )
-  assertEquals (
+  assert.deepStrictEqual (
     traverse (Maybe) (recordVisit) (left<string, number> ('error')),
     just (left<string, number> ('error')),
   )
-  assertEquals (traverse (Maybe) (recordVisit) ([] as number[]), just ([]))
-  assertEquals (calls, 0)
+  assert.deepStrictEqual (traverse (Maybe) (recordVisit) ([] as number[]), just ([]))
+  assert.deepStrictEqual (calls, 0)
 })
 
 test ('traverse: Array passes only its contained values', () => {
@@ -226,7 +226,7 @@ test ('traverse: Array passes only its contained values', () => {
 
   traverse (Maybe) (recordArguments) ([1, 2, 3])
 
-  assertEquals (calls, [[1], [2], [3]])
+  assert.deepStrictEqual (calls, [[1], [2], [3]])
 })
 
 test ('traverse: Just passes only its contained values', () => {
@@ -239,7 +239,7 @@ test ('traverse: Just passes only its contained values', () => {
 
   traverse (Maybe) (recordArguments) (just (1))
 
-  assertEquals (calls, [[1]])
+  assert.deepStrictEqual (calls, [[1]])
 })
 
 test ('traverse: Nothing passes only its contained values', () => {
@@ -252,7 +252,7 @@ test ('traverse: Nothing passes only its contained values', () => {
 
   traverse (Maybe) (recordArguments) (nothing<number> ())
 
-  assertEquals (calls, [])
+  assert.deepStrictEqual (calls, [])
 })
 
 test ('traverse: Right passes only its contained values', () => {
@@ -265,7 +265,7 @@ test ('traverse: Right passes only its contained values', () => {
 
   traverse (Maybe) (recordArguments) (right<string, number> (1))
 
-  assertEquals (calls, [[1]])
+  assert.deepStrictEqual (calls, [[1]])
 })
 
 test ('traverse: Left passes only its contained values', () => {
@@ -278,7 +278,7 @@ test ('traverse: Left passes only its contained values', () => {
 
   traverse (Maybe) (recordArguments) (left<string, number> ('error'))
 
-  assertEquals (calls, [])
+  assert.deepStrictEqual (calls, [])
 })
 
 test ('traverse: Identity passes only its contained values', () => {
@@ -291,7 +291,7 @@ test ('traverse: Identity passes only its contained values', () => {
 
   traverse (Maybe) (recordArguments) (identity (1))
 
-  assertEquals (calls, [[1]])
+  assert.deepStrictEqual (calls, [[1]])
 })
 
 test ('traverse: Pair passes only its contained values', () => {
@@ -304,28 +304,26 @@ test ('traverse: Pair passes only its contained values', () => {
 
   traverse (Maybe) (recordArguments) (pair ('log', 1))
 
-  assertEquals (calls, [[1]])
+  assert.deepStrictEqual (calls, [[1]])
 })
 
 test ('traverse: rejects values without Traversable', () => {
   const strangers = {
-    'Set': new Set ([1, 2, 3]),
-    'Map': new Map ([['a', 1]]),
-    'StrMap': { a: 1 },
-    'String': 'text',
-    'Fn': (n: number) => n,
+    Set: new Set ([1, 2, 3]),
+    Map: new Map ([['a', 1]]),
+    StrMap: { a: 1 },
+    String: 'text',
+    Fn: (n: number) => n,
   }
   for (const [name, ta] of Object.entries (strangers)) {
-    assertThrows (
+    assert.throws (
       () => traverse (Maybe) (ok) (ta as never),
-      TypeError,
-      'has no Traversable',
+      (error: unknown) => error instanceof TypeError && error.message.includes ('has no Traversable'),
       name,
     )
-    assertThrows (
+    assert.throws (
       () => sequence (Maybe) (ta as never),
-      TypeError,
-      'has no Traversable',
+      (error: unknown) => error instanceof TypeError && error.message.includes ('has no Traversable'),
       name,
     )
   }
@@ -334,26 +332,26 @@ test ('traverse: rejects values without Traversable', () => {
 test ('traverse: the failure comes before the callback is called', () => {
   let calls = 0
 
-  assertThrows (() =>
+  assert.throws (() =>
     traverse (Maybe) (
       ((n: number) => {
         calls += 1
         return just (n)
       }) as never,
-    ) (new Set ([1, 2]) as never)
+    ) (new Set ([1, 2]) as never),
   )
-  assertEquals (calls, 0)
+  assert.deepStrictEqual (calls, 0)
 })
 
 test ('sequence still rejects a Traversable of plain values', () => {
   // @ts-expect-error a number is not a member of the Array family
   const _flat = () => sequence (Arr) ([1, 2, 3])
 
-  assertEquals (typeof _flat, 'function')
+  assert.deepStrictEqual (typeof _flat, 'function')
 })
 
 test ('traversableNatives: the only native type is Array', () => {
-  assertEquals (Object.keys (traversableNatives), ['Array'])
+  assert.deepStrictEqual (Object.keys (traversableNatives), ['Array'])
 })
 
 interface Logged<A> {
@@ -389,13 +387,13 @@ const journal = (ta: unknown): string =>
     .log
 
 const samplesByType = {
-  'Array': [1, 2, 3],
+  Array: [1, 2, 3],
   'Maybe.Just': just (1),
   'Maybe.Nothing': nothing<number> (),
   'Either.Right': right<string, number> (1),
   'Either.Left': left<string, number> ('error'),
-  'Identity': identity (1),
-  'Pair': pair ('log', 1),
+  Identity: identity (1),
+  Pair: pair ('log', 1),
 }
 
 const ok = (n: number) => just (n)

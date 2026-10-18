@@ -2,7 +2,6 @@
  * Operations and types for transforming both sides with `bimap`.
  */
 
-import type { Kind, Shape } from '../core/shape.ts'
 import type {
   Assert,
   KindOf,
@@ -11,9 +10,10 @@ import type {
   SlotBOf,
   SubclassOf,
 } from '../core/kind.ts'
+import type { Instances } from '../core/named.ts'
+import type { Kind, Shape } from '../core/shape.ts'
 import type { FunctorDict, FunctorMethods, FunctorShapes } from './functor.ts'
 import { dispatch } from '../core/instance.ts'
-import type { Instances } from '../core/named.ts'
 
 /**
  * Implement these methods on a custom value to support transforming both sides with `bimap`.

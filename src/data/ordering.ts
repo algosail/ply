@@ -2,8 +2,8 @@
  * Compare and sort values, including comparisons by multiple keys.
  */
 
-import type { Nullary } from '../core/shape.ts'
 import type { MonoidDict } from '../classes/monoid.ts'
+import type { Nullary } from '../core/shape.ts'
 import { lte } from '../classes/ord.ts'
 
 /**
@@ -47,17 +47,17 @@ const GT: GT = { tag: 'GT' }
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * function length(word: string): number {
  *   return word.length
  * }
- * 
+ *
  * const byLength = P.comparing(length)
- * 
+ *
  * function compareWords(a: string, b: string): P.Ordering {
  *   return P.mconcat(P.Ordering)([byLength(a, b), P.compare(a, b)])
  * }
- * 
+ *
  * P.sortWith(compareWords)(['bb', 'a', 'ba', 'ab']) // => ['a', 'ab', 'ba', 'bb']
  * ```
  */
@@ -144,7 +144,7 @@ export const Ordering: MonoidDict<Nullary<Ordering>> & {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.Ordering.isLT(P.compare(1, 2)) // => true
  * P.Ordering.isEQ(P.compare(Number.NaN, Number.NaN)) // => true
  * ```
@@ -156,7 +156,7 @@ export const compare: <A>(a: A, b: A) => Ordering = Ordering.compare
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * const byLength = P.comparing((s: string) => s.length)
  * P.Ordering.isLT(byLength('ab', 'cde')) // => true
  * ```
@@ -169,7 +169,7 @@ export const comparing: <A, B>(f: (a: A) => B) => Comparator<A> =
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.sortWith(P.comparing((s: string) => s.length))(['aaa', 'a', 'aa'])
  * // => [ "a", "aa", "aaa" ]
  * ```
@@ -182,7 +182,7 @@ export const sortWith: <A>(cmp: Comparator<A>) => (xs: readonly A[]) => A[] =
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.isLT(P.compare(1, 2)) // => true
  * P.isEQ(P.compare(2, 2)) // => true
  * P.isGT(P.compare(2, 1)) // => true

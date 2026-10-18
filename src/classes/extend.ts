@@ -2,7 +2,6 @@
  * Operations and types for computing from a whole wrapper.
  */
 
-import type { Kind, Shape } from '../core/shape.ts'
 import type {
   Assert,
   KindOf,
@@ -11,9 +10,10 @@ import type {
   SlotBOf,
   SubclassOf,
 } from '../core/kind.ts'
+import type { Instances } from '../core/named.ts'
+import type { Kind, Shape } from '../core/shape.ts'
 import type { FunctorDict, FunctorMethods, FunctorShapes } from './functor.ts'
 import { dispatch } from '../core/instance.ts'
-import type { Instances } from '../core/named.ts'
 
 /**
  * Implement these methods on a custom value to support computing from a whole wrapper.
@@ -76,7 +76,7 @@ export const extendNatives: Instances<ExtendDicts, ExtendShapes> = {}
  * ```ts
  * import type { Identity, Pair } from '@algosail/ply'
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.extend((w: Pair<string, number>) => P.extract(w) * 2)(P.pair('log', 21))
  * // => Pair ("log") (42)
  * P.extend((w: Identity<number>) => P.extract(w) + 1)(P.identity(1))
@@ -95,7 +95,7 @@ export function extend<F extends Extend<F>, B>(
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.duplicate(P.identity(1)) // => Identity (Identity (1))
  * P.duplicate(P.pair('log', 1)) // => Pair ("log") (Pair ("log") (1))
  * ```

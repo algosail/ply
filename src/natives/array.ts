@@ -2,9 +2,6 @@
  * Create, search, group, and transform arrays.
  */
 
-import type { NativeTypeRep } from '../core/named.ts'
-import type { Matchable, Shape } from '../core/shape.ts'
-import type { KindOf, ShapeOf, SlotAOf, SlotBOf } from '../core/kind.ts'
 import type { AltDict } from '../classes/alt.ts'
 import type {
   ApplicativeDict,
@@ -24,14 +21,17 @@ import type { SemigroupDict } from '../classes/semigroup.ts'
 import type { SetoidDict } from '../classes/setoid.ts'
 import type { ShowDict } from '../classes/show.ts'
 import type { TraversableDict } from '../classes/traversable.ts'
+import type { KindOf, ShapeOf, SlotAOf, SlotBOf } from '../core/kind.ts'
+import type { NativeTypeRep } from '../core/named.ts'
+import type { Matchable, Shape } from '../core/shape.ts'
 import type { Maybe } from '../data/maybe.ts'
 import type { Pair } from '../data/pair.ts'
+import { of } from '../classes/applicative.ts'
+import { ap } from '../classes/apply.ts'
+import { map } from '../classes/functor.ts'
+import { lte } from '../classes/ord.ts'
 import { equals } from '../classes/setoid.ts'
 import { show } from '../classes/show.ts'
-import { lte } from '../classes/ord.ts'
-import { of } from '../classes/applicative.ts'
-import { map } from '../classes/functor.ts'
-import { ap } from '../classes/apply.ts'
 import { integer, integerFrom } from '../core/domain.ts'
 import { just, nothing } from '../data/maybe.ts'
 
@@ -84,7 +84,7 @@ export type ArrDict =
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.of(P.Arr)(1) // => [1]
  * P.empty(P.Arr) // => []
  * ```
@@ -187,7 +187,7 @@ export const Arr: ArrDict = {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.fromIterable(new Set([1, 2, 2, 3])) // => [1, 2, 3]
  * P.fromIterable('abc') // => ['a', 'b', 'c']
  * ```
@@ -202,7 +202,7 @@ export function fromIterable<A>(source: Iterable<A>): A[] {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.range(0)(5) // => [0, 1, 2, 3, 4]
  * P.range(3)(3) // => []
  * ```
@@ -220,7 +220,7 @@ export function range(start: number): (end: number) => number[] {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.takeWhile((n: number) => n < 3)([1, 2, 3, 1]) // => [1, 2]
  * ```
  */
@@ -236,7 +236,7 @@ export function takeWhile<A>(p: (a: A) => boolean): (xs: readonly A[]) => A[] {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.dropWhile((n: number) => n < 3)([1, 2, 3, 1]) // => [3, 1]
  * ```
  */
@@ -253,7 +253,7 @@ export function dropWhile<A>(p: (a: A) => boolean): (xs: readonly A[]) => A[] {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.chunksOf(2)([1, 2, 3, 4, 5]) // => [[1, 2], [3, 4], [5]]
  * ```
  */
@@ -270,7 +270,7 @@ export function chunksOf(n: number): <A>(xs: readonly A[]) => A[][] {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.find((n: number) => n % 2 === 0)([1, 2, 3, 4]) // => Just (2)
  * P.find((n: number) => n > 9)([1, 2]) // => Nothing
  * ```
@@ -289,9 +289,9 @@ export function find<A>(p: (a: A) => boolean): (xs: readonly A[]) => Maybe<A> {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * const tenfoldEven = (n: number) => n % 2 === 0 ? P.just(n * 10) : P.nothing()
- * 
+ *
  * P.findMap(tenfoldEven)([1, 2, 3, 4]) // => Just (20)
  * ```
  */
@@ -313,7 +313,7 @@ export function findMap<A, B>(
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.index(1)(['a', 'b', 'c']) // => Just ('b')
  * P.index(9)(['a']) // => Nothing
  * ```
@@ -331,7 +331,7 @@ export function index(i: number): <A>(xs: readonly A[]) => Maybe<A> {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.findIndex((n: number) => n > 1)([1, 2, 3]) // => Just (1)
  * P.findIndex((n: number) => n > 9)([1, 2, 3]) // => Nothing
  * ```
@@ -350,7 +350,7 @@ export function findIndex<A>(
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.zipWith((a: number, b: number) => a + b)([1, 2, 3])([10, 20])
  * // => [11, 22]
  * ```
@@ -371,7 +371,7 @@ export function zipWith<A, B, C>(
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.zip([1, 2])(['a', 'b', 'c']) // => [[1, 'a'], [2, 'b']]
  * ```
  */
@@ -386,7 +386,7 @@ export function zip<A>(as: readonly A[]): <B>(bs: readonly B[]) => [A, B][] {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.nub([1, 1, 2, 1, 3]) // => [1, 2, 3]
  * P.nub([[1], [1], [2]]) // => [[1], [2]]
  * ```
@@ -404,9 +404,9 @@ export function nub<A>(xs: readonly A[]): A[] {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * const sameLength = (a: string, b: string) => a.length === b.length
- * 
+ *
  * P.nubBy(sameLength)(['a', 'b', 'cc']) // => ['a', 'cc']
  * ```
  */
@@ -427,10 +427,10 @@ export function nubBy<A>(
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * const describe = P.array('empty')((h: number) => (t: number[]) =>
  *   `${h} then ${P.show(t)}`)
- * 
+ *
  * describe([1, 2, 3]) // => '1 then [2, 3]'
  * describe([]) // => 'empty'
  * ```
@@ -448,10 +448,10 @@ export function array<B>(
  * ```ts
  * import type { Maybe, Pair } from '@algosail/ply'
  * import * as P from '@algosail/ply'
- * 
+ *
  * const countdown = (n: number): Maybe<Pair<number, number>> =>
  *   n === 0 ? P.nothing() : P.just(P.pair(n, n - 1))
- * 
+ *
  * P.unfold(countdown)(3) // => [3, 2, 1]
  * ```
  */
@@ -475,7 +475,7 @@ export function unfold<A, B>(
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.groupBy((a: number) => (b: number) => a === b)([1, 1, 2, 1])
  * // => [[1, 1], [2], [1]]
  * ```
@@ -507,10 +507,10 @@ export function groupBy<A>(
  * ```ts
  * import type { Maybe, Pair } from '@algosail/ply'
  * import * as P from '@algosail/ply'
- * 
+ *
  * const countdown = (n: number): Maybe<Pair<number, number>> =>
  *   n === 0 ? P.nothing() : P.just(P.pair(n, n - 1))
- * 
+ *
  * P.unfoldr(countdown)(3) // => [3, 2, 1]
  * ```
  * @see {@link unfold}

@@ -1,20 +1,20 @@
+import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import type { FnShape } from '../../src/natives/function.ts'
-import { assertEquals, assertThrows } from '../assert.ts'
 import { categoryNatives, id } from '../../src/classes/category.ts'
 import { compose, semigroupoidNatives } from '../../src/classes/semigroupoid.ts'
-import { Fn } from '../../src/natives/function.ts'
-import { Arr } from '../../src/natives/array.ts'
-import { StrMap } from '../../src/natives/strmap.ts'
-import { Pair } from '../../src/data/pair.ts'
 import { Maybe } from '../../src/data/maybe.ts'
+import { Pair } from '../../src/data/pair.ts'
+import { Arr } from '../../src/natives/array.ts'
+import { Fn } from '../../src/natives/function.ts'
+import { StrMap } from '../../src/natives/strmap.ts'
 
 test ('id: creates an identity for the chosen type', () => {
-  assertEquals (id<FnShape, number> (Fn) (9), 9)
-  assertEquals (id<FnShape, string> (Fn) ('one'), 'one')
+  assert.deepStrictEqual (id<FnShape, number> (Fn) (9), 9)
+  assert.deepStrictEqual (id<FnShape, string> (Fn) ('one'), 'one')
 
   const values = [1, 2, 3]
-  assertEquals (id<FnShape, number[]> (Fn) (values) === values, true)
+  assert.deepStrictEqual (id<FnShape, number[]> (Fn) (values) === values, true)
 })
 
 test ('id: the category identity laws', () => {
@@ -23,8 +23,8 @@ test ('id: the category identity laws', () => {
   const left = compose (id<FnShape, number> (Fn)) (f)
   const right = compose (f) (id<FnShape, string> (Fn))
   for (const s of probes) {
-    assertEquals (left (s), f (s))
-    assertEquals (right (s), f (s))
+    assert.deepStrictEqual (left (s), f (s))
+    assert.deepStrictEqual (right (s), f (s))
   }
 })
 
@@ -37,27 +37,28 @@ test ('id: a type without an identity arrow throws a descriptive TypeError', () 
       ['Maybe', Maybe],
     ] as const
   ) {
-    assertThrows (
+    assert.throws (
       () => id (T as never),
-      TypeError,
-      `id: ${name} has no Category`,
+      (error: unknown) => error instanceof TypeError && error.message.includes (`id: ${name} has no Category`),
     )
   }
 })
 
 test ('id: an empty argument is named by name too', () => {
-  assertThrows (() => id (null as never), TypeError, 'id: Null has no Category')
-  assertThrows (
+  assert.throws (
+    () => id (null as never),
+    (error: unknown) => error instanceof TypeError && error.message.includes ('id: Null has no Category'),
+  )
+  assert.throws (
     () => id (undefined as never),
-    TypeError,
-    'id: Undefined has no Category',
+    (error: unknown) => error instanceof TypeError && error.message.includes ('id: Undefined has no Category'),
   )
 })
 
 test ('categoryNatives: provides only Fn operations', () => {
-  assertEquals (Object.keys (categoryNatives), ['Fn'])
-  assertEquals (typeof categoryNatives.Fn.id, 'function')
+  assert.deepStrictEqual (Object.keys (categoryNatives), ['Fn'])
+  assert.deepStrictEqual (typeof categoryNatives.Fn.id, 'function')
   for (const name of Object.keys (categoryNatives)) {
-    assertEquals (Object.hasOwn (semigroupoidNatives, name), true, name)
+    assert.deepStrictEqual (Object.hasOwn (semigroupoidNatives, name), true, name)
   }
 })

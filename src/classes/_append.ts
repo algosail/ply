@@ -2,7 +2,6 @@
  * Operations and types for appending and prepending values.
  */
 
-import type { Shape } from '../core/shape.ts'
 import type {
   Assert,
   KindOf,
@@ -11,15 +10,16 @@ import type {
   SlotBOf,
   SubclassOf,
 } from '../core/kind.ts'
+import type { Constructed } from '../core/named.ts'
+import type { Shape } from '../core/shape.ts'
 import type { ArrayShape } from '../natives/array.ts'
-import type { ApplyMethods } from './apply.ts'
 import type { ApplicativeDict, ApplicativeShapes } from './applicative.ts'
+import type { ApplyMethods } from './apply.ts'
 import type {
   SemigroupDict,
   SemigroupMethods,
   SemigroupShapes,
 } from './semigroup.ts'
-import type { Constructed } from '../core/named.ts'
 import { ofIn } from '../core/instance.ts'
 import { applicativeNatives } from './applicative.ts'
 import { concat } from './semigroup.ts'
@@ -77,9 +77,9 @@ export type ApplicativeSemigroup<S, A = SlotAOf<S>, B = SlotBOf<S>> =
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
- * P.append(9)([1, 2]) // => [1, 2, 9]
- * P.append('!')(P.right<number, string>('ab')) // => Right ("ab!")
+ *
+ * P.append (9) ([1, 2]) // => [1, 2, 9]
+ * P.append ('!') (P.right<number, string> ('ab')) // => Right ("ab!")
  * ```
  */
 export function append<A>(
@@ -97,7 +97,7 @@ export function append<A>(
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.prepend(0)([1, 2]) // => [0, 1, 2]
  * P.prepend('>')(P.right<number, string>('ab')) // => Right (">ab")
  * ```

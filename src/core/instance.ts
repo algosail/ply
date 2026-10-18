@@ -3,18 +3,18 @@
  */
 
 import type { DictsOf, Instances } from './named.ts'
-import { taggedName } from './named.ts'
 import { Arr } from '../natives/array.ts'
 import { Big } from '../natives/bigint.ts'
 import { Bool } from '../natives/boolean.ts'
 import { Dates } from '../natives/date.ts'
-import { Re } from '../natives/regexp.ts'
 import { Fn } from '../natives/function.ts'
 import { Maps } from '../natives/map.ts'
 import { Num } from '../natives/number.ts'
+import { Re } from '../natives/regexp.ts'
 import { Sets } from '../natives/set.ts'
 import { Str } from '../natives/string.ts'
 import { StrMap } from '../natives/strmap.ts'
+import { taggedName } from './named.ts'
 
 /**
  * Accepts a table of operations keyed by native type name.
@@ -35,9 +35,9 @@ export type OpsOf<N extends NativeTable> = Extract<keyof N[keyof N], string>
  * import type { Shape } from './shape.ts'
  * import { Arr } from '../natives/array.ts'
  * import { lazily } from './instance.ts'
- * 
+ *
  * type Dicts = <S extends Shape>(s: S) => FunctorDict<S>
- * 
+ *
  * const natives = lazily<Dicts, { Array: ArrayShape }>({ Array: () => Arr })
  * natives.Array.map([1, 2, 3], (n: number) => n + 1) // => [2, 3, 4]
  * ```
@@ -86,7 +86,7 @@ const natives = () =>
  * ```ts
  * import { just } from '../data/maybe.ts'
  * import { nameOf } from './instance.ts'
- * 
+ *
  * nameOf([1, 2]) // => 'Array'
  * nameOf(just(1)) // => 'Maybe'
  * nameOf({ a: 1 }) // => 'StrMap'
@@ -118,9 +118,9 @@ const dictIn = (
  * ```ts
  * import { functorNatives } from '../classes/functor.ts'
  * import { opIn } from './instance.ts'
- * 
+ *
  * const inc = ((n: number) => n + 1) as never
- * 
+ *
  * const mapArray = opIn(functorNatives, [1, 2, 3], 'map')
  * mapArray?.([1, 2, 3] as never, inc) // => [2, 3, 4]
  * opIn(functorNatives, 42, 'map') // => undefined
@@ -154,9 +154,9 @@ export function opIn(
  * import { assertThrows } from '@std/assert'
  * import { functorNatives } from '../classes/functor.ts'
  * import { dispatch } from './instance.ts'
- * 
+ *
  * const inc = (n: number) => n + 1
- * 
+ *
  * dispatch('map', 'Functor', functorNatives, [1, 2, 3], inc) // => [2, 3, 4]
  * assertThrows(
  *   () => dispatch('map', 'Functor', functorNatives, 42, inc),
@@ -188,7 +188,7 @@ export function dispatch<N extends NativeTable>(
  * ```ts
  * import { just } from '../data/maybe.ts'
  * import { hasMethod } from './instance.ts'
- * 
+ *
  * hasMethod(just(1), 'map') // => true
  * hasMethod([1, 2], 'map') // => true
  * hasMethod(1, 'map') // => false
@@ -212,7 +212,7 @@ export function hasMethod<M extends string>(
  * import { applicativeNatives } from '../classes/applicative.ts'
  * import { monoidNatives } from '../classes/monoid.ts'
  * import { typeRepIn } from './instance.ts'
- * 
+ *
  * typeRepIn(applicativeNatives, Arr, 'of')?.(9 as never) // => [9]
  * typeRepIn(applicativeNatives, Maybe, 'of')?.(9 as never) // => Just (9)
  * typeRepIn(monoidNatives, Str, 'empty')?.() // => ''
@@ -252,7 +252,7 @@ function staticOf(value: unknown, name: string): unknown {
  * import { just } from '../data/maybe.ts'
  * import { applicativeNatives } from '../classes/applicative.ts'
  * import { ofIn } from './instance.ts'
- * 
+ *
  * ofIn(applicativeNatives, [1, 2])(9) // => [9]
  * ofIn(applicativeNatives, just(1))(9) // => Just (9)
  * assertThrows(
@@ -280,7 +280,7 @@ export function ofIn(
  * ```ts
  * import { monoidNatives } from '../classes/monoid.ts'
  * import { emptyIn } from './instance.ts'
- * 
+ *
  * emptyIn(monoidNatives, [1, 2])() // => []
  * emptyIn(monoidNatives, 'text')() // => ''
  * ```

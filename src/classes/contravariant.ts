@@ -2,9 +2,9 @@
  * Operations and types for adapting inputs with `contramap`.
  */
 
-import type { Kind, Shape } from '../core/shape.ts'
 import type { KindOf, MatchableIn, SlotAOf, SlotBOf } from '../core/kind.ts'
 import type { Instances } from '../core/named.ts'
+import type { Kind, Shape } from '../core/shape.ts'
 import type { FnShape } from '../natives/function.ts'
 import { dispatch, lazily } from '../core/instance.ts'
 import { Fn } from '../natives/function.ts'
@@ -68,7 +68,7 @@ export const contravariantNatives: Instances<
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * const long = P.predicate((s: string) => s.length > 3)
  * P.contramap((u: { name: string }) => u.name)(long)({ name: 'hello' })
  * // => true

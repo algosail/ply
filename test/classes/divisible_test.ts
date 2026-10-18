@@ -1,18 +1,18 @@
+import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { assertEquals, assertThrows } from '../assert.ts'
-import { conquer, divide, divisibleNatives } from '../../src/classes/divisible.ts'
-import { concat } from '../../src/classes/semigroup.ts'
-import { empty } from '../../src/classes/monoid.ts'
 import { contramap } from '../../src/classes/contravariant.ts'
-import { Predicate, predicate } from '../../src/data/predicate.ts'
+import { conquer, divide, divisibleNatives } from '../../src/classes/divisible.ts'
+import { empty } from '../../src/classes/monoid.ts'
+import { concat } from '../../src/classes/semigroup.ts'
 import { Equivalence, equivalence } from '../../src/data/equivalence.ts'
 import { just } from '../../src/data/maybe.ts'
+import { Predicate, predicate } from '../../src/data/predicate.ts'
 
 test ('divide: validates each field with its own predicate', () => {
   const known = predicate<string> ((c) => c === 'ann')
   const small = predicate<number> ((t) => t < 800)
   const ok = divide (split) (known) (small)
-  assertEquals ([ok (ann500), ok (ann900), ok (bob500)], [true, false, false])
+  assert.deepStrictEqual ([ok (ann500), ok (ann900), ok (bob500)], [true, false, false])
 })
 
 test ('divide: skips the second predicate when the first fails', () => {
@@ -23,19 +23,19 @@ test ('divide: skips the second predicate when the first fails', () => {
 
   asked.length = 0
   ok (ann500)
-  assertEquals (asked, ['customer', 'total'])
+  assert.deepStrictEqual (asked, ['customer', 'total'])
   asked.length = 0
   ok (bob500)
-  assertEquals (asked, ['customer'])
+  assert.deepStrictEqual (asked, ['customer'])
 })
 
 test ('divide assembles a comparison for a record out of its fields', () => {
   const sameString = equivalence<string> ((a, b) => a === b)
   const sameNumber = equivalence<number> ((a, b) => a === b)
   const sameOrder = divide (split) (sameString) (sameNumber)
-  assertEquals (sameOrder (ann500, ann500), true)
-  assertEquals (sameOrder (ann500, ann900), false)
-  assertEquals (sameOrder (ann500, bob500), false)
+  assert.deepStrictEqual (sameOrder (ann500, ann500), true)
+  assert.deepStrictEqual (sameOrder (ann500, ann900), false)
+  assert.deepStrictEqual (sameOrder (ann500, bob500), false)
 })
 
 test ('concat is divide along the diagonal', () => {
@@ -44,7 +44,7 @@ test ('concat is divide along the diagonal', () => {
   const viaConcat = concat (long) (startsA)
   const viaDivide = divide ((a: string) => [a, a] as const) (long) (startsA)
   for (const s of ['', 'a', 'ann', 'bob', 'abcd']) {
-    assertEquals (viaConcat (s), viaDivide (s), s)
+    assert.deepStrictEqual (viaConcat (s), viaDivide (s), s)
   }
 
   const sameLen = equivalence<string> ((a, b) => a.length === b.length)
@@ -52,7 +52,7 @@ test ('concat is divide along the diagonal', () => {
   const eConcat = concat (sameLen) (sameHead)
   const eDivide = divide ((a: string) => [a, a] as const) (sameLen) (sameHead)
   for (const [a, b] of [['ann', 'amy'], ['ann', 'bob'], ['a', 'ab']] as const) {
-    assertEquals (eConcat (a, b), eDivide (a, b), `${a}/${b}`)
+    assert.deepStrictEqual (eConcat (a, b), eDivide (a, b), `${a}/${b}`)
   }
 })
 
@@ -61,9 +61,9 @@ test ('conquer is the unit, and it is the same value as empty', () => {
   const alone = divide ((a: string) => [a, a] as const) (known) (
     conquer (Predicate),
   )
-  for (const c of ['ann', 'bob', '']) assertEquals (alone (c), known (c))
-  assertEquals (conquer (Predicate) ('anything'), empty (Predicate) ('anything'))
-  assertEquals (conquer (Equivalence) (1, 'x'), empty (Equivalence) (1, 'x'))
+  for (const c of ['ann', 'bob', '']) assert.deepStrictEqual (alone (c), known (c))
+  assert.deepStrictEqual (conquer (Predicate) ('anything'), empty (Predicate) ('anything'))
+  assert.deepStrictEqual (conquer (Equivalence) (1, 'x'), empty (Equivalence) (1, 'x'))
 })
 
 test ('divide agrees with the contramap-and-concat spelling', () => {
@@ -73,24 +73,22 @@ test ('divide agrees with the contramap-and-concat spelling', () => {
   const long = concat (contramap ((o: Order) => o.customer) (known)) (
     contramap ((o: Order) => o.total) (small),
   )
-  for (const o of [ann500, ann900, bob500]) assertEquals (short (o), long (o))
+  for (const o of [ann500, ann900, bob500]) assert.deepStrictEqual (short (o), long (o))
 })
 
 test ('a type without Divisible throws a descriptive TypeError', () => {
-  assertThrows (
+  assert.throws (
     () => divide (split) ([1, 2] as never) (just (1) as never),
-    TypeError,
-    'divide: Array has no Divisible',
+    (error: unknown) => error instanceof TypeError && error.message.includes ('divide: Array has no Divisible'),
   )
-  assertThrows (
+  assert.throws (
     () => conquer (just (1) as never),
-    TypeError,
-    'conquer: Maybe has no Divisible',
+    (error: unknown) => error instanceof TypeError && error.message.includes ('conquer: Maybe has no Divisible'),
   )
 })
 
 test ('divisibleNatives: has no native implementations', () => {
-  assertEquals (Object.keys (divisibleNatives), [])
+  assert.deepStrictEqual (Object.keys (divisibleNatives), [])
 })
 
 type Order = { readonly customer: string; readonly total: number }

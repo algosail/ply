@@ -2,7 +2,6 @@
  * Operations and types for composing values.
  */
 
-import type { Kind, Shape } from '../core/shape.ts'
 import type {
   ComposableWith,
   KindOf,
@@ -11,6 +10,7 @@ import type {
   SlotBOf,
 } from '../core/kind.ts'
 import type { Instances } from '../core/named.ts'
+import type { Kind, Shape } from '../core/shape.ts'
 import type { FnShape } from '../natives/function.ts'
 import { dispatch, lazily } from '../core/instance.ts'
 import { Fn } from '../natives/function.ts'
@@ -74,7 +74,7 @@ export const semigroupoidNatives: Instances<
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.compose(P.size)(P.words)('one two three') // => 3
  * P.compose(P.pair('y', 'z'))(P.pair('x', 'y')) // => Pair ("x") ("z")
  * ```

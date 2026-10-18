@@ -2,26 +2,26 @@
  * Operations and types for comparing values for equality.
  */
 
-import type { Kind, Shape } from '../core/shape.ts'
 import type { MatchableIn, SlotAOf, SlotBOf } from '../core/kind.ts'
 import type { Instances } from '../core/named.ts'
+import type { Kind, Shape } from '../core/shape.ts'
 import type { ArrayShape } from '../natives/array.ts'
-import type { StrMapShape } from '../natives/strmap.ts'
-import type { StrShape } from '../natives/string.ts'
-import type { NumShape } from '../natives/number.ts'
-import type { BoolShape } from '../natives/boolean.ts'
 import type { BigShape } from '../natives/bigint.ts'
+import type { BoolShape } from '../natives/boolean.ts'
 import type { DateShape } from '../natives/date.ts'
+import type { NumShape } from '../natives/number.ts'
 import type { ReShape } from '../natives/regexp.ts'
+import type { StrShape } from '../natives/string.ts'
+import type { StrMapShape } from '../natives/strmap.ts'
 import { lazily, nameOf, opIn } from '../core/instance.ts'
 import { Arr } from '../natives/array.ts'
-import { StrMap } from '../natives/strmap.ts'
-import { Str } from '../natives/string.ts'
-import { Num } from '../natives/number.ts'
-import { Bool } from '../natives/boolean.ts'
 import { Big } from '../natives/bigint.ts'
+import { Bool } from '../natives/boolean.ts'
 import { Dates } from '../natives/date.ts'
+import { Num } from '../natives/number.ts'
 import { Re } from '../natives/regexp.ts'
+import { Str } from '../natives/string.ts'
+import { StrMap } from '../natives/strmap.ts'
 
 /**
  * Implement these methods on a custom value to support comparing values for equality.
@@ -138,7 +138,7 @@ export const setoidNatives: Instances<
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.equals(2)(2) // => true
  * P.equals([1, [2]])([1, [2]]) // => true
  * P.equals({ a: 1 })({ a: 1 }) // => true

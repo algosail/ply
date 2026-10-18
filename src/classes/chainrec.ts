@@ -2,7 +2,6 @@
  * Operations and types for repeating wrapped computations with `chainRec`.
  */
 
-import type { Kind, Shape } from '../core/shape.ts'
 import type {
   Assert,
   KindOf,
@@ -15,6 +14,7 @@ import type {
   Superclass,
 } from '../core/kind.ts'
 import type { Instances } from '../core/named.ts'
+import type { Kind, Shape } from '../core/shape.ts'
 import type { ArrayShape } from '../natives/array.ts'
 import type {
   ChainDict,
@@ -120,7 +120,7 @@ export type LoopOf<S> = S extends
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.loop(1) // => { tag: 'loop', value: 1 }
  * ```
  */
@@ -131,7 +131,7 @@ export const loop = <A, B>(value: A): Step<A, B> => ({ tag: 'loop', value })
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.done('x') // => { tag: 'done', value: 'x' }
  * ```
  */
@@ -142,11 +142,11 @@ export const done = <A, B>(value: B): Step<A, B> => ({ tag: 'done', value })
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * const countdown = (n: number): P.Step<number, string>[] =>
  *   n === 0 ? [P.done('end')] : [P.loop(n - 1)]
  * P.chainRec(P.Arr, countdown, 3) // => ['end']
- * 
+ *
  * const fan = (n: number): P.Step<number, number>[] =>
  *   n < 3 ? [P.loop(n + 1), P.done(n)] : [P.done(n)]
  * P.chainRec(P.Arr, fan, 0) // => [3, 2, 1, 0]

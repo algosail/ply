@@ -1,12 +1,12 @@
+import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { assertEquals, assertThrows } from '../assert.ts'
-import { chain, chainNatives, join } from '../../src/classes/chain.ts'
-import { ap } from '../../src/classes/apply.ts'
 import { of } from '../../src/classes/applicative.ts'
+import { ap } from '../../src/classes/apply.ts'
+import { chain, chainNatives, join } from '../../src/classes/chain.ts'
 import { map } from '../../src/classes/functor.ts'
+import { Either, left, right } from '../../src/data/either.ts'
 import { Identity, identity } from '../../src/data/identity.ts'
 import { just, Maybe, nothing } from '../../src/data/maybe.ts'
-import { Either, left, right } from '../../src/data/either.ts'
 import { type Pair, pair } from '../../src/data/pair.ts'
 import { Arr } from '../../src/natives/array.ts'
 import { Fn } from '../../src/natives/function.ts'
@@ -37,29 +37,29 @@ test ('chain: sequences computations that return the same wrapper', () => {
     return pair ('b', n * 2)
   }
 
-  assertEquals (chain (repeatNumber) ([1, 2]), [1, 1, 2, 2])
-  assertEquals (
+  assert.deepStrictEqual (chain (repeatNumber) ([1, 2]), [1, 1, 2, 2])
+  assert.deepStrictEqual (
     chain (includeTenfold) (new Set ([1, 2])),
     new Set ([1, 10, 2, 20]),
   )
-  assertEquals (chain (incrementMaybe) (just (1)), just (2))
-  assertEquals (
+  assert.deepStrictEqual (chain (incrementMaybe) (just (1)), just (2))
+  assert.deepStrictEqual (
     chain (incrementMaybe) (nothing<number> ()),
     nothing<number> (),
   )
-  assertEquals (
+  assert.deepStrictEqual (
     chain (incrementEither) (right<string, number> (1)),
     right<string, number> (2),
   )
-  assertEquals (
+  assert.deepStrictEqual (
     chain (incrementEither) (left<string, number> ('e')),
     left<string, number> ('e'),
   )
-  assertEquals (
+  assert.deepStrictEqual (
     chain (incrementIdentity) (identity (1)),
     identity (2),
   )
-  assertEquals (
+  assert.deepStrictEqual (
     chain (doubleWithLog) (pair ('a', 1)),
     pair ('ab', 2),
   )
@@ -69,14 +69,14 @@ test ('chain: passes the same input to the first function and its continuation',
   const g = (i: number) => i * 2
   const f = (a: number) => (i: number) => a + i
 
-  assertEquals ((chain (f) (g) as (i: number) => number) (3), 9)
+  assert.deepStrictEqual ((chain (f) (g) as (i: number) => number) (3), 9)
 })
 
 test ('chain: the monad left identity across supported types with of', () => {
   for (const [name, { f, T }] of Object.entries (samplesByType)) {
     if (T === undefined) continue
 
-    assertEquals (chain (f) (of (T as never) (1) as never), f (1), name)
+    assert.deepStrictEqual (chain (f) (of (T as never) (1) as never), f (1), name)
   }
 })
 
@@ -84,7 +84,7 @@ test ('chain: the monad right identity across supported types with of', () => {
   for (const [name, { m, T }] of Object.entries (samplesByType)) {
     if (T === undefined) continue
 
-    assertEquals (chain ((a: number) => of (T as never) (a)) (m as never), m, name)
+    assert.deepStrictEqual (chain ((a: number) => of (T as never) (a)) (m as never), m, name)
   }
 })
 
@@ -93,30 +93,30 @@ test ('chain: both monad identities on functions', () => {
   const g = (i: number) => i * 2
   const f = (a: number) => (i: number) => a + i
   const leftUnit = chain (f) (of (Fn) (1)) as (i: number) => number
-  for (const i of probes) assertEquals (leftUnit (i), f (1) (i), `left at i=${i}`)
+  for (const i of probes) assert.deepStrictEqual (leftUnit (i), f (1) (i), `left at i=${i}`)
   const rightUnit = chain ((a: number) => of (Fn) (a)) (g) as (
     i: number,
   ) => number
-  for (const i of probes) assertEquals (rightUnit (i), g (i), `right at i=${i}`)
+  for (const i of probes) assert.deepStrictEqual (rightUnit (i), g (i), `right at i=${i}`)
 })
 
 test ('join: removes one level of nesting from arrays or wrapped values of the same type', () => {
-  assertEquals (join ([[1], [2]]), [1, 2])
-  assertEquals (join (just (just (1))), just (1))
-  assertEquals (join (just (nothing<number> ())), nothing<number> ())
-  assertEquals (join (identity (identity (1))), identity (1))
-  assertEquals (join (pair ('A', pair ('B', 7))), pair ('AB', 7))
+  assert.deepStrictEqual (join ([[1], [2]]), [1, 2])
+  assert.deepStrictEqual (join (just (just (1))), just (1))
+  assert.deepStrictEqual (join (just (nothing<number> ())), nothing<number> ())
+  assert.deepStrictEqual (join (identity (identity (1))), identity (1))
+  assert.deepStrictEqual (join (pair ('A', pair ('B', 7))), pair ('AB', 7))
 })
 
 test ('join: this is chain with identity', () => {
   for (const [name, { m, f }] of Object.entries (samplesByType)) {
-    assertEquals (join (map (f) (m as never) as never), chain (f) (m as never), name)
+    assert.deepStrictEqual (join (map (f) (m as never) as never), chain (f) (m as never), name)
   }
 })
 
 test ('chain: associativity law across supported types', () => {
   for (const [name, { m, f, g }] of Object.entries (samplesByType)) {
-    assertEquals (
+    assert.deepStrictEqual (
       chain (g) (chain (f) (m as never) as never),
       chain ((x: number) => chain (g) (f (x) as never)) (m as never),
       name,
@@ -128,8 +128,8 @@ test ('chain: associativity preserves the order of accumulated logs', () => {
   const f = (n: number) => [n, n + 1]
   const g = (n: number) => [n * 10, -n]
 
-  assertEquals (chain (g) (chain (f) ([1])), [10, -1, 20, -2])
-  assertEquals (chain (f) (chain (g) ([1])), [10, 11, -1, 0])
+  assert.deepStrictEqual (chain (g) (chain (f) ([1])), [10, -1, 20, -2])
+  assert.deepStrictEqual (chain (f) (chain (g) ([1])), [10, 11, -1, 0])
 })
 
 test ('chain: agrees with ap', () => {
@@ -137,24 +137,24 @@ test ('chain: agrees with ap', () => {
     string,
     { readonly wrappedFunctions: unknown; readonly wrappedValue: unknown }
   > = {
-    'Array': {
+    Array: {
       wrappedFunctions: [increment, (n: number) => n * 10],
       wrappedValue: [1, 2],
     },
-    'Set': {
+    Set: {
       wrappedFunctions: new Set ([increment]),
       wrappedValue: new Set ([1, 2]),
     },
-    'Maybe': { wrappedFunctions: just (increment), wrappedValue: just (1) },
-    'Either': {
+    Maybe: { wrappedFunctions: just (increment), wrappedValue: just (1) },
+    Either: {
       wrappedFunctions: right<string, (a: number) => number> (increment),
       wrappedValue: right<string, number> (1),
     },
-    'Identity': {
+    Identity: {
       wrappedFunctions: identity (increment),
       wrappedValue: identity (1),
     },
-    'Pair': {
+    Pair: {
       wrappedFunctions: pair ('f', increment),
       wrappedValue: pair ('a', 1),
     },
@@ -162,7 +162,7 @@ test ('chain: agrees with ap', () => {
   for (
     const [name, { wrappedFunctions, wrappedValue }] of Object.entries (fns)
   ) {
-    assertEquals (
+    assert.deepStrictEqual (
       ap (wrappedFunctions as never) (wrappedValue as never),
       chain ((k: (a: number) => number) => map (k) (wrappedValue as never)) (
         wrappedFunctions as never,
@@ -173,20 +173,17 @@ test ('chain: agrees with ap', () => {
 })
 
 test ('chain: rejects values without Chain', () => {
-  assertThrows (
+  assert.throws (
     () => chain ((n: number) => [n]) (new Map ([['a', 1]]) as never),
-    TypeError,
-    'chain: Map has no Chain',
+    (error: unknown) => error instanceof TypeError && error.message.includes ('chain: Map has no Chain'),
   )
-  assertThrows (
+  assert.throws (
     () => chain ((n: number) => [n]) ({ a: 1 } as never),
-    TypeError,
-    'chain: StrMap has no Chain',
+    (error: unknown) => error instanceof TypeError && error.message.includes ('chain: StrMap has no Chain'),
   )
-  assertThrows (
+  assert.throws (
     () => chain ((s: string) => [s]) ('string' as never),
-    TypeError,
-    'chain: String has no Chain',
+    (error: unknown) => error instanceof TypeError && error.message.includes ('chain: String has no Chain'),
   )
 })
 
@@ -200,7 +197,7 @@ test ('chain: Array passes only the value', () => {
 
   chain (recordArguments) ([1, 2])
 
-  assertEquals (calls, [[1], [2]])
+  assert.deepStrictEqual (calls, [[1], [2]])
 })
 
 test ('chain: Set passes only the value', () => {
@@ -213,7 +210,7 @@ test ('chain: Set passes only the value', () => {
 
   chain (recordArguments) (new Set ([1, 2]))
 
-  assertEquals (calls, [[1], [2]])
+  assert.deepStrictEqual (calls, [[1], [2]])
 })
 
 test ('chain: Maybe passes only the value', () => {
@@ -226,7 +223,7 @@ test ('chain: Maybe passes only the value', () => {
 
   chain (recordArguments) (just (1))
 
-  assertEquals (calls, [[1]])
+  assert.deepStrictEqual (calls, [[1]])
 })
 
 test ('chain: Either passes only the value', () => {
@@ -239,7 +236,7 @@ test ('chain: Either passes only the value', () => {
 
   chain (recordArguments) (right<string, number> (1))
 
-  assertEquals (calls, [[1]])
+  assert.deepStrictEqual (calls, [[1]])
 })
 
 test ('chain: Identity passes only the value', () => {
@@ -252,7 +249,7 @@ test ('chain: Identity passes only the value', () => {
 
   chain (recordArguments) (identity (1))
 
-  assertEquals (calls, [[1]])
+  assert.deepStrictEqual (calls, [[1]])
 })
 
 test ('chain: Pair passes only the value', () => {
@@ -265,7 +262,7 @@ test ('chain: Pair passes only the value', () => {
 
   chain (recordArguments) (pair ('l', 1))
 
-  assertEquals (calls, [[1]])
+  assert.deepStrictEqual (calls, [[1]])
 })
 
 test ('chain: Function passes only the first function’s result', () => {
@@ -283,7 +280,7 @@ test ('chain: Function passes only the first function’s result', () => {
   const chained = chain (recordArguments) (returnInput)
   chained (1)
 
-  assertEquals (calls, [[1]])
+  assert.deepStrictEqual (calls, [[1]])
 })
 
 test ('chain types: reject callbacks that return a different wrapper', () => {
@@ -304,7 +301,7 @@ test ('chain types: reject callbacks that return a different wrapper', () => {
   // @ts-expect-error same type, but the accumulators do not agree
   const _chainAcc = () => chain (toOtherAcc) (writer)
 
-  assertEquals (
+  assert.deepStrictEqual (
     chain ((n: number) => pair<string, number> ('b', n * 2)) (writer),
     pair ('ab', 2),
   )
@@ -315,12 +312,12 @@ test ('join types: require matching inner and outer wrappers', () => {
   // @ts-expect-error the inner accumulator is an array, the outer a string
   const _joinMixed = () => join (nested)
 
-  assertEquals (
+  assert.deepStrictEqual (
     join (pair<string, Pair<string, number>> ('outer', pair ('in', 42))),
     pair ('outerin', 42),
   )
-  assertEquals (join ([[1], [2]]), [1, 2])
-  assertEquals (join (just (just (1))), just (1))
+  assert.deepStrictEqual (join ([[1], [2]]), [1, 2])
+  assert.deepStrictEqual (join (just (just (1))), just (1))
 })
 
 test ('chainNatives: lists the supported native implementations', () => {
@@ -328,17 +325,17 @@ test ('chainNatives: lists the supported native implementations', () => {
     return [n, n]
   }
 
-  assertEquals (
+  assert.deepStrictEqual (
     new Set (Object.keys (chainNatives)),
     new Set (['Array', 'Fn', 'Set']),
   )
-  assertEquals (chainNatives.Array.chain ([1, 2], repeatNumber), [
+  assert.deepStrictEqual (chainNatives.Array.chain ([1, 2], repeatNumber), [
     1,
     1,
     2,
     2,
   ])
-  assertEquals (
+  assert.deepStrictEqual (
     chainNatives.Set.chain (new Set ([1, 2]), (n: number) => new Set ([n * 10])),
     new Set ([10, 20]),
   )
@@ -354,13 +351,13 @@ interface Bind {
 }
 
 const samplesByType: Record<string, Bind> = {
-  'Array': {
+  Array: {
     m: [1, 2],
     f: (n) => [n, n + 1],
     g: (n) => [n * 10, -n],
     T: Arr,
   },
-  'Set': {
+  Set: {
     m: new Set ([1, 2]),
     f: (n) => new Set ([n, n + 1]),
     g: (n) => new Set ([n * 10, -n]),
@@ -390,13 +387,13 @@ const samplesByType: Record<string, Bind> = {
     g: (n) => right<string, number> (n * 10),
     T: Either,
   },
-  'Identity': {
+  Identity: {
     m: identity (1),
     f: (n) => identity (n + 1),
     g: (n) => identity (n * 10),
     T: Identity,
   },
-  'Pair': {
+  Pair: {
     m: pair ('m', 1),
     f: (n) => pair ('f', n + 1),
     g: (n) => pair ('g', n * 10),

@@ -1,33 +1,33 @@
+import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { assertEquals, assertThrows } from '../assert.ts'
-import { get, gets, modify, prop, props, remove, set } from '../../src/natives/record.ts'
 import { just, nothing } from '../../src/data/maybe.ts'
+import { get, gets, modify, prop, props, remove, set } from '../../src/natives/record.ts'
 
 test ('set: returns a copy with an updated property', () => {
-  assertEquals (set ('a') (9) ({ a: 0, b: 1 }), { a: 9, b: 1 })
-  assertEquals (set ('a') (9) ({ a: 0 }), { a: 9 })
-  assertEquals (set ('b') ('y') ({ a: 0, b: 'x' }), { a: 0, b: 'y' })
+  assert.deepStrictEqual (set ('a') (9) ({ a: 0, b: 1 }), { a: 9, b: 1 })
+  assert.deepStrictEqual (set ('a') (9) ({ a: 0 }), { a: 9 })
+  assert.deepStrictEqual (set ('b') ('y') ({ a: 0, b: 'x' }), { a: 0, b: 'y' })
 })
 
 test ('set: the original record is not changed', () => {
   const rec = { a: 0, b: 1 }
   const next = set ('a') (9) (rec)
 
-  assertEquals (rec, { a: 0, b: 1 })
-  assertEquals (next === rec, false)
+  assert.deepStrictEqual (rec, { a: 0, b: 1 })
+  assert.deepStrictEqual (next === rec, false)
 })
 
 test ('set: the key order is preserved', () => {
-  assertEquals (Object.keys (set ('a') (9) ({ b: 1, a: 0 })), ['b', 'a'])
+  assert.deepStrictEqual (Object.keys (set ('a') (9) ({ b: 1, a: 0 })), ['b', 'a'])
 })
 
 test ('modify: copies a record with an existing property transformed by a function', () => {
-  assertEquals (modify ('a') ((n: number) => n + 1) ({ a: 0 }), { a: 1 })
-  assertEquals (modify ('a') ((n: number) => n + 1) ({ a: 0, b: 'x' }), {
+  assert.deepStrictEqual (modify ('a') ((n: number) => n + 1) ({ a: 0 }), { a: 1 })
+  assert.deepStrictEqual (modify ('a') ((n: number) => n + 1) ({ a: 0, b: 'x' }), {
     a: 1,
     b: 'x',
   })
-  assertEquals (modify ('b') ((s: string) => s + '!') ({ a: 0, b: 'x' }), {
+  assert.deepStrictEqual (modify ('b') ((s: string) => s + '!') ({ a: 0, b: 'x' }), {
     a: 0,
     b: 'x!',
   })
@@ -37,96 +37,96 @@ test ('modify: the original record is not changed', () => {
   const rec = { a: 0, b: 'x' }
   const next = modify ('a') ((n: number) => n + 1) (rec)
 
-  assertEquals (rec, { a: 0, b: 'x' })
-  assertEquals (next === rec, false)
+  assert.deepStrictEqual (rec, { a: 0, b: 'x' })
+  assert.deepStrictEqual (next === rec, false)
 })
 
 test ('prop: reads a property, including an inherited property', () => {
-  assertEquals (prop ('a') ({ a: 1, b: 2 }), 1)
-  assertEquals (prop ('b') ({ a: 1, b: 2 }), 2)
-  assertEquals (prop ('a') ({ a: undefined }), undefined)
+  assert.deepStrictEqual (prop ('a') ({ a: 1, b: 2 }), 1)
+  assert.deepStrictEqual (prop ('b') ({ a: 1, b: 2 }), 2)
+  assert.deepStrictEqual (prop ('a') ({ a: undefined }), undefined)
 })
 
 test ('prop: the key may be a number or a symbol', () => {
   const key = Symbol ('k')
 
-  assertEquals (prop (0) ([10, 'x'] as [number, string]), 10)
-  assertEquals (prop (key) ({ [key]: 7 }), 7)
+  assert.deepStrictEqual (prop (0) ([10, 'x'] as [number, string]), 10)
+  assert.deepStrictEqual (prop (key) ({ [key]: 7 }), 7)
 })
 
 test ('props: reads a nested property along a path, including inherited properties', () => {
-  assertEquals (props (['a', 'b', 'c']) ({ a: { b: { c: 1 } } }), 1)
-  assertEquals (props (['a']) ({ a: 1 }), 1)
-  assertEquals (props ([]) ({ a: 1 }), { a: 1 })
+  assert.deepStrictEqual (props (['a', 'b', 'c']) ({ a: { b: { c: 1 } } }), 1)
+  assert.deepStrictEqual (props (['a']) ({ a: 1 }), 1)
+  assert.deepStrictEqual (props ([]) ({ a: 1 }), { a: 1 })
 })
 
 test ('get: reads a property only when it passes validation', () => {
-  assertEquals (get (isNumber) ('x') ({ x: 1, y: 2 }), just (1))
-  assertEquals (get (isNumber) ('x') ({ x: '1', y: '2' }), nothing<number> ())
-  assertEquals (get (isNumber) ('x') ({}), nothing<number> ())
-  assertEquals (get (isNumberArray) ('x') ({ x: [1, 2, 3] }), just ([1, 2, 3]))
-  assertEquals (
+  assert.deepStrictEqual (get (isNumber) ('x') ({ x: 1, y: 2 }), just (1))
+  assert.deepStrictEqual (get (isNumber) ('x') ({ x: '1', y: '2' }), nothing<number> ())
+  assert.deepStrictEqual (get (isNumber) ('x') ({}), nothing<number> ())
+  assert.deepStrictEqual (get (isNumberArray) ('x') ({ x: [1, 2, 3] }), just ([1, 2, 3]))
+  assert.deepStrictEqual (
     get (isNumberArray) ('x') ({ x: [1, 2, 3, null] }),
     nothing<number[]> (),
   )
 })
 
 test ('get: a primitive is read through its wrapper', () => {
-  assertEquals (get (isNumber) ('length') ('abc'), just (3))
+  assert.deepStrictEqual (get (isNumber) ('length') ('abc'), just (3))
 })
 
 test ('gets: reads a nested property only when it passes validation', () => {
-  assertEquals (
+  assert.deepStrictEqual (
     gets (isNumber) (['a', 'b', 'c']) ({ a: { b: { c: 42 } } }),
     just (42),
   )
-  assertEquals (
+  assert.deepStrictEqual (
     gets (isNumber) (['a', 'b', 'c']) ({ a: { b: { c: '42' } } }),
     nothing<number> (),
   )
-  assertEquals (gets (isNumber) (['a', 'b', 'c']) ({}), nothing<number> ())
-  assertEquals (gets (isNumber) ([]) (1), just (1))
-  assertEquals (gets (isNumber) ([]) ('x'), nothing<number> ())
+  assert.deepStrictEqual (gets (isNumber) (['a', 'b', 'c']) ({}), nothing<number> ())
+  assert.deepStrictEqual (gets (isNumber) ([]) (1), just (1))
+  assert.deepStrictEqual (gets (isNumber) ([]) ('x'), nothing<number> ())
 })
 
 test ('gets: returns Nothing when a path is missing', () => {
-  assertEquals (gets (isNumber) (['a', 'b']) ({ a: {} }), nothing<number> ())
-  assertEquals (gets (isNumber) (['a', 'b']) ({ a: null }), nothing<number> ())
-  assertEquals (gets (isNumber) (['a', 'b']) (null), nothing<number> ())
+  assert.deepStrictEqual (gets (isNumber) (['a', 'b']) ({ a: {} }), nothing<number> ())
+  assert.deepStrictEqual (gets (isNumber) (['a', 'b']) ({ a: null }), nothing<number> ())
+  assert.deepStrictEqual (gets (isNumber) (['a', 'b']) (null), nothing<number> ())
 })
 
 test ('remove: copies an object without the specified property', () => {
-  assertEquals (remove ('c') ({ a: 1, b: 2, c: 3 }), { a: 1, b: 2 })
-  assertEquals (remove ('c') ({}), {})
+  assert.deepStrictEqual (remove ('c') ({ a: 1, b: 2, c: 3 }), { a: 1, b: 2 })
+  assert.deepStrictEqual (remove ('c') ({}), {})
   const key = Symbol ('k')
 
-  assertEquals (remove (key) ({ [key]: 0, n: 1 }), { n: 1 })
+  assert.deepStrictEqual (remove (key) ({ [key]: 0, n: 1 }), { n: 1 })
 })
 
 test ('remove: the original record is not changed', () => {
   const rec = { a: 1, b: 2, c: 3 }
   const next = remove ('c') (rec)
 
-  assertEquals (rec, { a: 1, b: 2, c: 3 })
-  assertEquals (next === rec, false)
-  assertEquals ('c' in next, false)
+  assert.deepStrictEqual (rec, { a: 1, b: 2, c: 3 })
+  assert.deepStrictEqual (next === rec, false)
+  assert.deepStrictEqual ('c' in next, false)
 })
 
 test ('remove: exactly one field is taken away', () => {
   const rec = { a: 1, b: 2, c: 3 }
 
-  assertEquals (Object.keys (remove ('b') (rec)), ['a', 'c'])
-  assertEquals (remove ('a') (remove ('b') (rec)), { c: 3 })
+  assert.deepStrictEqual (Object.keys (remove ('b') (rec)), ['a', 'c'])
+  assert.deepStrictEqual (remove ('a') (remove ('b') (rec)), { c: 3 })
 })
 
 test ('set and modify: the write and read laws', () => {
   const rec = { a: 1, b: 'x' }
 
-  assertEquals (prop ('a') (set ('a') (9) (rec)), 9)
-  assertEquals (set ('a') (prop ('a') (rec)) (rec), rec)
-  assertEquals (set ('a') (2) (set ('a') (9) (rec)), set ('a') (2) (rec))
-  assertEquals (modify ('a') ((n: number) => n) (rec), rec)
-  assertEquals (
+  assert.deepStrictEqual (prop ('a') (set ('a') (9) (rec)), 9)
+  assert.deepStrictEqual (set ('a') (prop ('a') (rec)) (rec), rec)
+  assert.deepStrictEqual (set ('a') (2) (set ('a') (9) (rec)), set ('a') (2) (rec))
+  assert.deepStrictEqual (modify ('a') ((n: number) => n) (rec), rec)
+  assert.deepStrictEqual (
     modify ('a') ((n: number) => n + 1) (set ('a') (9) (rec)),
     set ('a') (10) (rec),
   )
@@ -143,47 +143,42 @@ test ('modify: passes only the selected field’s value', () => {
   modify ('a') (recordArguments) ({ a: 1 })
   modify ('b') (recordArguments) ({ a: 1, b: 2 })
 
-  assertEquals (calls, [[1], [2]])
+  assert.deepStrictEqual (calls, [[1], [2]])
 })
 
 test ('prop: a missing field is a failure naming the key', () => {
   const lies = {} as { c: number }
 
-  assertThrows (
+  assert.throws (
     () => prop ('c') (lies),
-    TypeError,
-    'prop: object has no property named c',
+    (error: unknown) => error instanceof TypeError && error.message.includes ('prop: object has no property named c'),
   )
   const key = Symbol ('k')
 
-  assertThrows (
+  assert.throws (
     () => prop (key) ({} as Record<typeof key, number>),
-    TypeError,
-    'prop: object has no property named Symbol(k)',
+    (error: unknown) => error instanceof TypeError && error.message.includes ('prop: object has no property named Symbol(k)'),
   )
 })
 
 test ('props: a broken path rejects, naming the key and the whole path', () => {
-  assertThrows (
+  assert.throws (
     () => props (['a', 'b', 'c']) ({}),
-    TypeError,
-    'props: object has no property named a at path a.b.c',
+    (error: unknown) => error instanceof TypeError && error.message.includes ('props: object has no property named a at path a.b.c'),
   )
-  assertThrows (
+  assert.throws (
     () => props (['a', 'b', 'c']) ({ a: { x: 1 } }),
-    TypeError,
-    'props: object has no property named b at path a.b.c',
+    (error: unknown) => error instanceof TypeError && error.message.includes ('props: object has no property named b at path a.b.c'),
   )
-  assertThrows (
+  assert.throws (
     () => props (['a', 'b']) ({ a: null }),
-    TypeError,
-    'props: object has no property named b at path a.b',
+    (error: unknown) => error instanceof TypeError && error.message.includes ('props: object has no property named b at path a.b'),
   )
 })
 
 test ('get: returns Nothing for null and undefined inputs', () => {
-  assertEquals (get (isNumber) ('x') (null), nothing<number> ())
-  assertEquals (get (isNumber) ('x') (undefined), nothing<number> ())
+  assert.deepStrictEqual (get (isNumber) ('x') (null), nothing<number> ())
+  assert.deepStrictEqual (get (isNumber) ('x') (undefined), nothing<number> ())
 })
 
 test ('get: passes only the selected field’s value', () => {
@@ -196,7 +191,7 @@ test ('get: passes only the selected field’s value', () => {
 
   get (recordArguments) ('a') ({ a: 1 })
 
-  assertEquals (calls, [[1]])
+  assert.deepStrictEqual (calls, [[1]])
 })
 
 test ('gets: passes only the value at the end of the path', () => {
@@ -209,7 +204,7 @@ test ('gets: passes only the value at the end of the path', () => {
 
   gets (recordArguments) (['a', 'b']) ({ a: { b: 1 } })
 
-  assertEquals (calls, [[1]])
+  assert.deepStrictEqual (calls, [[1]])
 })
 
 test ('gets: does not call the predicate for a missing path', () => {
@@ -222,7 +217,7 @@ test ('gets: does not call the predicate for a missing path', () => {
 
   gets (recordArguments) (['a', 'b']) ({})
 
-  assertEquals (calls, [])
+  assert.deepStrictEqual (calls, [])
 })
 
 test ('get answers Just exactly where prop does not refuse', () => {
@@ -244,7 +239,7 @@ test ('get answers Just exactly where prop does not refuse', () => {
       refused = true
     }
 
-    assertEquals (get (() => true) (key) (a).tag === 'just', !refused, label)
+    assert.deepStrictEqual (get (() => true) (key) (a).tag === 'just', !refused, label)
   }
 })
 
@@ -265,7 +260,7 @@ test ('gets answers Just exactly where props does not refuse', () => {
       refused = true
     }
 
-    assertEquals (gets (() => true) (path) (a).tag === 'just', !refused, label)
+    assert.deepStrictEqual (gets (() => true) (path) (a).tag === 'just', !refused, label)
   }
 })
 

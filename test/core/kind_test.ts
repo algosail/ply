@@ -1,9 +1,8 @@
+import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { assertEquals } from '../assert.ts'
-import * as kind from '../../src/core/kind.ts'
 import type {
-  Assert as KindAssert,
   BothB,
+  Assert as KindAssert,
   KindLike,
   KindOf,
   MatchableIn,
@@ -22,21 +21,22 @@ import type {
   TypeRepBase,
 } from '../../src/core/kind.ts'
 import type { Fail, Kind, Shape, Shaped, Slotted, Widened } from '../../src/core/shape.ts'
+import type { Either } from '../../src/data/either.ts'
+import type { Equivalence, EquivalenceShape } from '../../src/data/equivalence.ts'
+import type { Pair } from '../../src/data/pair.ts'
+import type { Predicate, PredicateShape } from '../../src/data/predicate.ts'
 import type { ArrayShape } from '../../src/natives/array.ts'
 import type { FnShape } from '../../src/natives/function.ts'
 import type { MapShape } from '../../src/natives/map.ts'
 import type { SetShape } from '../../src/natives/set.ts'
-import type { StrMapShape } from '../../src/natives/strmap.ts'
 import type { StrShape } from '../../src/natives/string.ts'
-import type { Either } from '../../src/data/either.ts'
-import type { Pair } from '../../src/data/pair.ts'
-import type { Predicate, PredicateShape } from '../../src/data/predicate.ts'
-import type { Equivalence, EquivalenceShape } from '../../src/data/equivalence.ts'
+import type { StrMapShape } from '../../src/natives/strmap.ts'
 import { nameOf } from '../../src/core/instance.ts'
+import * as kind from '../../src/core/kind.ts'
 import { just } from '../../src/data/maybe.ts'
 
 test ('kind: exports types without runtime values', () => {
-  assertEquals (Object.keys (kind), [])
+  assert.deepStrictEqual (Object.keys (kind), [])
 })
 
 test ('MatchableName lists exactly the types nameOf recognizes', () => {
@@ -54,12 +54,12 @@ test ('MatchableName lists exactly the types nameOf recognizes', () => {
     new Map ([['a', 1]]),
     { a: 1 },
   ]
-  assertEquals (samples.map (nameOf), names as readonly string[])
+  assert.deepStrictEqual (samples.map (nameOf), names as readonly string[])
 })
 
 test ('nameOf: distinguishes a named Maybe from a plain record', () => {
-  assertEquals (nameOf (just (1)), 'Maybe')
-  assertEquals (nameOf ({ tag: 'just', value: 1 }), 'StrMap')
+  assert.deepStrictEqual (nameOf (just (1)), 'Maybe')
+  assert.deepStrictEqual (nameOf ({ tag: 'just', value: 1 }), 'StrMap')
 })
 
 type Exact<A, B> = (<T>() => T extends A ? 1 : 2) extends

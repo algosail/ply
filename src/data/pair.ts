@@ -2,8 +2,6 @@
  * Keep two values together.
  */
 
-import type { Shape, Shaped } from '../core/shape.ts'
-import type { KindOf, Satisfies, ShapeOf, SlotAOf } from '../core/kind.ts'
 import type { ApplicativeTypeRep } from '../classes/applicative.ts'
 import type { Apply, ApplyMethods } from '../classes/apply.ts'
 import type { BifunctorMethods } from '../classes/bifunctor.ts'
@@ -13,12 +11,14 @@ import type { ComonadMethods } from '../classes/comonad.ts'
 import type { ExtendMethods } from '../classes/extend.ts'
 import type { FoldableMethods } from '../classes/foldable.ts'
 import type { FunctorMethods } from '../classes/functor.ts'
+import type { OrdMethods } from '../classes/ord.ts'
 import type { SemigroupMethods } from '../classes/semigroup.ts'
 import type { SemigroupoidMethods } from '../classes/semigroupoid.ts'
-import type { TraversableMethods } from '../classes/traversable.ts'
-import type { OrdMethods } from '../classes/ord.ts'
 import type { SetoidMethods } from '../classes/setoid.ts'
 import type { ShowMethods } from '../classes/show.ts'
+import type { TraversableMethods } from '../classes/traversable.ts'
+import type { KindOf, Satisfies, ShapeOf, SlotAOf } from '../core/kind.ts'
+import type { Shape, Shaped } from '../core/shape.ts'
 import { map } from '../classes/functor.ts'
 import { lte } from '../classes/ord.ts'
 import { concat } from '../classes/semigroup.ts'
@@ -277,7 +277,7 @@ export class Pair<L, R> implements PairMethods<L, R> {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.pair('log', 1) // => Pair ("log") (1)
  * ```
  */
@@ -290,7 +290,7 @@ export function pair<L, R>(fst: L, snd: R): Pair<L, R> {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.fst(P.pair('log', 1)) // => 'log'
  * ```
  */
@@ -303,7 +303,7 @@ export function fst<L, R>(p: Pair<L, R>): L {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.snd(P.pair('log', 1)) // => 1
  * ```
  */
@@ -316,7 +316,7 @@ export function snd<L, R>(p: Pair<L, R>): R {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.swap(P.pair('log', 1)) // => Pair (1) ("log")
  * ```
  */
@@ -329,7 +329,7 @@ export function swap<L, R>(p: Pair<L, R>): Pair<R, L> {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.diagonal(2) // => Pair (2) (2)
  * ```
  */
@@ -342,7 +342,7 @@ export function diagonal<A>(a: A): Pair<A, A> {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.uncurry((l: number) => (r: number) => l + r)(P.pair(1, 2)) // => 3
  * ```
  */
@@ -357,7 +357,7 @@ export function uncurry<L, R, C>(
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.fromTuple(['log', 1] as const) // => Pair ("log") (1)
  * ```
  */
@@ -370,7 +370,7 @@ export function fromTuple<L, R>(t: readonly [L, R]): Pair<L, R> {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.toTuple(P.pair('log', 1)) // => ['log', 1]
  * ```
  */

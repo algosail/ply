@@ -2,32 +2,32 @@
  * Operations and types for recognizing unknown values and narrowing their types.
  */
 
-import type { Shape } from '../core/shape.ts'
 import type { MemberOf, RepIn } from '../core/kind.ts'
 import type { Instances } from '../core/named.ts'
+import type { Shape } from '../core/shape.ts'
 import type { ArrayShape } from '../natives/array.ts'
-import type { FnShape } from '../natives/function.ts'
-import type { MapShape } from '../natives/map.ts'
-import type { SetShape } from '../natives/set.ts'
-import type { StrMapShape } from '../natives/strmap.ts'
 import type { BigShape } from '../natives/bigint.ts'
 import type { BoolShape } from '../natives/boolean.ts'
 import type { DateShape } from '../natives/date.ts'
+import type { FnShape } from '../natives/function.ts'
+import type { MapShape } from '../natives/map.ts'
 import type { NumShape } from '../natives/number.ts'
 import type { ReShape } from '../natives/regexp.ts'
+import type { SetShape } from '../natives/set.ts'
 import type { StrShape } from '../natives/string.ts'
+import type { StrMapShape } from '../natives/strmap.ts'
 import { lazily, nameOf, typeRepIn } from '../core/instance.ts'
 import { Arr } from '../natives/array.ts'
-import { Fn } from '../natives/function.ts'
-import { Maps } from '../natives/map.ts'
-import { Sets } from '../natives/set.ts'
-import { StrMap } from '../natives/strmap.ts'
 import { Big } from '../natives/bigint.ts'
 import { Bool } from '../natives/boolean.ts'
 import { Dates } from '../natives/date.ts'
+import { Fn } from '../natives/function.ts'
+import { Maps } from '../natives/map.ts'
 import { Num } from '../natives/number.ts'
 import { Re } from '../natives/regexp.ts'
+import { Sets } from '../natives/set.ts'
 import { Str } from '../natives/string.ts'
+import { StrMap } from '../natives/strmap.ts'
 
 /**
  * The static `is` operation required from a custom type representative.
@@ -149,11 +149,11 @@ export const checkableNatives: Instances<
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * const values: unknown[] = [1, 'hello', false, 'world']
  * const words: string[] = values.filter(P.is(P.Str))
  * words // => ['hello', 'world']
- * 
+ *
  * P.is(P.Maybe)(P.just(1)) // => true
  * P.is(P.Maybe)(1) // => false
  * ```

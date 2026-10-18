@@ -1,14 +1,14 @@
+import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import type { Do } from '../../src/classes/monad.ts'
-import type { ArrayShape } from '../../src/natives/array.ts'
 import type { MaybeShape } from '../../src/data/maybe.ts'
-import { assertEquals, assertThrows } from '../assert.ts'
+import type { ArrayShape } from '../../src/natives/array.ts'
+import { fgo, go } from '../../src/classes/monad.ts'
+import { Either, left, right } from '../../src/data/either.ts'
+import { just, Maybe, nothing } from '../../src/data/maybe.ts'
 import { Arr } from '../../src/natives/array.ts'
 import { Fn } from '../../src/natives/function.ts'
 import { Sets } from '../../src/natives/set.ts'
-import { Either, left, right } from '../../src/data/either.ts'
-import { just, Maybe, nothing } from '../../src/data/maybe.ts'
-import { fgo, go } from '../../src/classes/monad.ts'
 
 test ('go: passes each unwrapped value to the next computation', () => {
   function* total() {
@@ -17,7 +17,7 @@ test ('go: passes each unwrapped value to the next computation', () => {
     return first + second
   }
 
-  assertEquals (go (Maybe) (total), just (6))
+  assert.deepStrictEqual (go (Maybe) (total), just (6))
 })
 
 test ('go: combines successful Either values', () => {
@@ -27,7 +27,7 @@ test ('go: combines successful Either values', () => {
     return first + second
   }
 
-  assertEquals (go (Either) (total), right (42))
+  assert.deepStrictEqual (go (Either) (total), right (42))
 })
 
 test ('go: arrays produce every combination in order', () => {
@@ -37,7 +37,7 @@ test ('go: arrays produce every combination in order', () => {
     return first + second
   }
 
-  assertEquals (go (Arr) (sums), [11, 21, 12, 22])
+  assert.deepStrictEqual (go (Arr) (sums), [11, 21, 12, 22])
 })
 
 test ('go: transforms every value from a single array', () => {
@@ -46,7 +46,7 @@ test ('go: transforms every value from a single array', () => {
     return value * 10
   }
 
-  assertEquals (go (Arr) (scale), [10, 20, 30])
+  assert.deepStrictEqual (go (Arr) (scale), [10, 20, 30])
 })
 
 test ('go: sets produce every combination', () => {
@@ -56,7 +56,7 @@ test ('go: sets produce every combination', () => {
     return first + second
   }
 
-  assertEquals (go (Sets) (sums), new Set ([11, 21, 12, 22]))
+  assert.deepStrictEqual (go (Sets) (sums), new Set ([11, 21, 12, 22]))
 })
 
 test ('go: sets remove duplicate results', () => {
@@ -66,7 +66,7 @@ test ('go: sets remove duplicate results', () => {
     return first + second
   }
 
-  assertEquals (go (Sets) (sums), new Set ([1, 2, 3]))
+  assert.deepStrictEqual (go (Sets) (sums), new Set ([1, 2, 3]))
 })
 
 test ('fgo: forwards arguments to the generator', () => {
@@ -78,12 +78,12 @@ test ('fgo: forwards arguments to the generator', () => {
 
   const sumPairs = fgo (Arr) (sums)
 
-  assertEquals (sumPairs ([1, 2], [10, 20]), [11, 21, 12, 22])
-  assertEquals (sumPairs ([0], [7]), [7])
+  assert.deepStrictEqual (sumPairs ([1, 2], [10, 20]), [11, 21, 12, 22])
+  assert.deepStrictEqual (sumPairs ([0], [7]), [7])
 })
 
 test ('fgo: a body can recurse into itself with yield*', () => {
-  assertEquals (halfRepeatedly (3, 8), just (1))
+  assert.deepStrictEqual (halfRepeatedly (3, 8), just (1))
 })
 
 test ('go: Maybe runs the body once when every yield succeeds', () => {
@@ -95,8 +95,8 @@ test ('go: Maybe runs the body once when every yield succeeds', () => {
     return first + second
   }
 
-  assertEquals (go (Maybe) (total), just (6))
-  assertEquals (starts, 1)
+  assert.deepStrictEqual (go (Maybe) (total), just (6))
+  assert.deepStrictEqual (starts, 1)
 })
 
 test ('go: array branching can repeat statements before a yield', () => {
@@ -109,8 +109,8 @@ test ('go: array branching can repeat statements before a yield', () => {
     return first + second
   }
 
-  assertEquals (go (Arr) (sums), [11, 21, 12, 22])
-  assertEquals (visits, [
+  assert.deepStrictEqual (go (Arr) (sums), [11, 21, 12, 22])
+  assert.deepStrictEqual (visits, [
     'start',
     'first: 1',
     'start',
@@ -139,9 +139,9 @@ test ('go: functions share the input and can be called repeatedly', () => {
 
   const calculate = go (Fn) (total)
 
-  assertEquals (calculate (10), 31)
-  assertEquals (calculate (3), 10)
-  assertEquals (calculate (10), 31)
+  assert.deepStrictEqual (calculate (10), 31)
+  assert.deepStrictEqual (calculate (3), 10)
+  assert.deepStrictEqual (calculate (10), 31)
 })
 
 test ('fgo: creates a fresh body for each call', () => {
@@ -153,10 +153,10 @@ test ('fgo: creates a fresh body for each call', () => {
   }
 
   const run = fgo (Maybe) (recordHalf)
-  assertEquals (inputs, [])
-  assertEquals (run (8), just (4))
-  assertEquals (run (6), just (3))
-  assertEquals (inputs, [8, 6])
+  assert.deepStrictEqual (inputs, [])
+  assert.deepStrictEqual (run (8), just (4))
+  assert.deepStrictEqual (run (6), just (3))
+  assert.deepStrictEqual (inputs, [8, 6])
 })
 
 test ('go: Nothing stops the body before the next statement', () => {
@@ -168,8 +168,8 @@ test ('go: Nothing stops the body before the next statement', () => {
     return first + second
   }
 
-  assertEquals (go (Maybe) (total), nothing ())
-  assertEquals (continued, false)
+  assert.deepStrictEqual (go (Maybe) (total), nothing ())
+  assert.deepStrictEqual (continued, false)
 })
 
 test ('go: Left preserves the error and stops the body', () => {
@@ -181,8 +181,8 @@ test ('go: Left preserves the error and stops the body', () => {
     return first + second
   }
 
-  assertEquals (go (Either) (total), left ('invalid'))
-  assertEquals (continued, false)
+  assert.deepStrictEqual (go (Either) (total), left ('invalid'))
+  assert.deepStrictEqual (continued, false)
 })
 
 test ('go: an empty array removes every branch that reaches it', () => {
@@ -193,7 +193,7 @@ test ('go: an empty array removes every branch that reaches it', () => {
     return first + second
   }
 
-  assertEquals (go (Arr) (sums), [])
+  assert.deepStrictEqual (go (Arr) (sums), [])
 })
 
 test ('go: wraps a return value in Maybe without any yields', () => {
@@ -201,7 +201,7 @@ test ('go: wraps a return value in Maybe without any yields', () => {
     return 42
   }
 
-  assertEquals (go (Maybe) (answer), just (42))
+  assert.deepStrictEqual (go (Maybe) (answer), just (42))
 })
 
 test ('go: wraps a return value in an array without any yields', () => {
@@ -209,15 +209,15 @@ test ('go: wraps a return value in an array without any yields', () => {
     return 42
   }
 
-  assertEquals (go (Arr) (answer), [42])
+  assert.deepStrictEqual (go (Arr) (answer), [42])
 })
 
 test ('fgo: recursive failure returns Nothing', () => {
-  assertEquals (halfRepeatedly (4, 8), nothing ())
+  assert.deepStrictEqual (halfRepeatedly (4, 8), nothing ())
 })
 
 test ('fgo: the recursive base case wraps the result without yielding', () => {
-  assertEquals (halfRepeatedly (0, 5), just (5))
+  assert.deepStrictEqual (halfRepeatedly (0, 5), just (5))
 })
 
 test ('fgo: yield* recursion survives the replay of a branching body', () => {
@@ -228,9 +228,9 @@ test ('fgo: yield* recursion survives the replay of a branching body', () => {
   }
 
   const walk = fgo (Arr) (countdown)
-  assertEquals (walk (0), [0])
-  assertEquals (walk (1), [1, 2])
-  assertEquals (walk (2), [2, 3, 3, 4])
+  assert.deepStrictEqual (walk (0), [0])
+  assert.deepStrictEqual (walk (1), [1, 2])
+  assert.deepStrictEqual (walk (2), [2, 3, 3, 4])
 })
 
 test ('go: rejects Maybe inside an Either body', () => {
@@ -246,7 +246,10 @@ test ('go: rejects Maybe inside an Either body', () => {
     return go (Either) (mixed)
   }
 
-  assertThrows (run, TypeError, 'the body runs in Either but yielded Maybe')
+  assert.throws (
+    run,
+    (error: unknown) => error instanceof TypeError && error.message.includes ('the body runs in Either but yielded Maybe'),
+  )
 })
 
 test ('go: rejects Maybe inside an array body', () => {
@@ -259,7 +262,10 @@ test ('go: rejects Maybe inside an array body', () => {
     return go (Arr) (mixed)
   }
 
-  assertThrows (run, TypeError, 'the body runs in Array but yielded Maybe')
+  assert.throws (
+    run,
+    (error: unknown) => error instanceof TypeError && error.message.includes ('the body runs in Array but yielded Maybe'),
+  )
 })
 
 test ('fgo: identifies itself in the mismatched wrapper error', () => {
@@ -270,7 +276,10 @@ test ('fgo: identifies itself in the mismatched wrapper error', () => {
   }
 
   const run = fgo (Maybe) (mixed)
-  assertThrows (run, TypeError, 'fgo: the body runs in Maybe but yielded Array')
+  assert.throws (
+    run,
+    (error: unknown) => error instanceof TypeError && error.message.includes ('fgo: the body runs in Maybe but yielded Array'),
+  )
 })
 
 test ('fgo: a function without arguments returns the same result as go', () => {
@@ -281,8 +290,8 @@ test ('fgo: a function without arguments returns the same result as go', () => {
   }
 
   const run = fgo (Maybe) (total)
-  assertEquals (run (), just (6))
-  assertEquals (run (), go (Maybe) (total))
+  assert.deepStrictEqual (run (), just (6))
+  assert.deepStrictEqual (run (), go (Maybe) (total))
 })
 
 test ('Do: describes the yielded wrapper and the returned value', () => {
@@ -293,7 +302,7 @@ test ('Do: describes the yielded wrapper and the returned value', () => {
   }
 
   const result = go (Arr) (sums)
-  assertEquals (result, [11, 21, 12, 22])
+  assert.deepStrictEqual (result, [11, 21, 12, 22])
 })
 
 function half(value: number): Maybe<number> {

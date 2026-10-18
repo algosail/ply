@@ -15,13 +15,13 @@ export interface Fail<M extends string> {
  * @example
  * ```ts
  * import type { Shape, Kind } from './shape.ts'
- * 
+ *
  * type Box<A> = { readonly value: A }
- * 
+ *
  * interface BoxShape extends Shape<'Box'> {
  *   readonly out: Box<this['slotA']>
  * }
- * 
+ *
  * type Boxed = Kind<BoxShape, number, never> // => Box<number>
  * ```
  */
@@ -55,7 +55,7 @@ export interface Shape<Name extends string = string> {
  * import type { FnShape } from '../natives/function.ts'
  * import type { MapShape } from '../natives/map.ts'
  * import type { Kind } from './shape.ts'
- * 
+ *
  * type Keyed = Kind<MapShape, number, string> // => Map<string, number>
  * type Arrow = Kind<FnShape, number, string> // => (i: string) => number
  * ```
@@ -68,7 +68,7 @@ export type Kind<S extends Shape, A, B> =
  * @example
  * ```ts
  * import type { Nullary, Kind } from './shape.ts'
- * 
+ *
  * type Big = Kind<Nullary<bigint>, string, number> // => bigint
  * ```
  */
@@ -85,13 +85,13 @@ export interface Nullary<T> extends Shape {
  * ```ts
  * import type { ArrayShape } from '../natives/array.ts'
  * import type { Shape, Shaped } from './shape.ts'
- * 
+ *
  * type Name = Shaped<ArrayShape>['@@type'] // => 'Array'
- * 
+ *
  * interface Nameless extends Shape {
  *   readonly out: number
  * }
- * 
+ *
  * type None = Shaped<Nameless>['@@type']
  * // => Fail<'Shape must name the type'>
  * ```
@@ -135,7 +135,7 @@ export type AnyKind<A = unknown, B = unknown> = Shaped<Shape> & Slotted<A, B>
  * @example
  * ```ts
  * import type { FnShape } from '../natives/function.ts'
- * 
+ *
  * type Loosest = (FnShape & { slotA: number })['like']
  * // => (i: never) => number
  * ```
@@ -152,7 +152,7 @@ export interface Widened {
  * @example
  * ```ts
  * import type { MapShape } from '../natives/map.ts'
- * 
+ *
  * type Value = (MapShape & { val: Map<string, number> })['readA'] // => number
  * type Key = (MapShape & { val: Map<string, number> })['readB'] // => string
  * ```

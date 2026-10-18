@@ -1,16 +1,16 @@
+import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { assertEquals, assertThrows } from '../assert.ts'
-import * as P from '../../src/mod.ts'
-
-import type { Checkable } from '../../src/typeclasses.ts'
-import type { ArrayShape, Shape, StrShape } from '../../src/shapes.ts'
-import type { MemberOf } from '../../src/core/kind.ts'
 import type {
   CheckableDict,
   CheckableKeys,
   CheckableTypeRep,
   IsSig,
 } from '../../src/classes/checkable.ts'
+
+import type { MemberOf } from '../../src/core/kind.ts'
+import type { ArrayShape, Shape, StrShape } from '../../src/shapes.ts'
+import type { Checkable } from '../../src/typeclasses.ts'
+import * as P from '../../src/mod.ts'
 
 const StringType: CheckableTypeRep<StrShape> = {
   '@@type': 'String',
@@ -30,85 +30,85 @@ function filterChecked<S extends Shape>(
 }
 
 test ('is: checks native values with their representatives', () => {
-  assertEquals (P.is (P.Str) ('hello'), true)
-  assertEquals (P.is (P.Str) (42), false)
-  assertEquals (P.is (P.Num) (NaN), true)
-  assertEquals (P.is (P.Bool) (false), true)
-  assertEquals (P.is (P.Arr) ([1, 'two']), true)
-  assertEquals (P.is (P.Arr) ({ length: 2 }), false)
-  assertEquals (P.is (P.Str) (null), false)
-  assertEquals (P.is (P.Str) (undefined), false)
+  assert.deepStrictEqual (P.is (P.Str) ('hello'), true)
+  assert.deepStrictEqual (P.is (P.Str) (42), false)
+  assert.deepStrictEqual (P.is (P.Num) (NaN), true)
+  assert.deepStrictEqual (P.is (P.Bool) (false), true)
+  assert.deepStrictEqual (P.is (P.Arr) ([1, 'two']), true)
+  assert.deepStrictEqual (P.is (P.Arr) ({ length: 2 }), false)
+  assert.deepStrictEqual (P.is (P.Str) (null), false)
+  assert.deepStrictEqual (P.is (P.Str) (undefined), false)
 })
 
 test ('is: recognizes dates, regular expressions, and bigints', () => {
-  assertEquals (P.is (P.Dates) (new Date (NaN)), true)
-  assertEquals (P.is (P.Dates) (0), false)
-  assertEquals (P.is (P.Re) (/hello/), true)
-  assertEquals (P.is (P.Re) ('hello'), false)
-  assertEquals (P.is (P.Big) (1n), true)
-  assertEquals (P.is (P.Big) (1), false)
+  assert.deepStrictEqual (P.is (P.Dates) (new Date (NaN)), true)
+  assert.deepStrictEqual (P.is (P.Dates) (0), false)
+  assert.deepStrictEqual (P.is (P.Re) (/hello/), true)
+  assert.deepStrictEqual (P.is (P.Re) ('hello'), false)
+  assert.deepStrictEqual (P.is (P.Big) (1n), true)
+  assert.deepStrictEqual (P.is (P.Big) (1), false)
 })
 
 test ('is: recognizes functions and native collections', () => {
-  assertEquals (P.is (P.Fn) (P.I), true)
-  assertEquals (P.is (P.Fn) ({}), false)
-  assertEquals (P.is (P.Maps) (new Map ([['key', 1]])), true)
-  assertEquals (P.is (P.Maps) ({ key: 1 }), false)
-  assertEquals (P.is (P.Sets) (new Set ([1])), true)
-  assertEquals (P.is (P.Sets) ([1]), false)
-  assertEquals (P.is (P.StrMap) ({ key: 1 }), true)
-  assertEquals (P.is (P.StrMap) (Object.create (null)), true)
-  assertEquals (P.is (P.StrMap) (new P.Identity (1)), false)
+  assert.deepStrictEqual (P.is (P.Fn) (P.I), true)
+  assert.deepStrictEqual (P.is (P.Fn) ({}), false)
+  assert.deepStrictEqual (P.is (P.Maps) (new Map ([['key', 1]])), true)
+  assert.deepStrictEqual (P.is (P.Maps) ({ key: 1 }), false)
+  assert.deepStrictEqual (P.is (P.Sets) (new Set ([1])), true)
+  assert.deepStrictEqual (P.is (P.Sets) ([1]), false)
+  assert.deepStrictEqual (P.is (P.StrMap) ({ key: 1 }), true)
+  assert.deepStrictEqual (P.is (P.StrMap) (Object.create (null)), true)
+  assert.deepStrictEqual (P.is (P.StrMap) (new P.Identity (1)), false)
 })
 
 test ('is: finds native checks by the representative name and shape', () => {
-  assertEquals (P.is (StringType) ('hello'), true)
-  assertEquals (P.is (StringType) (42), false)
-  assertEquals (P.is (ArrayType) ([1, 'two']), true)
-  assertEquals (P.is (ArrayType) ({ length: 2 }), false)
+  assert.deepStrictEqual (P.is (StringType) ('hello'), true)
+  assert.deepStrictEqual (P.is (StringType) (42), false)
+  assert.deepStrictEqual (P.is (ArrayType) ([1, 'two']), true)
+  assert.deepStrictEqual (P.is (ArrayType) ({ length: 2 }), false)
 })
 
 test ('is: narrows unknown values when filtering', () => {
   const values: unknown[] = [1, 'hello', false, 'world']
   const words = values.filter (P.is (P.Str))
-  assertEquals (words.map ((word) => word.toUpperCase ()), ['HELLO', 'WORLD'])
+  assert.deepStrictEqual (words.map ((word) => word.toUpperCase ()), ['HELLO', 'WORLD'])
 })
 
 test ('is: shaped representatives work in generic helpers', () => {
   const values: unknown[] = ['hello', [1], P.just (2), P.nothing (), 42]
 
-  assertEquals (filterChecked (StringType, values), ['hello'])
-  assertEquals (filterChecked (ArrayType, values), [[1]])
-  assertEquals (filterChecked (P.Maybe, values), [P.just (2), P.nothing ()])
+  assert.deepStrictEqual (filterChecked (StringType, values), ['hello'])
+  assert.deepStrictEqual (filterChecked (ArrayType, values), [[1]])
+  assert.deepStrictEqual (filterChecked (P.Maybe, values), [P.just (2), P.nothing ()])
 })
 
 test ('is: recognizes both branches without checking their contents', () => {
-  assertEquals (P.is (P.Maybe) (P.just (1)), true)
-  assertEquals (P.is (P.Maybe) (P.just ('hello')), true)
-  assertEquals (P.is (P.Maybe) (P.nothing ()), true)
-  assertEquals (P.is (P.Either) (P.left ('error')), true)
-  assertEquals (P.is (P.Either) (P.right (1)), true)
-  assertEquals (P.is (P.Maybe) (P.right (1)), false)
-  assertEquals (P.is (P.Either) (P.just (1)), false)
+  assert.deepStrictEqual (P.is (P.Maybe) (P.just (1)), true)
+  assert.deepStrictEqual (P.is (P.Maybe) (P.just ('hello')), true)
+  assert.deepStrictEqual (P.is (P.Maybe) (P.nothing ()), true)
+  assert.deepStrictEqual (P.is (P.Either) (P.left ('error')), true)
+  assert.deepStrictEqual (P.is (P.Either) (P.right (1)), true)
+  assert.deepStrictEqual (P.is (P.Maybe) (P.right (1)), false)
+  assert.deepStrictEqual (P.is (P.Either) (P.just (1)), false)
 })
 
 test ('is: recognizes identity, pair, and callable data types', () => {
-  assertEquals (P.is (P.Identity) (P.identity (1)), true)
-  assertEquals (P.is (P.Pair) (P.pair ('key', 1)), true)
-  assertEquals (P.is (P.Predicate) (P.predicate (Number.isFinite)), true)
-  assertEquals (P.is (P.Equivalence) (P.equivalence (Object.is)), true)
-  assertEquals (P.is (P.Identity) (P.just (1)), false)
-  assertEquals (P.is (P.Pair) (['key', 1]), false)
-  assertEquals (P.is (P.Predicate) (Number.isFinite), false)
-  assertEquals (P.is (P.Equivalence) (Object.is), false)
+  assert.deepStrictEqual (P.is (P.Identity) (P.identity (1)), true)
+  assert.deepStrictEqual (P.is (P.Pair) (P.pair ('key', 1)), true)
+  assert.deepStrictEqual (P.is (P.Predicate) (P.predicate (Number.isFinite)), true)
+  assert.deepStrictEqual (P.is (P.Equivalence) (P.equivalence (Object.is)), true)
+  assert.deepStrictEqual (P.is (P.Identity) (P.just (1)), false)
+  assert.deepStrictEqual (P.is (P.Pair) (['key', 1]), false)
+  assert.deepStrictEqual (P.is (P.Predicate) (Number.isFinite), false)
+  assert.deepStrictEqual (P.is (P.Equivalence) (Object.is), false)
 })
 
 test ('is: a copied tag does not make a value a ply data type', () => {
-  assertEquals (
+  assert.deepStrictEqual (
     P.is (P.Maybe) ({ '@@type': 'Maybe', tag: 'just', value: 1 }),
     false,
   )
-  assertEquals (P.is (P.Identity) ({ '@@type': 'Identity', value: 1 }), false)
+  assert.deepStrictEqual (P.is (P.Identity) ({ '@@type': 'Identity', value: 1 }), false)
 })
 
 test ('is: custom representatives can check a narrower domain', () => {
@@ -118,7 +118,7 @@ test ('is: custom representatives can check a narrower domain', () => {
     },
   }
 
-  assertEquals ([null, -1, 0, 2, '3'].filter (P.is (Positive)), [2])
+  assert.deepStrictEqual ([null, -1, 0, 2, '3'].filter (P.is (Positive)), [2])
 })
 
 test ('is: custom shaped representatives provide their own check', () => {
@@ -134,7 +134,7 @@ test ('is: custom shaped representatives provide their own check', () => {
     },
   }
 
-  assertEquals (filterChecked (Positive, [null, -1, 0, 2, '3']), [2])
+  assert.deepStrictEqual (filterChecked (Positive, [null, -1, 0, 2, '3']), [2])
 })
 
 test ('is: an own check takes precedence over the native implementation', () => {
@@ -145,7 +145,7 @@ test ('is: an own check takes precedence over the native implementation', () => 
     },
   }
 
-  assertEquals (['', 'hello', 42].filter (P.is (NonEmpty)), ['hello'])
+  assert.deepStrictEqual (['', 'hello', 42].filter (P.is (NonEmpty)), ['hello'])
 })
 
 test ('is: calls the representative method with its receiver and only the value', () => {
@@ -158,43 +158,39 @@ test ('is: calls the representative method with its receiver and only the value'
     },
   }
 
-  assertEquals (['selected', 'other'].filter (P.is (Selected)), ['selected'])
-  assertEquals (calls, [['selected'], ['other']])
+  assert.deepStrictEqual (['selected', 'other'].filter (P.is (Selected)), ['selected'])
+  assert.deepStrictEqual (calls, [['selected'], ['other']])
 })
 
 test ('is: a non-callable field falls back to the native check', () => {
   const StringWithMissingCheck = { ...StringType, is: null }
 
-  assertEquals (P.is (StringWithMissingCheck) ('hello'), true)
-  assertEquals (P.is (StringWithMissingCheck) (42), false)
+  assert.deepStrictEqual (P.is (StringWithMissingCheck) ('hello'), true)
+  assert.deepStrictEqual (P.is (StringWithMissingCheck) (42), false)
 })
 
 test ('is: a missing check throws when selecting the representative', () => {
   const Missing = { '@@type': 'Missing' }
   const Invalid = { '@@type': 'Invalid', is: true }
 
-  assertThrows (
+  assert.throws (
     () => P.is (Missing as never),
-    TypeError,
-    'is: Missing has no Checkable',
+    (error: unknown) => error instanceof TypeError && error.message.includes ('is: Missing has no Checkable'),
   )
-  assertThrows (
+  assert.throws (
     () => P.is (Invalid as never),
-    TypeError,
-    'is: Invalid has no Checkable',
+    (error: unknown) => error instanceof TypeError && error.message.includes ('is: Invalid has no Checkable'),
   )
 })
 
 test ('is: null and undefined representatives produce descriptive errors', () => {
-  assertThrows (
+  assert.throws (
     () => P.is (null as never),
-    TypeError,
-    'is: Null has no Checkable',
+    (error: unknown) => error instanceof TypeError && error.message.includes ('is: Null has no Checkable'),
   )
-  assertThrows (
+  assert.throws (
     () => P.is (undefined as never),
-    TypeError,
-    'is: Undefined has no Checkable',
+    (error: unknown) => error instanceof TypeError && error.message.includes ('is: Undefined has no Checkable'),
   )
 })
 

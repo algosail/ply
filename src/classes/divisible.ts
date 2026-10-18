@@ -2,7 +2,6 @@
  * Operations and types for combining rules for separate parts of an input.
  */
 
-import type { Kind, Shape } from '../core/shape.ts'
 import type {
   Assert,
   KindOf,
@@ -14,6 +13,7 @@ import type {
   Superclass,
 } from '../core/kind.ts'
 import type { Instances } from '../core/named.ts'
+import type { Kind, Shape } from '../core/shape.ts'
 import type {
   ContravariantKeys,
   ContravariantMethods,
@@ -108,13 +108,13 @@ export const divisibleNatives: Instances<
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * type Order = { name: string; total: number }
- * 
+ *
  * const long = P.predicate((s: string) => s.length > 3)
  * const big = P.predicate((n: number) => n > 10)
  * const ok = P.divide((o: Order) => [o.name, o.total] as const)(long)(big)
- * 
+ *
  * ok({ name: 'hello', total: 20 }) // => true
  * ok({ name: 'hi', total: 20 }) // => false
  * ```
@@ -141,7 +141,7 @@ export function divide<B, C, X>(
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.conquer(P.Predicate)(0) // => true
  * P.conquer(P.Predicate)('anything') // => true
  * ```

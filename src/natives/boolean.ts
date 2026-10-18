@@ -2,12 +2,12 @@
  * Combine boolean values and choose transformations with predicates.
  */
 
-import type { Shape } from '../core/shape.ts'
-import type { NativeTypeRep } from '../core/named.ts'
 import type { CheckableDict } from '../classes/checkable.ts'
 import type { OrdDict } from '../classes/ord.ts'
 import type { SetoidDict } from '../classes/setoid.ts'
 import type { ShowDict } from '../classes/show.ts'
+import type { NativeTypeRep } from '../core/named.ts'
+import type { Shape } from '../core/shape.ts'
 
 /**
  * The shape for booleans.
@@ -34,7 +34,7 @@ export type BoolDict =
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.Bool.is(false) // => true
  * P.Bool.lte(false, true) // => true
  * ```
@@ -61,7 +61,7 @@ export const Bool: BoolDict = {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.and(true)(false) // => false
  * P.and(true)(true) // => true
  * ```
@@ -75,7 +75,7 @@ export function and(x: boolean): (y: boolean) => boolean {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.or(true)(false) // => true
  * P.or(false)(false) // => false
  * ```
@@ -89,7 +89,7 @@ export function or(x: boolean): (y: boolean) => boolean {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.not(true) // => false
  * P.not(false) // => true
  * ```
@@ -103,7 +103,7 @@ export function not(x: boolean): boolean {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.complement(P.even)(3) // => true
  * P.map(P.complement(P.even))([1, 2, 3]) // => [true, false, true]
  * ```
@@ -117,7 +117,7 @@ export function complement<A>(pred: (a: A) => boolean): (x: A) => boolean {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.boolean('no')('yes')(true) // => 'yes'
  * P.boolean('no')('yes')(false) // => 'no'
  * ```
@@ -131,7 +131,7 @@ export function boolean<A>(onFalse: A): (onTrue: A) => (b: boolean) => A {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.ifElse(P.even)(P.div(2))(P.mult(3))(4) // => 2
  * P.ifElse(P.even)(P.div(2))(P.mult(3))(3) // => 9
  * ```
@@ -147,7 +147,7 @@ export function ifElse<A>(
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.when(P.even)(P.div(2))(4) // => 2
  * P.when(P.even)(P.div(2))(3) // => 3
  * ```
@@ -163,7 +163,7 @@ export function when<A>(
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.unless(P.even)(P.add(1))(3) // => 4
  * P.unless(P.even)(P.add(1))(4) // => 4
  * ```
@@ -179,7 +179,7 @@ export function unless<A>(
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.isTrue(true) // => true
  * P.isTrue(1) // => false
  * ```
@@ -193,7 +193,7 @@ export function isTrue(x: unknown): x is true {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.isFalse(false) // => true
  * P.isFalse(0) // => false
  * ```
@@ -207,7 +207,7 @@ export function isFalse(x: unknown): x is false {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.onlyIf(true)((n: number) => n + 1)(1) // => 2
  * P.onlyIf(false)((n: number) => n + 1)(1) // => 1
  * ```

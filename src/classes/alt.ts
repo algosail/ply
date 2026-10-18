@@ -2,7 +2,6 @@
  * Operations and types for combining alternatives with `alt`.
  */
 
-import type { Kind, Shape } from '../core/shape.ts'
 import type {
   Assert,
   MatchableIn,
@@ -11,6 +10,7 @@ import type {
   SubclassOf,
 } from '../core/kind.ts'
 import type { Instances } from '../core/named.ts'
+import type { Kind, Shape } from '../core/shape.ts'
 import type { ArrayShape } from '../natives/array.ts'
 import type { StrMapShape } from '../natives/strmap.ts'
 import type { FunctorDict, FunctorMethods, FunctorShapes } from './functor.ts'
@@ -87,7 +87,7 @@ export const altNatives: Instances<
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.alt([3, 4])([1, 2]) // => [1, 2, 3, 4]
  * P.alt({ b: 2 })({ a: 1 }) // => { a: 1, b: 2 }
  * P.alt({ a: 9 })({ a: 1 }) // => { a: 1 }

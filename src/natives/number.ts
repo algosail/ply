@@ -2,16 +2,16 @@
  * Curried arithmetic, integer checks, and numeric summaries.
  */
 
-import type { Shape } from '../core/shape.ts'
-import type { NativeTypeRep } from '../core/named.ts'
 import type { CheckableDict } from '../classes/checkable.ts'
 import type { Foldable } from '../classes/foldable.ts'
 import type { OrdDict } from '../classes/ord.ts'
 import type { SetoidDict } from '../classes/setoid.ts'
 import type { ShowDict } from '../classes/show.ts'
+import type { NativeTypeRep } from '../core/named.ts'
+import type { Shape } from '../core/shape.ts'
 import type { Maybe } from '../data/maybe.ts'
-import { integer } from '../core/domain.ts'
 import { reduce } from '../classes/foldable.ts'
+import { integer } from '../core/domain.ts'
 import { just, nothing } from '../data/maybe.ts'
 
 /**
@@ -39,7 +39,7 @@ export type NumTypeRep =
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.Num.is(42) // => true
  * P.Num.equals(NaN, NaN) // => true
  * ```
@@ -68,7 +68,7 @@ export const Num: NumTypeRep = {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.add(1)(1) // => 2
  * ```
  */
@@ -81,7 +81,7 @@ export function add(x: number): (y: number) => number {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.map(P.sub(1))([1, 2, 3]) // => [0, 1, 2]
  * ```
  */
@@ -94,7 +94,7 @@ export function sub(y: number): (x: number) => number {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.mult(4)(2) // => 8
  * ```
  */
@@ -107,7 +107,7 @@ export function mult(x: number): (y: number) => number {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.map(P.div(2))([0, 1, 2, 3]) // => [0, 0.5, 1, 1.5]
  * ```
  */
@@ -120,7 +120,7 @@ export function div(y: number): (x: number) => number {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.map(P.pow(2))([-3, -2, -1, 0, 1, 2, 3]) // => [9, 4, 1, 0, 1, 4, 9]
  * P.map(P.pow(0.5))([1, 4, 9, 16, 25]) // => [1, 2, 3, 4, 5]
  * ```
@@ -134,7 +134,7 @@ export function pow(exp: number): (base: number) => number {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.negate(12.5) // => -12.5
  * P.negate(-42) // => 42
  * ```
@@ -150,7 +150,7 @@ export function negate(n: number): number {
  * ```ts
  * import { assertThrows } from '@std/assert'
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.even(42) // => true
  * P.even(99) // => false
  * assertThrows(() => P.even(2.5), TypeError, 'even: 2.5 is not an integer')
@@ -168,7 +168,7 @@ export function even(n: number): boolean {
  * ```ts
  * import { assertThrows } from '@std/assert'
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.odd(99) // => true
  * P.odd(42) // => false
  * assertThrows(() => P.odd(2.5), TypeError, 'odd: 2.5 is not an integer')
@@ -184,7 +184,7 @@ export function odd(n: number): boolean {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.sum([1, 2, 3, 4, 5]) // => 15
  * P.sum([]) // => 0
  * P.sum(P.just(42)) // => 42
@@ -202,7 +202,7 @@ export function sum<F extends Foldable<F, number>>(fa: F): number {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.product([1, 2, 3, 4, 5]) // => 120
  * P.product([]) // => 1
  * P.product(P.just(42)) // => 42
@@ -220,7 +220,7 @@ export function product<F extends Foldable<F, number>>(fa: F): number {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.mean([1, 2, 3, 4]) // => Just (2.5)
  * P.mean([]) // => Nothing
  * P.mean(P.just(42)) // => Just (42)

@@ -2,8 +2,8 @@
  * Choose how to combine values with `foldMap` or `mconcat`.
  */
 
-import type { Nullary } from '../core/shape.ts'
 import type { MonoidDict } from '../classes/monoid.ts'
+import type { Nullary } from '../core/shape.ts'
 import type { Maybe } from './maybe.ts'
 import { lte } from '../classes/ord.ts'
 import { nothing } from './maybe.ts'
@@ -13,7 +13,7 @@ import { nothing } from './maybe.ts'
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.mconcat(P.Sum)([1, 2, 3]) // => 6
  * P.mconcat(P.Sum)([]) // => 0
  * ```
@@ -28,7 +28,7 @@ export const Sum: MonoidDict<Nullary<number>> = {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.mconcat(P.Product)([2, 3, 4]) // => 24
  * P.mconcat(P.Product)([]) // => 1
  * ```
@@ -43,7 +43,7 @@ export const Product: MonoidDict<Nullary<number>> = {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.mconcat(P.Min)([3, 1, 2]) // => 1
  * P.mconcat(P.Min)([]) // => Infinity
  * ```
@@ -58,7 +58,7 @@ export const Min: MonoidDict<Nullary<number>> = {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.mconcat(P.Max)([3, 1, 2]) // => 3
  * P.mconcat(P.Max)([]) // => -Infinity
  * ```
@@ -73,7 +73,7 @@ export const Max: MonoidDict<Nullary<number>> = {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.mconcat(P.Concat)(['a', 'b']) // => 'ab'
  * P.foldMap(P.Concat)((n: number) => `${n}`)([1, 2, 3]) // => '123'
  * ```
@@ -88,7 +88,7 @@ export const Concat: MonoidDict<Nullary<string>> = {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.mconcat(P.All)([true, false]) // => false
  * P.mconcat(P.All)([]) // => true
  * ```
@@ -103,7 +103,7 @@ export const All: MonoidDict<Nullary<boolean>> = {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.mconcat(P.Any)([false, true]) // => true
  * P.foldMap(P.Any)((n: number) => n > 2)([1, 2, 3]) // => true
  * ```
@@ -118,7 +118,7 @@ export const Any: MonoidDict<Nullary<boolean>> = {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.mconcat(P.First<number>())([P.nothing(), P.just(1), P.just(2)]) // => Just (1)
  * ```
  */
@@ -132,7 +132,7 @@ export const First = <A>(): MonoidDict<Nullary<Maybe<A>>> => ({
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.mconcat(P.Last<number>())([P.nothing(), P.just(1), P.just(2)]) // => Just (2)
  * ```
  */
@@ -146,7 +146,7 @@ export const Last = <A>(): MonoidDict<Nullary<Maybe<A>>> => ({
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.mconcat(P.RightUnion<number>())([{ a: 1 }, { a: 2, b: 3 }])
  * // => { a: 2, b: 3 }
  * ```
@@ -161,7 +161,7 @@ export const RightUnion = <A>(): MonoidDict<Nullary<Record<string, A>>> => ({
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.mconcat(P.Endo<number>())([(n) => n + 1, (n) => n * 2])(5) // => 11
  * ```
  */

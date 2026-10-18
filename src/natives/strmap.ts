@@ -2,8 +2,6 @@
  * Read and copy records with string keys.
  */
 
-import type { NativeTypeRep } from '../core/named.ts'
-import type { Matchable, Shape } from '../core/shape.ts'
 import type { AltDict } from '../classes/alt.ts'
 import type { CheckableDict } from '../classes/checkable.ts'
 import type { FilterableDict } from '../classes/filterable.ts'
@@ -14,11 +12,13 @@ import type { PlusDict } from '../classes/plus.ts'
 import type { SemigroupDict } from '../classes/semigroup.ts'
 import type { SetoidDict } from '../classes/setoid.ts'
 import type { ShowDict } from '../classes/show.ts'
+import type { NativeTypeRep } from '../core/named.ts'
+import type { Matchable, Shape } from '../core/shape.ts'
 import type { Maybe } from '../data/maybe.ts'
 import type { Pair } from '../data/pair.ts'
-import { hasName } from '../core/named.ts'
 import { equals } from '../classes/setoid.ts'
 import { show } from '../classes/show.ts'
+import { hasName } from '../core/named.ts'
 import { just, nothing } from '../data/maybe.ts'
 import { pair } from '../data/pair.ts'
 
@@ -73,7 +73,7 @@ export type StrMapDict =
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.empty(P.StrMap) // => {}
  * P.StrMap.is({ name: 'Ada' }) // => true
  * ```
@@ -138,7 +138,7 @@ export const StrMap: StrMapDict = {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.lookup('a')({ a: 1 }) // => Just (1)
  * P.lookup('z')({ a: 1 }) // => Nothing
  * ```
@@ -152,7 +152,7 @@ export function lookup(k: string): <A>(m: StrMap<A>) => Maybe<A> {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.has('a')({ a: 1 }) // => true
  * ```
  */
@@ -165,7 +165,7 @@ export function has(k: string): <A>(m: StrMap<A>) => boolean {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.getPath(['a', 'b'])({ a: { b: 1 } }) // => Just (1)
  * P.getPath(['a', 'z'])({ a: { b: 1 } }) // => Nothing
  * ```
@@ -191,7 +191,7 @@ export function getPath(
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.hasPath(['a', 'b'])({ a: { b: 1 } }) // => true
  * ```
  */
@@ -206,7 +206,7 @@ export function hasPath(
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.keys({ b: 2, a: 1 }) // => ['b', 'a']
  * ```
  */
@@ -219,7 +219,7 @@ export function keys(m: StrMap<unknown>): string[] {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.values({ b: 2, a: 1 }) // => [2, 1]
  * ```
  */
@@ -232,7 +232,7 @@ export function values<A>(m: StrMap<A>): A[] {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.pairs({ b: 2, a: 1 }) // => [Pair ('b') (2), Pair ('a') (1)]
  * ```
  */
@@ -245,7 +245,7 @@ export function pairs<A>(m: StrMap<A>): Pair<string, A>[] {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.sortedKeys({ b: 2, a: 1 }) // => ['a', 'b']
  * ```
  */
@@ -258,7 +258,7 @@ export function sortedKeys(m: StrMap<unknown>): string[] {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.sortedValues({ b: 2, a: 1 }) // => [1, 2]
  * ```
  */
@@ -271,7 +271,7 @@ export function sortedValues<A>(m: StrMap<A>): A[] {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.sortedPairs({ b: 2, a: 1 }) // => [Pair ('a') (1), Pair ('b') (2)]
  * ```
  */
@@ -284,7 +284,7 @@ export function sortedPairs<A>(m: StrMap<A>): Pair<string, A>[] {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.singleton('a', 1) // => { a: 1 }
  * ```
  */
@@ -297,7 +297,7 @@ export function singleton<A>(k: string, a: A): StrMap<A> {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.fromPairs([P.pair('a', 1), P.pair('b', 2)]) // => { a: 1, b: 2 }
  * ```
  */
@@ -312,7 +312,7 @@ export function fromPairs<A>(ps: Iterable<Pair<string, A>>): StrMap<A> {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.insert('b')(2)({ a: 1 }) // => { a: 1, b: 2 }
  * P.insert('a')(9)({ a: 1 }) // => { a: 9 }
  * ```

@@ -1,5 +1,5 @@
+import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { assertEquals, assertThrows } from '../assert.ts'
 import {
   filter,
   filterableNatives,
@@ -9,14 +9,14 @@ import {
   reject,
 } from '../../src/classes/filterable.ts'
 import { toArray } from '../../src/classes/foldable.ts'
-import { just, nothing } from '../../src/data/maybe.ts'
 import { left, right } from '../../src/data/either.ts'
 import { identity } from '../../src/data/identity.ts'
+import { just, nothing } from '../../src/data/maybe.ts'
 import { pair } from '../../src/data/pair.ts'
 
 test ('filter: keeps values that pass the predicate, preserving the collection type', () => {
   for (const [name, wrappedValue, , kept] of samplesByType) {
-    assertEquals (filterBy (isEven) (wrappedValue), kept, name)
+    assert.deepStrictEqual (filterBy (isEven) (wrappedValue), kept, name)
   }
 })
 
@@ -33,23 +33,23 @@ test ('filterMap: transforms values with a function returning Maybe', () => {
     return n > 1 ? just (n) : nothing<number> ()
   }
 
-  assertEquals (
+  assert.deepStrictEqual (
     filterMap (doubleAboveOne) ([1, 2, 3]),
     [4, 6],
   )
-  assertEquals (
+  assert.deepStrictEqual (
     filterMap (stringifyAboveOne) (new Map ([['a', 1], ['b', 2]])),
     new Map ([['b', '2']]),
   )
-  assertEquals (
+  assert.deepStrictEqual (
     filterMap (keepAboveOne) ({ a: 1, b: 2 }),
     { b: 2 },
   )
-  assertEquals (
+  assert.deepStrictEqual (
     filterMap (keepAboveOne) (just (1)),
     nothing (),
   )
-  assertEquals (
+  assert.deepStrictEqual (
     filterMap (keepAboveOne) (just (2)),
     just (2),
   )
@@ -57,7 +57,7 @@ test ('filterMap: transforms values with a function returning Maybe', () => {
 
 test ('partition: splits values into two collections: matches first, non-matches second', () => {
   for (const [name, wrappedValue, , kept, dropped] of samplesByType) {
-    assertEquals (
+    assert.deepStrictEqual (
       partition (isEven) (wrappedValue as never) as unknown,
       [kept, dropped],
       name,
@@ -74,15 +74,15 @@ test ('partitionMap: transforms and splits values into unwrapped Left and Right 
     return isEven (n) ? right<string, number> (n) : left<string, number> (`n${n}`)
   }
 
-  assertEquals (
+  assert.deepStrictEqual (
     partitionMap (classifyAboveOne) ([1, 2]) as unknown,
     [['lo'], [2]],
   )
-  assertEquals (
+  assert.deepStrictEqual (
     partitionMap (classifyEvenOrLabelOdd) ({ a: 1, b: 2 }) as unknown,
     [{ a: 'n1' }, { b: 2 }],
   )
-  assertEquals (
+  assert.deepStrictEqual (
     partitionMap (classifyEvenOrLabelOdd) (just (1)) as unknown,
     [just ('n1'), nothing ()],
   )
@@ -90,13 +90,13 @@ test ('partitionMap: transforms and splits values into unwrapped Left and Right 
 
 test ('filter: identity law across supported types', () => {
   for (const [name, wrappedValue] of samplesByType) {
-    assertEquals (filterBy (() => true) (wrappedValue), wrappedValue, name)
+    assert.deepStrictEqual (filterBy (() => true) (wrappedValue), wrappedValue, name)
   }
 })
 
 test ('filter: the annihilation law across supported types', () => {
   for (const [name, wrappedValue, empty] of samplesByType) {
-    assertEquals (filterBy (() => false) (wrappedValue), empty, name)
+    assert.deepStrictEqual (filterBy (() => false) (wrappedValue), empty, name)
   }
 })
 
@@ -106,7 +106,7 @@ test ('filter: distributivity law across supported types', () => {
   }
 
   for (const [name, wrappedValue] of samplesByType) {
-    assertEquals (
+    assert.deepStrictEqual (
       filterBy (isEvenAndOverTwo) (wrappedValue),
       filterBy (overTwo) (filterBy (isEven) (wrappedValue)),
       name,
@@ -120,17 +120,17 @@ test ('filterMap: agrees with filter across supported types', () => {
   }
 
   for (const [name, wrappedValue, empty, kept] of samplesByType) {
-    assertEquals (
+    assert.deepStrictEqual (
       filterMap (keepEven) (wrappedValue as never) as unknown,
       kept,
       name,
     )
-    assertEquals (
+    assert.deepStrictEqual (
       filterMap ((n: number) => just (n)) (wrappedValue as never) as unknown,
       wrappedValue,
       `${name}: filterMap(just) — identity`,
     )
-    assertEquals (
+    assert.deepStrictEqual (
       filterMap ((_: number) => nothing<number> ()) (
         wrappedValue as never,
       ) as unknown,
@@ -148,7 +148,7 @@ test ('partition: the generic implementation walks the value twice', () => {
   }
   partition (p) ([1, 2, 3, 4])
 
-  assertEquals (calls, 8)
+  assert.deepStrictEqual (calls, 8)
 })
 
 test ('partitionMap: agrees with partition across supported types', () => {
@@ -157,7 +157,7 @@ test ('partitionMap: agrees with partition across supported types', () => {
   }
 
   for (const [name, wrappedValue] of samplesByType) {
-    assertEquals (
+    assert.deepStrictEqual (
       partitionMap (classifyEvenOnLeft) (wrappedValue as never) as unknown,
       partition (isEven) (wrappedValue as never) as unknown,
       name,
@@ -167,13 +167,13 @@ test ('partitionMap: agrees with partition across supported types', () => {
 
 test ('reject: removes values that pass the predicate, preserving the collection type', () => {
   for (const [name, wrappedValue, , , dropped] of samplesByType) {
-    assertEquals (rejectBy (isEven) (wrappedValue), dropped, name)
+    assert.deepStrictEqual (rejectBy (isEven) (wrappedValue), dropped, name)
   }
 })
 
 test ('partition: this is exactly the pair of filter and reject', () => {
   for (const [name, wrappedValue] of samplesByType) {
-    assertEquals (
+    assert.deepStrictEqual (
       partition (isEven) (wrappedValue as never) as unknown,
       [filterBy (isEven) (wrappedValue), rejectBy (isEven) (wrappedValue)],
       name,
@@ -194,7 +194,7 @@ test ('filter: passes only the value to its callback', async (test) => {
       filter (recordArguments) (wrappedValue as never)
       const expected = elements.map ((value) => [value])
 
-      assertEquals (calls, expected)
+      assert.deepStrictEqual (calls, expected)
     })
   }
 })
@@ -212,7 +212,7 @@ test ('reject: passes only the value to its callback', async (test) => {
       reject (recordArguments) (wrappedValue as never)
       const expected = elements.map ((value) => [value])
 
-      assertEquals (calls, expected)
+      assert.deepStrictEqual (calls, expected)
     })
   }
 })
@@ -230,7 +230,7 @@ test ('filterMap: passes only the value to its callback', async (test) => {
       filterMap (recordArguments) (wrappedValue as never)
       const expected = elements.map ((value) => [value])
 
-      assertEquals (calls, expected)
+      assert.deepStrictEqual (calls, expected)
     })
   }
 })
@@ -251,7 +251,7 @@ test ('partition: passes only the value to its callback', async (test) => {
         ...elements.map ((value) => [value]),
       ]
 
-      assertEquals (calls, expected)
+      assert.deepStrictEqual (calls, expected)
     })
   }
 })
@@ -269,7 +269,7 @@ test ('partitionMap: passes only the value to its callback', async (test) => {
       partitionMap (recordArguments) (wrappedValue as never)
       const expected = [...elements, ...elements].map ((value) => [value])
 
-      assertEquals (calls, expected)
+      assert.deepStrictEqual (calls, expected)
     })
   }
 })
@@ -282,37 +282,32 @@ test ('a type without Filterable throws a descriptive TypeError', () => {
     ['String', 'abc'],
   ]
   for (const [name, wrappedValue] of foreign) {
-    assertThrows (
+    assert.throws (
       () => filter (isEven) (wrappedValue as never),
-      TypeError,
-      'has no Filterable',
+      (error: unknown) => error instanceof TypeError && error.message.includes ('has no Filterable'),
       name,
     )
-    assertThrows (
+    assert.throws (
       () => reject (isEven) (wrappedValue as never),
-      TypeError,
-      'has no Filterable',
+      (error: unknown) => error instanceof TypeError && error.message.includes ('has no Filterable'),
       name,
     )
-    assertThrows (
+    assert.throws (
       () => partition (isEven) (wrappedValue as never),
-      TypeError,
-      'has no Filterable',
+      (error: unknown) => error instanceof TypeError && error.message.includes ('has no Filterable'),
       name,
     )
-    assertThrows (
+    assert.throws (
       () => filterMap ((n: number) => just (n)) (wrappedValue as never),
-      TypeError,
-      'has no Filterable',
+      (error: unknown) => error instanceof TypeError && error.message.includes ('has no Filterable'),
       name,
     )
-    assertThrows (
+    assert.throws (
       () =>
         partitionMap ((n: number) => right<number, number> (n)) (
           wrappedValue as never,
         ),
-      TypeError,
-      'has no Filterable',
+      (error: unknown) => error instanceof TypeError && error.message.includes ('has no Filterable'),
       name,
     )
   }
@@ -320,7 +315,7 @@ test ('a type without Filterable throws a descriptive TypeError', () => {
 
 test ('reject: complements filter across supported types', () => {
   for (const [name, wrappedValue] of samplesByType) {
-    assertEquals (
+    assert.deepStrictEqual (
       rejectBy (isEven) (wrappedValue),
       filterBy ((n: number) => !isEven (n)) (wrappedValue),
       name,
@@ -329,9 +324,9 @@ test ('reject: complements filter across supported types', () => {
   const foldables = samplesByType.filter (([n]) => n !== 'Set' && n !== 'Map')
   const countables = samplesByType.filter (([n]) => n === 'Set' || n === 'Map')
 
-  assertEquals (foldables.length + countables.length, samplesByType.length)
+  assert.deepStrictEqual (foldables.length + countables.length, samplesByType.length)
   for (const [name, wrappedValue] of foldables) {
-    assertEquals (
+    assert.deepStrictEqual (
       [
         ...toArray (filterBy (isEven) (wrappedValue) as never),
         ...toArray (rejectBy (isEven) (wrappedValue) as never),
@@ -342,7 +337,7 @@ test ('reject: complements filter across supported types', () => {
   }
   const sizeOf = (x: unknown) => (x as { readonly size: number }).size
   for (const [name, wrappedValue] of countables) {
-    assertEquals (
+    assert.deepStrictEqual (
       sizeOf (filterBy (isEven) (wrappedValue)) +
         sizeOf (rejectBy (isEven) (wrappedValue)),
       sizeOf (wrappedValue),
@@ -356,24 +351,23 @@ test ('reject: complements filter across supported types', () => {
   void _setCase, _mapCase
 
   for (const [name, wrappedValue] of countables) {
-    assertThrows (
+    assert.throws (
       () => toArray (wrappedValue as never),
-      TypeError,
-      `reduce: ${name} has no Foldable`,
+      (error: unknown) => error instanceof TypeError && error.message.includes (`reduce: ${name} has no Foldable`),
       name,
     )
   }
 })
 
 test ('filterableNatives: lists native filter implementations', () => {
-  assertEquals (Object.keys (filterableNatives).sort (), [
+  assert.deepStrictEqual (Object.keys (filterableNatives).sort (), [
     'Array',
     'Map',
     'Set',
     'StrMap',
   ])
   for (const [name, dict] of Object.entries (filterableNatives)) {
-    assertEquals (typeof dict.filter, 'function', name)
+    assert.deepStrictEqual (typeof dict.filter, 'function', name)
   }
 })
 

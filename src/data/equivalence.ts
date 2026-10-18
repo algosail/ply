@@ -2,14 +2,14 @@
  * Build equality rules and adapt them to compare objects by their properties.
  */
 
-import type { Shape, Shaped } from '../core/shape.ts'
-import type { Satisfies } from '../core/kind.ts'
 import type { CheckableTypeRep } from '../classes/checkable.ts'
 import type { DecidableMethods } from '../classes/decidable.ts'
 import type { DecidableTypeRep } from '../classes/decidable.ts'
 import type { DivisibleTypeRep } from '../classes/divisible.ts'
 import type { MonoidTypeRep } from '../classes/monoid.ts'
 import type { SemigroupMethods } from '../classes/semigroup.ts'
+import type { Satisfies } from '../core/kind.ts'
+import type { Shape, Shaped } from '../core/shape.ts'
 import type { Either } from './either.ts'
 import { equals } from '../classes/setoid.ts'
 import { either } from './either.ts'

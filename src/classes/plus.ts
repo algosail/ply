@@ -2,7 +2,6 @@
  * Operations and types for combining alternatives with an empty starting value.
  */
 
-import type { Kind, Shape } from '../core/shape.ts'
 import type {
   Assert,
   MatchableIn,
@@ -13,6 +12,7 @@ import type {
   Superclass,
 } from '../core/kind.ts'
 import type { Instances } from '../core/named.ts'
+import type { Kind, Shape } from '../core/shape.ts'
 import type { ArrayShape } from '../natives/array.ts'
 import type { StrMapShape } from '../natives/strmap.ts'
 import type { AltDict, AltKeys, AltShapes } from './alt.ts'
@@ -98,7 +98,7 @@ export const plusNatives: Instances<
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.zero(P.Arr) // => []
  * P.zero(P.StrMap) // => {}
  * P.zero(P.Maybe) // => Nothing
@@ -120,7 +120,7 @@ export function zero(T: unknown): unknown {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.altAll(P.Arr)([[1, 2], [3]]) // => [1, 2, 3]
  * P.altAll(P.Arr)([]) // => []
  * P.altAll(P.Maybe)([P.nothing(), P.just(2), P.just(3)]) // => Just (2)

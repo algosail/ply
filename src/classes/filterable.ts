@@ -2,19 +2,19 @@
  * Operations and types for keeping or discarding contained values.
  */
 
-import type { Kind, Shape } from '../core/shape.ts'
 import type { KindOf, MatchableIn, SlotAOf, SlotBOf } from '../core/kind.ts'
 import type { Instances } from '../core/named.ts'
+import type { Kind, Shape } from '../core/shape.ts'
+import type { Either } from '../data/either.ts'
+import type { Maybe } from '../data/maybe.ts'
 import type { ArrayShape } from '../natives/array.ts'
 import type { MapShape } from '../natives/map.ts'
 import type { SetShape } from '../natives/set.ts'
 import type { StrMapShape } from '../natives/strmap.ts'
-import type { Either } from '../data/either.ts'
-import type { Maybe } from '../data/maybe.ts'
 import { dispatch, lazily, nameOf, opIn } from '../core/instance.ts'
 import { Arr } from '../natives/array.ts'
-import { Sets } from '../natives/set.ts'
 import { Maps } from '../natives/map.ts'
+import { Sets } from '../natives/set.ts'
 import { StrMap } from '../natives/strmap.ts'
 import { map } from './functor.ts'
 
@@ -92,7 +92,7 @@ export const filterableNatives: Instances<
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.filter((n: number) => n % 2 === 0)([1, 2, 3, 4]) // => [2, 4]
  * P.filter((n: number) => n > 1)({ a: 1, b: 2 }) // => { b: 2 }
  * P.filter((n: number) => n > 1)(P.just(1)) // => Nothing
@@ -119,7 +119,7 @@ const requireFilterable = (op: string, fa: unknown): void => {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.reject((n: number) => n % 2 === 0)([1, 2, 3, 4]) // => [1, 3]
  * P.reject((n: number) => n > 1)(P.just(2)) // => Nothing
  * ```
@@ -152,10 +152,10 @@ const mapKeepBranch = (
  * ```ts
  * import type { Maybe } from '@algosail/ply'
  * import * as P from '@algosail/ply'
- * 
+ *
  * const tenfold = (n: number): Maybe<number> =>
  *   n % 2 === 0 ? P.just(n * 10) : P.nothing()
- * 
+ *
  * P.filterMap(tenfold)([1, 2, 3, 4]) // => [20, 40]
  * P.filterMap(tenfold)({ a: 1, b: 2 }) // => { b: 20 }
  * ```
@@ -172,7 +172,7 @@ export function filterMap<A, B>(
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.partition((n: number) => n % 2 === 0)([1, 2, 3, 4])
  * // => [[2, 4], [1, 3]]
  * P.partition((n: number) => n > 1)({ a: 1, b: 2 })
@@ -197,10 +197,10 @@ export function partition<A>(
  * ```ts
  * import type { Either } from '@algosail/ply'
  * import * as P from '@algosail/ply'
- * 
+ *
  * const big = (n: number): Either<string, number> =>
  *   n > 2 ? P.right(n) : P.left(String(n))
- * 
+ *
  * P.partitionMap(big)([1, 2, 3, 4]) // => [['1', '2'], [3, 4]]
  * ```
  */

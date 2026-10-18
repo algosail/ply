@@ -1,6 +1,7 @@
+import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { assertEquals } from '../assert.ts'
-import { hasName } from '../../src/core/named.ts'
+import type { SetoidDict, SetoidShapes } from '../../src/classes/setoid.ts'
+import type { MemberOf } from '../../src/core/kind.ts'
 import type {
   DictAt,
   DictsOf,
@@ -9,49 +10,48 @@ import type {
   NativeTypeRep,
 } from '../../src/core/named.ts'
 import type { Shape, Shaped } from '../../src/core/shape.ts'
-import type { MemberOf } from '../../src/core/kind.ts'
-import type { SetoidDict, SetoidShapes } from '../../src/classes/setoid.ts'
 import type { ArrayShape } from '../../src/natives/array.ts'
 import type { StrShape } from '../../src/natives/string.ts'
+import { nameOf } from '../../src/core/instance.ts'
+import { hasName } from '../../src/core/named.ts'
+import { just } from '../../src/data/maybe.ts'
 import { Arr } from '../../src/natives/array.ts'
 import { Sets } from '../../src/natives/set.ts'
 import { StrMap } from '../../src/natives/strmap.ts'
-import { nameOf } from '../../src/core/instance.ts'
-import { just } from '../../src/data/maybe.ts'
 
 test ('hasName: recognizes values with a string @@type', () => {
-  assertEquals (hasName ({ '@@type': 'Mine' }), true)
-  assertEquals (hasName (just (1)), true)
-  assertEquals (hasName (Object.assign (() => {}, { '@@type': 'F' })), true)
-  assertEquals (hasName ({}), false)
-  assertEquals (hasName ([]), false)
-  assertEquals (hasName (null), false)
-  assertEquals (hasName (undefined), false)
-  assertEquals (hasName ('text'), false)
-  assertEquals (hasName (42), false)
+  assert.deepStrictEqual (hasName ({ '@@type': 'Mine' }), true)
+  assert.deepStrictEqual (hasName (just (1)), true)
+  assert.deepStrictEqual (hasName (Object.assign (() => {}, { '@@type': 'F' })), true)
+  assert.deepStrictEqual (hasName ({}), false)
+  assert.deepStrictEqual (hasName ([]), false)
+  assert.deepStrictEqual (hasName (null), false)
+  assert.deepStrictEqual (hasName (undefined), false)
+  assert.deepStrictEqual (hasName ('text'), false)
+  assert.deepStrictEqual (hasName (42), false)
 })
 
 test ('hasName: the name is looked up along the prototype too', () => {
-  assertEquals (hasName (Object.create ({ '@@type': 'Parent' })), true)
+  assert.deepStrictEqual (hasName (Object.create ({ '@@type': 'Parent' })), true)
 })
 
 test ('hasName: a constructor name counts when the value has none', () => {
-  assertEquals (hasName ({ constructor: { '@@type': 'Own' } }), true)
-  assertEquals (hasName (just (1)), true)
+  assert.deepStrictEqual (hasName ({ constructor: { '@@type': 'Own' } }), true)
+  assert.deepStrictEqual (hasName (just (1)), true)
 })
 
 test ('hasName: both the presence of the key and its type are checked', () => {
-  assertEquals (hasName ({ '@@type': 'Own' }), true)
-  assertEquals (hasName ({ '@@type': 42 }), false)
-  assertEquals (hasName ({ '@@type': undefined }), false)
-  assertEquals (hasName ({}), false)
-  assertEquals (hasName (null), false)
-  assertEquals (nameOf ({ '@@type': 42 } as unknown), 'StrMap')
-  assertEquals (
+  assert.deepStrictEqual (hasName ({ '@@type': 'Own' }), true)
+  assert.deepStrictEqual (hasName ({ '@@type': 42 }), false)
+  assert.deepStrictEqual (hasName ({ '@@type': undefined }), false)
+  assert.deepStrictEqual (hasName ({}), false)
+  assert.deepStrictEqual (hasName (null), false)
+  assert.deepStrictEqual (nameOf ({ '@@type': 42 } as unknown), 'StrMap')
+  assert.deepStrictEqual (
     hasName ({ '@@type': 42, constructor: { '@@type': 'Own' } }),
     false,
   )
-  assertEquals (
+  assert.deepStrictEqual (
     nameOf ({ '@@type': 42, constructor: { '@@type': 'Own' } } as unknown),
     'StrMap',
   )

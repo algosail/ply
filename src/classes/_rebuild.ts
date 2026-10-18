@@ -2,7 +2,6 @@
  * Operations and types for slicing, sorting, and rebuilding collections.
  */
 
-import type { Shape } from '../core/shape.ts'
 import type {
   Assert,
   KindOf,
@@ -11,12 +10,15 @@ import type {
   SlotBOf,
   SubclassOf,
 } from '../core/kind.ts'
+import type { Constructed } from '../core/named.ts'
+import type { Shape } from '../core/shape.ts'
+import type { Maybe } from '../data/maybe.ts'
 import type { ArrayShape } from '../natives/array.ts'
-import type { ApplyMethods } from './apply.ts'
 import type {
   ApplicativeSemigroupDict,
   ApplicativeSemigroupShapes,
 } from './_append.ts'
+import type { ApplyMethods } from './apply.ts'
 import type {
   Foldable,
   FoldableDict,
@@ -25,13 +27,11 @@ import type {
 } from './foldable.ts'
 import type { MonoidDict, MonoidShapes } from './monoid.ts'
 import type { SemigroupMethods } from './semigroup.ts'
-import type { Constructed } from '../core/named.ts'
 import { integer } from '../core/domain.ts'
 import { emptyIn, ofIn } from '../core/instance.ts'
-import type { Maybe } from '../data/maybe.ts'
 import { just, nothing } from '../data/maybe.ts'
-import { toArray } from './foldable.ts'
 import { applicativeNatives } from './applicative.ts'
+import { toArray } from './foldable.ts'
 import { monoidNatives } from './monoid.ts'
 import { lte } from './ord.ts'
 import { concat } from './semigroup.ts'
@@ -116,7 +116,7 @@ const comparing =
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.reverse([1, 2, 3]) // => [3, 2, 1]
  * ```
  */
@@ -137,7 +137,7 @@ export function reverse(fa: unknown): unknown {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.sort([3, 1, 2]) // => [1, 2, 3]
  * P.sort(['pear', 'fig', 'apple']) // => ['apple', 'fig', 'pear']
  * ```
@@ -160,7 +160,7 @@ export function sort(fa: unknown): unknown {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.sortBy((s: string) => s.length)(['pear', 'fig', 'apple'])
  * // => ['fig', 'pear', 'apple']
  * ```
@@ -198,7 +198,7 @@ const sliced = (
  * ```ts
  * import { assertThrows } from '@std/assert'
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.take(2)([1, 2, 3]) // => Just ([1, 2])
  * P.take(5)([1, 2, 3]) // => Nothing
  * assertThrows(() => P.take(1.5), TypeError, 'take: 1.5 is not an integer')
@@ -216,7 +216,7 @@ export function take(n: number): Slice {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.drop(1)([1, 2, 3]) // => Just ([2, 3])
  * P.drop(5)([1, 2, 3]) // => Nothing
  * ```
@@ -233,7 +233,7 @@ export function drop(n: number): Slice {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.takeLast(2)([1, 2, 3]) // => Just ([2, 3])
  * P.takeLast(5)([1, 2, 3]) // => Nothing
  * ```
@@ -250,7 +250,7 @@ export function takeLast(n: number): Slice {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.dropLast(1)([1, 2, 3]) // => Just ([1, 2])
  * P.dropLast(5)([1, 2, 3]) // => Nothing
  * ```
@@ -266,7 +266,7 @@ export function dropLast(n: number): Slice {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.tail([1, 2, 3]) // => Just ([2, 3])
  * P.tail([]) // => Nothing
  * ```
@@ -287,7 +287,7 @@ export function tail(fa: unknown): unknown {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.init([1, 2, 3]) // => Just ([1, 2])
  * P.init([]) // => Nothing
  * ```

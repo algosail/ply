@@ -1,108 +1,108 @@
+import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { assertEquals, assertThrows } from '../assert.ts'
-import { equals } from '../../src/classes/setoid.ts'
-import { show } from '../../src/classes/show.ts'
-import { setDifference, setFromIterable, setMember, Sets } from '../../src/natives/set.ts'
-import { just } from '../../src/data/maybe.ts'
-import { Maybe } from '../../src/data/maybe.ts'
-import { concat } from '../../src/classes/semigroup.ts'
-import { empty } from '../../src/classes/monoid.ts'
 import { alt } from '../../src/classes/alt.ts'
-import { zero } from '../../src/classes/plus.ts'
 import { of } from '../../src/classes/applicative.ts'
 import { ap } from '../../src/classes/apply.ts'
 import { chain } from '../../src/classes/chain.ts'
 import { filter, reject } from '../../src/classes/filterable.ts'
 import { foldMap, reduce, size, toArray } from '../../src/classes/foldable.ts'
 import { map } from '../../src/classes/functor.ts'
+import { empty } from '../../src/classes/monoid.ts'
 import { lte } from '../../src/classes/ord.ts'
+import { zero } from '../../src/classes/plus.ts'
+import { concat } from '../../src/classes/semigroup.ts'
+import { equals } from '../../src/classes/setoid.ts'
+import { show } from '../../src/classes/show.ts'
 import { traverse } from '../../src/classes/traversable.ts'
+import { just } from '../../src/data/maybe.ts'
+import { Maybe } from '../../src/data/maybe.ts'
 import { Concat } from '../../src/data/monoid.ts'
+import { setDifference, setFromIterable, setMember, Sets } from '../../src/natives/set.ts'
 
 test ("setFromIterable: creates a Set from an iterable, using JavaScript's usual set equality", () => {
-  assertEquals (items (setFromIterable ([1, 2, 2])), [1, 2])
-  assertEquals (items (setFromIterable ('ab')), ['a', 'b'])
-  assertEquals (items (setFromIterable ([])), [])
-  assertEquals (items (setFromIterable (new Map ([['a', 1]]))), [['a', 1]])
-  assertEquals (items (setFromIterable ([3, 1, 3, 2])), [3, 1, 2])
+  assert.deepStrictEqual (items (setFromIterable ([1, 2, 2])), [1, 2])
+  assert.deepStrictEqual (items (setFromIterable ('ab')), ['a', 'b'])
+  assert.deepStrictEqual (items (setFromIterable ([])), [])
+  assert.deepStrictEqual (items (setFromIterable (new Map ([['a', 1]]))), [['a', 1]])
+  assert.deepStrictEqual (items (setFromIterable ([3, 1, 3, 2])), [3, 1, 2])
 })
 
 test ('setFromIterable: dedupes by JS identity, not structurally', () => {
-  assertEquals (items (setFromIterable ([[1], [1]])).length, 2)
-  assertEquals (items (setFromIterable ([NaN, NaN])), [NaN])
+  assert.deepStrictEqual (items (setFromIterable ([[1], [1]])).length, 2)
+  assert.deepStrictEqual (items (setFromIterable ([NaN, NaN])), [NaN])
 })
 
 test ('setDifference: returns values from the first set that have no equal value in the second', () => {
-  assertEquals (items (setDifference (new Set ([1, 2]), new Set ([1]))), [2])
-  assertEquals (items (setDifference (new Set ([1, 2]), new Set ([3]))), [1, 2])
-  assertEquals (items (setDifference (new Set ([1]), new Set ([1]))), [])
-  assertEquals (items (setDifference (new Set<number> (), new Set ([1]))), [])
+  assert.deepStrictEqual (items (setDifference (new Set ([1, 2]), new Set ([1]))), [2])
+  assert.deepStrictEqual (items (setDifference (new Set ([1, 2]), new Set ([3]))), [1, 2])
+  assert.deepStrictEqual (items (setDifference (new Set ([1]), new Set ([1]))), [])
+  assert.deepStrictEqual (items (setDifference (new Set<number> (), new Set ([1]))), [])
 })
 
 test ('setDifference: membership is structural', () => {
-  assertEquals (
+  assert.deepStrictEqual (
     items (setDifference (new Set ([[1], [2]]), new Set ([[1]]))),
     [[2]],
   )
-  assertEquals (
+  assert.deepStrictEqual (
     items (setDifference (new Set ([just (1), just (2)]), new Set ([just (1)]))),
     [just (2)],
   )
 })
 
 test ("setMember: checks whether a set contains an equal value using ply's equals", () => {
-  assertEquals (setMember (1) (new Set ([1, 2])), true)
-  assertEquals (setMember (3) (new Set ([1, 2])), false)
-  assertEquals (setMember (1) (new Set<number> ()), false)
+  assert.deepStrictEqual (setMember (1) (new Set ([1, 2])), true)
+  assert.deepStrictEqual (setMember (3) (new Set ([1, 2])), false)
+  assert.deepStrictEqual (setMember (1) (new Set<number> ()), false)
 })
 
 test ('setMember: membership is structural', () => {
-  assertEquals (setMember ([1]) (new Set ([[1]])), true)
-  assertEquals (setMember ([2]) (new Set ([[1]])), false)
-  assertEquals (setMember (just (1)) (new Set ([just (1)])), true)
+  assert.deepStrictEqual (setMember ([1]) (new Set ([[1]])), true)
+  assert.deepStrictEqual (setMember ([2]) (new Set ([[1]])), false)
+  assert.deepStrictEqual (setMember (just (1)) (new Set ([just (1)])), true)
 })
 
 test ('Sets: recognizes values and provides the declared operations', () => {
-  assertEquals (Sets['@@type'], 'Set')
-  assertEquals (Sets.is (new Set ()), true)
-  assertEquals (Sets.is (new Set ([1])), true)
-  assertEquals (Sets.is (new WeakSet ()), false)
-  assertEquals (Sets.is (new Map ()), false)
-  assertEquals (Sets.is ([1]), false)
-  assertEquals (Sets.is (null), false)
+  assert.deepStrictEqual (Sets['@@type'], 'Set')
+  assert.deepStrictEqual (Sets.is (new Set ()), true)
+  assert.deepStrictEqual (Sets.is (new Set ([1])), true)
+  assert.deepStrictEqual (Sets.is (new WeakSet ()), false)
+  assert.deepStrictEqual (Sets.is (new Map ()), false)
+  assert.deepStrictEqual (Sets.is ([1]), false)
+  assert.deepStrictEqual (Sets.is (null), false)
 })
 
 test ('Sets.of: wraps a single value', () => {
-  assertEquals (items (Sets.of (1)), [1])
-  assertEquals (items (of (Sets) (7) as Set<number>), [7])
-  assertEquals (items (Sets.of (new Set ([1]))), [new Set ([1])])
+  assert.deepStrictEqual (items (Sets.of (1)), [1])
+  assert.deepStrictEqual (items (of (Sets) (7) as Set<number>), [7])
+  assert.deepStrictEqual (items (Sets.of (new Set ([1]))), [new Set ([1])])
 })
 
 test ('Sets.show: formats values as readable strings', () => {
-  assertEquals (Sets.show (new Set ()), 'Set ([])')
-  assertEquals (Sets.show (new Set ([2, 1])), 'Set ([2, 1])')
-  assertEquals (Sets.show (new Set ([just (1)])), 'Set ([Just (1)])')
+  assert.deepStrictEqual (Sets.show (new Set ()), 'Set ([])')
+  assert.deepStrictEqual (Sets.show (new Set ([2, 1])), 'Set ([2, 1])')
+  assert.deepStrictEqual (Sets.show (new Set ([just (1)])), 'Set ([Just (1)])')
 })
 
 test ('Sets.map: transforms values', () => {
-  assertEquals (items (Sets.map (new Set ([1, 2, 3]), increment)), [2, 3, 4])
-  assertEquals (items (Sets.map (new Set<number> (), increment)), [])
+  assert.deepStrictEqual (items (Sets.map (new Set ([1, 2, 3]), increment)), [2, 3, 4])
+  assert.deepStrictEqual (items (Sets.map (new Set<number> (), increment)), [])
 })
 
 test ('Sets.map: identical images collapse', () => {
-  assertEquals (items (Sets.map (new Set ([1, 2, 3]), () => 0)), [0])
+  assert.deepStrictEqual (items (Sets.map (new Set ([1, 2, 3]), () => 0)), [0])
 })
 
 test ('Sets.ap: applies every wrapped function to the wrapped values', () => {
   const ten = (n: number) => n * 10
 
-  assertEquals (items (Sets.ap (new Set ([1, 2]), new Set ([increment, ten]))), [
+  assert.deepStrictEqual (items (Sets.ap (new Set ([1, 2]), new Set ([increment, ten]))), [
     2,
     3,
     10,
     20,
   ])
-  assertEquals (
+  assert.deepStrictEqual (
     items (
       ap (new Set ([increment, ten])) (new Set ([1, 2])) as Set<
         number
@@ -110,12 +110,12 @@ test ('Sets.ap: applies every wrapped function to the wrapped values', () => {
     ),
     [2, 3, 10, 20],
   )
-  assertEquals (
+  assert.deepStrictEqual (
     items (Sets.ap (new Set ([1, 2]), new Set ([increment, doubleNumber]))),
     [2, 3, 4],
   )
-  assertEquals (items (Sets.ap (new Set<number> (), new Set ([increment]))), [])
-  assertEquals (
+  assert.deepStrictEqual (items (Sets.ap (new Set<number> (), new Set ([increment]))), [])
+  assert.deepStrictEqual (
     items (Sets.ap (new Set ([1]), new Set<(a: number) => number> ())),
     [],
   )
@@ -126,11 +126,11 @@ test ('Sets.chain: transforms values and flattens the results', () => {
     return new Set ([n, n * 10])
   }
 
-  assertEquals (
+  assert.deepStrictEqual (
     items (Sets.chain (new Set ([1, 2]), includeTenfold)),
     [1, 10, 2, 20],
   )
-  assertEquals (
+  assert.deepStrictEqual (
     items (
       chain ((n: number) => new Set ([n, n + 1])) (new Set ([1])) as Set<
         number
@@ -138,21 +138,21 @@ test ('Sets.chain: transforms values and flattens the results', () => {
     ),
     [1, 2],
   )
-  assertEquals (items (Sets.chain (new Set ([1]), () => new Set<number> ())), [])
+  assert.deepStrictEqual (items (Sets.chain (new Set ([1]), () => new Set<number> ())), [])
 })
 
 test ('Sets.filter: keeps values that pass the predicate', () => {
   const s = new Set ([1, 2, 3, 4])
 
-  assertEquals (items (Sets.filter (s, even)), [2, 4])
-  assertEquals (items (filter (even) (s) as Set<number>), [2, 4])
-  assertEquals (items (reject (even) (s) as Set<number>), [1, 3])
-  assertEquals (items (Sets.filter (s, () => true)), items (s))
-  assertEquals (items (Sets.filter (s, () => false)), [])
+  assert.deepStrictEqual (items (Sets.filter (s, even)), [2, 4])
+  assert.deepStrictEqual (items (filter (even) (s) as Set<number>), [2, 4])
+  assert.deepStrictEqual (items (reject (even) (s) as Set<number>), [1, 3])
+  assert.deepStrictEqual (items (Sets.filter (s, () => true)), items (s))
+  assert.deepStrictEqual (items (Sets.filter (s, () => false)), [])
 })
 
 test ('Sets.map: passes only values to Number.parseInt', () => {
-  assertEquals (items (Sets.map (new Set (['1', '2', '3']), Number.parseInt)), [
+  assert.deepStrictEqual (items (Sets.map (new Set (['1', '2', '3']), Number.parseInt)), [
     1,
     2,
     3,
@@ -160,8 +160,8 @@ test ('Sets.map: passes only values to Number.parseInt', () => {
 })
 
 test ('map through the class does not confuse a Set with an array', () => {
-  assertEquals (items (map (increment) (new Set ([1, 2])) as Set<number>), [2, 3])
-  assertEquals (map (increment) ([1, 2]), [2, 3])
+  assert.deepStrictEqual (items (map (increment) (new Set ([1, 2])) as Set<number>), [2, 3])
+  assert.deepStrictEqual (map (increment) ([1, 2]), [2, 3])
 })
 
 test ('map and filter: preserve the tested object-identity relationship', () => {
@@ -194,11 +194,11 @@ test ('Set.map: fresh object results can change the number of distinct values', 
   const fresh = map ((): number[] => [0]) (s) as Set<unknown>
   const shared = map ((): number[] => zeroArr) (s) as Set<unknown>
 
-  assertEquals (fresh.size, 2, 'different objects did not collapse')
-  assertEquals (shared.size, 1, 'one and the same object collapsed')
-  assertEquals (fresh.size === shared.size, false)
+  assert.deepStrictEqual (fresh.size, 2, 'different objects did not collapse')
+  assert.deepStrictEqual (shared.size, 1, 'one and the same object collapsed')
+  assert.deepStrictEqual (fresh.size === shared.size, false)
 
-  assertEquals (
+  assert.deepStrictEqual (
     (chain ((): Set<number[]> => new Set ([[0]])) (s) as Set<unknown>)
       .size ===
       (chain ((): Set<number[]> => new Set ([zeroArr])) (s) as Set<
@@ -206,7 +206,7 @@ test ('Set.map: fresh object results can change the number of distinct values', 
       >).size,
     false,
   )
-  assertEquals (
+  assert.deepStrictEqual (
     filter ((n: number) => n > 0) (s),
     filter ((n: number) => n > 0) (new Set ([2, 1])),
     'filter builds nothing and is therefore intact',
@@ -217,13 +217,13 @@ test ('Set.show: distinct object identities can have the same printed value', ()
   const a = new Set ([1, 2])
   const b = new Set ([2, 1])
 
-  assertEquals (a, b)
-  assertEquals (show (a), 'Set ([1, 2])')
-  assertEquals (show (b), 'Set ([2, 1])')
+  assert.deepStrictEqual (a, b)
+  assert.deepStrictEqual (show (a), 'Set ([1, 2])')
+  assert.deepStrictEqual (show (b), 'Set ([2, 1])')
 })
 
 test ('Sets: the dictionary holds exactly what is lawful', () => {
-  assertEquals (opsOf (Sets), [
+  assert.deepStrictEqual (opsOf (Sets), [
     'ap',
     'chain',
     'filter',
@@ -233,7 +233,7 @@ test ('Sets: the dictionary holds exactly what is lawful', () => {
     'show',
   ])
   for (const name of ['concat', 'empty', 'alt', 'zero', 'reduce']) {
-    assertEquals (name in Sets, false, name)
+    assert.deepStrictEqual (name in Sets, false, name)
   }
 })
 
@@ -244,8 +244,8 @@ test ('Sets.map: the Functor laws', () => {
 
   const s = new Set ([1, 2, 3])
 
-  assertEquals (items (Sets.map (s, (n: number) => n)), items (s))
-  assertEquals (
+  assert.deepStrictEqual (items (Sets.map (s, (n: number) => n)), items (s))
+  assert.deepStrictEqual (
     items (Sets.map (s, doubleThenIncrement)),
     items (Sets.map (Sets.map (s, doubleNumber), increment)),
   )
@@ -259,16 +259,16 @@ test ('Sets.ap: the Apply and Applicative laws', () => {
     (f: (b: number) => number) => (g: (a: number) => number) => (a: number) =>
       f (g (a))
 
-  assertEquals (items (Sets.ap (v, Sets.of ((a: number) => a))), items (v))
-  assertEquals (
+  assert.deepStrictEqual (items (Sets.ap (v, Sets.of ((a: number) => a))), items (v))
+  assert.deepStrictEqual (
     items (Sets.ap (Sets.of (1), Sets.of (increment))),
     items (Sets.of (increment (1))),
   )
-  assertEquals (
+  assert.deepStrictEqual (
     items (Sets.ap (Sets.of (1), u)),
     items (Sets.ap (u, Sets.of ((f: (a: number) => number) => f (1)))),
   )
-  assertEquals (
+  assert.deepStrictEqual (
     items (Sets.ap (v, Sets.ap (w, Sets.map (u, compose)))),
     items (Sets.ap (Sets.ap (v, w), u)),
   )
@@ -283,12 +283,12 @@ test ('Sets.chain: the Monad laws', () => {
   const f = includeTenfold
   const g = (n: number) => new Set ([n + 1])
 
-  assertEquals (
+  assert.deepStrictEqual (
     items (Sets.chain (Sets.chain (m, f), g)),
     items (Sets.chain (m, (n: number) => Sets.chain (f (n), g))),
   )
-  assertEquals (items (Sets.chain (Sets.of (1), f)), items (f (1)))
-  assertEquals (items (Sets.chain (m, (n: number) => Sets.of (n))), items (m))
+  assert.deepStrictEqual (items (Sets.chain (Sets.of (1), f)), items (f (1)))
+  assert.deepStrictEqual (items (Sets.chain (m, (n: number) => Sets.of (n))), items (m))
 })
 
 test ('Set: exposes no alt or zero operations', () => {
@@ -297,15 +297,23 @@ test ('Set: exposes no alt or zero operations', () => {
   const c = new Set ([3, 4])
   const z = new Set<number> ()
 
-  assertThrows (
+  assert.throws (
     () => alt (c as never) (alt (b as never) (a as never) as never),
-    TypeError,
-    'alt: Set has no ',
+    (error: unknown) => error instanceof TypeError && error.message.includes ('alt: Set has no '),
   )
-  assertThrows (() => alt (b as never) (a as never), TypeError, 'alt: Set has no ')
-  assertThrows (() => alt (z as never) (a as never), TypeError, 'alt: Set has no ')
-  assertThrows (() => alt (a as never) (z as never), TypeError, 'alt: Set has no ')
-  assertEquals (items (Sets.map (z, increment)), [])
+  assert.throws (
+    () => alt (b as never) (a as never),
+    (error: unknown) => error instanceof TypeError && error.message.includes ('alt: Set has no '),
+  )
+  assert.throws (
+    () => alt (z as never) (a as never),
+    (error: unknown) => error instanceof TypeError && error.message.includes ('alt: Set has no '),
+  )
+  assert.throws (
+    () => alt (a as never) (z as never),
+    (error: unknown) => error instanceof TypeError && error.message.includes ('alt: Set has no '),
+  )
+  assert.deepStrictEqual (items (Sets.map (z, increment)), [])
 })
 
 test ('setDifference: does not touch the operands', () => {
@@ -313,59 +321,63 @@ test ('setDifference: does not touch the operands', () => {
   const b = new Set ([1])
   setDifference (a, b)
 
-  assertEquals (items (a), [1, 2])
-  assertEquals (items (b), [1])
+  assert.deepStrictEqual (items (a), [1, 2])
+  assert.deepStrictEqual (items (b), [1])
 })
 
 test ('Set inhabits neither Monoid nor Plus: there is no neutral element', () => {
-  assertEquals ('empty' in Sets, false)
-  assertEquals ('zero' in Sets, false)
-  assertThrows (
+  assert.deepStrictEqual ('empty' in Sets, false)
+  assert.deepStrictEqual ('zero' in Sets, false)
+  assert.throws (
     () => empty (Sets as never),
-    TypeError,
-    'empty: Set has no Monoid',
+    (error: unknown) => error instanceof TypeError && error.message.includes ('empty: Set has no Monoid'),
   )
-  assertThrows (() => zero (Sets as never), TypeError, 'zero: Set has no Plus')
+  assert.throws (
+    () => zero (Sets as never),
+    (error: unknown) => error instanceof TypeError && error.message.includes ('zero: Set has no Plus'),
+  )
 })
 
 test ('Set does not support Foldable: there is no fold', () => {
   const s = new Set ([3, 1, 2])
 
-  assertThrows (
+  assert.throws (
     () =>
       reduce ((accumulator: number, a: number) => accumulator + a) (0) (
         s as never,
       ),
-    TypeError,
-    'reduce: Set has no ',
+    (error: unknown) => error instanceof TypeError && error.message.includes ('reduce: Set has no '),
   )
-  assertThrows (
+  assert.throws (
     () =>
       reduce ((accumulator: string, a: number) => accumulator + a) ('') (
         s as never,
       ),
-    TypeError,
-    'reduce: Set has no ',
+    (error: unknown) => error instanceof TypeError && error.message.includes ('reduce: Set has no '),
   )
-  assertThrows (
+  assert.throws (
     () =>
       reduce ((accumulator: number) => accumulator) (7) (
         new Set<number> () as never,
       ),
-    TypeError,
-    'reduce: Set has no ',
+    (error: unknown) => error instanceof TypeError && error.message.includes ('reduce: Set has no '),
   )
 })
 
 test ('Set does not support Foldable: the derived rejects too', () => {
   const s = new Set ([3, 1, 2])
 
-  assertThrows (() => toArray (s as never), TypeError, 'reduce: Set has no ')
-  assertThrows (() => size (s as never), TypeError, 'reduce: Set has no ')
-  assertThrows (
+  assert.throws (
+    () => toArray (s as never),
+    (error: unknown) => error instanceof TypeError && error.message.includes ('reduce: Set has no '),
+  )
+  assert.throws (
+    () => size (s as never),
+    (error: unknown) => error instanceof TypeError && error.message.includes ('reduce: Set has no '),
+  )
+  assert.throws (
     () => foldMap (Concat) ((n: number) => `${n}`) (s as never),
-    TypeError,
-    'reduce: Set has no ',
+    (error: unknown) => error instanceof TypeError && error.message.includes ('reduce: Set has no '),
   )
 })
 
@@ -379,7 +391,7 @@ test ('Sets.map: passes only the value', () => {
 
   Sets.map (new Set ([1, 2]), recordArguments)
 
-  assertEquals (calls, [[1], [2]])
+  assert.deepStrictEqual (calls, [[1], [2]])
 })
 
 test ('Sets.filter: passes only the value', () => {
@@ -392,7 +404,7 @@ test ('Sets.filter: passes only the value', () => {
 
   Sets.filter (new Set ([1, 2]), recordArguments)
 
-  assertEquals (calls, [[1], [2]])
+  assert.deepStrictEqual (calls, [[1], [2]])
 })
 
 test ('Sets.chain: passes only the value', () => {
@@ -405,7 +417,7 @@ test ('Sets.chain: passes only the value', () => {
 
   Sets.chain (new Set ([1, 2]), recordArguments)
 
-  assertEquals (calls, [[1], [2]])
+  assert.deepStrictEqual (calls, [[1], [2]])
 })
 
 test ('Sets.ap: passes only the value to each function', () => {
@@ -418,7 +430,7 @@ test ('Sets.ap: passes only the value to each function', () => {
 
   Sets.ap (new Set ([1, 2]), new Set ([recordArguments]))
 
-  assertEquals (calls, [[1], [2]])
+  assert.deepStrictEqual (calls, [[1], [2]])
 })
 
 test ('reduce: rejects Set before calling the callback', () => {
@@ -429,25 +441,22 @@ test ('reduce: rejects Set before calling the callback', () => {
     return 0
   }
 
-  assertThrows (
+  assert.throws (
     () => reduce (recordArguments) (0) (new Set ([1, 2]) as never),
-    TypeError,
-    'reduce: Set has no Foldable',
+    (error: unknown) => error instanceof TypeError && error.message.includes ('reduce: Set has no Foldable'),
   )
-  assertEquals (calls, [])
+  assert.deepStrictEqual (calls, [])
 })
 
 test ('Set inhabits neither Traversable nor Ord', () => {
-  assertThrows (
+  assert.throws (
     () =>
       traverse (Maybe as never) ((n: number) => just (n)) (new Set ([1]) as never),
-    TypeError,
-    'traverse: Set has no Traversable',
+    (error: unknown) => error instanceof TypeError && error.message.includes ('traverse: Set has no Traversable'),
   )
-  assertThrows (
+  assert.throws (
     () => lte (new Set ([1]) as never) (new Set ([2]) as never),
-    TypeError,
-    'has no Ord',
+    (error: unknown) => error instanceof TypeError && error.message.includes ('has no Ord'),
   )
 })
 
@@ -457,31 +466,31 @@ test ('counterexample: merging structurally equal collections can expose object 
   const a = new Set ([k1])
   const b = new Set ([k2])
 
-  assertEquals (sameSet (a, b), true)
+  assert.deepStrictEqual (sameSet (a, b), true)
 
   const c = new Set ([k1])
   const union = (x: ReadonlySet<number[]>, y: ReadonlySet<number[]>) =>
     new Set ([...x, ...y])
 
-  assertEquals (union (a, c).size, 1)
-  assertEquals (union (b, c).size, 2)
-  assertEquals (sameSet (union (a, c), union (b, c)), false)
+  assert.deepStrictEqual (union (a, c).size, 1)
+  assert.deepStrictEqual (union (b, c).size, 2)
+  assert.deepStrictEqual (sameSet (union (a, c), union (b, c)), false)
 })
 
 test ('counterexample: folding structurally equal sets can expose insertion order', () => {
   const a = new Set ([1, 2])
   const b = new Set ([2, 1])
 
-  assertEquals (sameSet (a, b), true)
-  assertEquals (items (a), [1, 2])
-  assertEquals (items (b), [2, 1])
+  assert.deepStrictEqual (sameSet (a, b), true)
+  assert.deepStrictEqual (items (a), [1, 2])
+  assert.deepStrictEqual (items (b), [2, 1])
 
   const fold = (s: ReadonlySet<number>) =>
     [...s].reduce ((accumulator: string, n: number) => accumulator + n, '')
 
-  assertEquals (fold (a), '12')
-  assertEquals (fold (b), '21')
-  assertEquals (fold (a) === fold (b), false)
+  assert.deepStrictEqual (fold (a), '12')
+  assert.deepStrictEqual (fold (b), '21')
+  assert.deepStrictEqual (fold (a) === fold (b), false)
 })
 
 test ('map and filter: preserve the tested insertion-order relationship', () => {
@@ -517,9 +526,18 @@ test ('Set: exposes no concat or empty operations', () => {
   const _rightUnit = () => concat (a) (e)
   void _associativity, _leftUnit, _rightUnit
 
-  assertThrows (() => cat (cat (a, b), c), TypeError, 'concat: Set has no ')
-  assertThrows (() => cat (e, a), TypeError, 'concat: Set has no ')
-  assertThrows (() => cat (a, e), TypeError, 'concat: Set has no ')
+  assert.throws (
+    () => cat (cat (a, b), c),
+    (error: unknown) => error instanceof TypeError && error.message.includes ('concat: Set has no '),
+  )
+  assert.throws (
+    () => cat (e, a),
+    (error: unknown) => error instanceof TypeError && error.message.includes ('concat: Set has no '),
+  )
+  assert.throws (
+    () => cat (a, e),
+    (error: unknown) => error instanceof TypeError && error.message.includes ('concat: Set has no '),
+  )
 })
 
 test ('Set inhabits neither Semigroup nor Alt: there is no union', () => {
@@ -535,17 +553,21 @@ test ('Set inhabits neither Semigroup nor Alt: there is no union', () => {
   const _4 = () => alt (new Set ([2])) (new Set ([1]))
   void _1, _2, _3, _4
 
-  assertThrows (() => cat (a, b), TypeError, 'concat: Set has no ')
-  assertThrows (
-    () => cat (new Set ([1]), new Set ([2])),
-    TypeError,
-    'concat: Set has no ',
+  assert.throws (
+    () => cat (a, b),
+    (error: unknown) => error instanceof TypeError && error.message.includes ('concat: Set has no '),
   )
-  assertThrows (() => alt (b as never) (a as never), TypeError, 'alt: Set has no ')
-  assertThrows (
+  assert.throws (
+    () => cat (new Set ([1]), new Set ([2])),
+    (error: unknown) => error instanceof TypeError && error.message.includes ('concat: Set has no '),
+  )
+  assert.throws (
+    () => alt (b as never) (a as never),
+    (error: unknown) => error instanceof TypeError && error.message.includes ('alt: Set has no '),
+  )
+  assert.throws (
     () => alt (new Set ([2]) as never) (new Set ([1]) as never),
-    TypeError,
-    'alt: Set has no ',
+    (error: unknown) => error instanceof TypeError && error.message.includes ('alt: Set has no '),
   )
 })
 
@@ -556,9 +578,12 @@ test ('concat over sets rejects without touching the operands', () => {
   const _call = () => concat (a) (b)
   void _call
 
-  assertThrows (() => cat (a, b), TypeError, 'concat: Set has no ')
-  assertEquals (items (a), [1])
-  assertEquals (items (b), [2])
+  assert.throws (
+    () => cat (a, b),
+    (error: unknown) => error instanceof TypeError && error.message.includes ('concat: Set has no '),
+  )
+  assert.deepStrictEqual (items (a), [1])
+  assert.deepStrictEqual (items (b), [2])
 })
 
 const increment = (n: number) => n + 1
@@ -591,10 +616,10 @@ const assertPreservesEquality = <A, B>(
   b: Set<A>,
   f: (s: Set<A>) => Set<B>,
 ) => {
-  assertEquals (
+  assert.deepStrictEqual (
     sameSet (a, b),
     true,
     `${name}: the input collections must be equal`,
   )
-  assertEquals (sameSet (f (a), f (b)), true, name)
+  assert.deepStrictEqual (sameSet (f (a), f (b)), true, name)
 }

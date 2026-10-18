@@ -1,6 +1,5 @@
+import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { assertEquals } from '../assert.ts'
-import * as shape from '../../src/core/shape.ts'
 import type {
   AnyKind,
   Fail,
@@ -23,6 +22,7 @@ import type { ReShape } from '../../src/natives/regexp.ts'
 import type { SetShape } from '../../src/natives/set.ts'
 import type { StrShape } from '../../src/natives/string.ts'
 import type { StrMapShape } from '../../src/natives/strmap.ts'
+import * as shape from '../../src/core/shape.ts'
 import { Arr } from '../../src/natives/array.ts'
 import { Big } from '../../src/natives/bigint.ts'
 import { Bool } from '../../src/natives/boolean.ts'
@@ -36,7 +36,7 @@ import { Str } from '../../src/natives/string.ts'
 import { StrMap } from '../../src/natives/strmap.ts'
 
 test ('shape: exports types without runtime values', () => {
-  assertEquals (Object.keys (shape), [])
+  assert.deepStrictEqual (Object.keys (shape), [])
 })
 
 test ('a type representative carries the shape its name declares', () => {
@@ -51,18 +51,18 @@ test ('a type representative carries the shape its name declares', () => {
   const date: Kind<DateShape, never, never> = new Date (0)
   const pattern: Kind<ReShape, never, never> = /a/
 
-  assertEquals (Arr.is (array), true)
-  assertEquals (Sets.is (set), true)
-  assertEquals (Maps.is (map), true)
-  assertEquals (StrMap.is (record), true)
-  assertEquals (Str.is (str), true)
-  assertEquals (Num.is (num), true)
-  assertEquals (Bool.is (flag), true)
-  assertEquals (Big.is (big), true)
-  assertEquals (Dates.is (date), true)
-  assertEquals (Re.is (pattern), true)
-  assertEquals (StrMap.is (array), false)
-  assertEquals (Arr.is (record), false)
+  assert.deepStrictEqual (Arr.is (array), true)
+  assert.deepStrictEqual (Sets.is (set), true)
+  assert.deepStrictEqual (Maps.is (map), true)
+  assert.deepStrictEqual (StrMap.is (record), true)
+  assert.deepStrictEqual (Str.is (str), true)
+  assert.deepStrictEqual (Num.is (num), true)
+  assert.deepStrictEqual (Bool.is (flag), true)
+  assert.deepStrictEqual (Big.is (big), true)
+  assert.deepStrictEqual (Dates.is (date), true)
+  assert.deepStrictEqual (Re.is (pattern), true)
+  assert.deepStrictEqual (StrMap.is (array), false)
+  assert.deepStrictEqual (Arr.is (record), false)
 })
 
 test ('the name of a shape coincides with the name of its representative', () => {
@@ -79,7 +79,7 @@ test ('the name of a shape coincides with the name of its representative', () =>
     [Dates['@@type'], 'Date'],
     [Re['@@type'], 'RegExp'],
   ]
-  for (const [name, expected] of pairs) assertEquals (name, expected)
+  for (const [name, expected] of pairs) assert.deepStrictEqual (name, expected)
 })
 
 type Exact<A, B> = (<T>() => T extends A ? 1 : 2) extends

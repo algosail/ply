@@ -2,14 +2,14 @@
  * Transform and split text, and parse values into `Maybe` results.
  */
 
-import type { Shape } from '../core/shape.ts'
-import type { NativeTypeRep } from '../core/named.ts'
 import type { CheckableDict } from '../classes/checkable.ts'
 import type { MonoidDict } from '../classes/monoid.ts'
 import type { OrdDict } from '../classes/ord.ts'
 import type { SemigroupDict } from '../classes/semigroup.ts'
 import type { SetoidDict } from '../classes/setoid.ts'
 import type { ShowDict } from '../classes/show.ts'
+import type { NativeTypeRep } from '../core/named.ts'
+import type { Shape } from '../core/shape.ts'
 import type { Maybe } from '../data/maybe.ts'
 import { just, nothing } from '../data/maybe.ts'
 
@@ -40,7 +40,7 @@ export type StrDict =
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.empty(P.Str) // => ''
  * P.Str.is('hello') // => true
  * ```
@@ -71,7 +71,7 @@ export const Str: StrDict = {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.startsWith('ab')('abc') // => true
  * P.startsWith('b')('abc') // => false
  * ```
@@ -85,7 +85,7 @@ export function startsWith(prefix: string): (s: string) => boolean {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.endsWith('bc')('abc') // => true
  * ```
  */
@@ -98,7 +98,7 @@ export function endsWith(suffix: string): (s: string) => boolean {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.stripPrefix('ab')('abc') // => Just ('c')
  * P.stripPrefix('x')('abc') // => Nothing
  * ```
@@ -112,7 +112,7 @@ export function stripPrefix(prefix: string): (s: string) => Maybe<string> {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.stripSuffix('.ts')('mod.ts') // => Just ('mod')
  * P.stripSuffix('.js')('mod.ts') // => Nothing
  * ```
@@ -127,7 +127,7 @@ export function stripSuffix(suffix: string): (s: string) => Maybe<string> {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.includes('b')('abc') // => true
  * ```
  */
@@ -140,7 +140,7 @@ export function includes(part: string): (s: string) => boolean {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.replaceAll('a', 'x')('aa') // => 'xx'
  * P.replaceAll('a', '$&')('a') // => '$&'
  * ```
@@ -154,7 +154,7 @@ export function replaceAll(from: string, to: string): (s: string) => string {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.splitOn(',')('a,b,c') // => ['a', 'b', 'c']
  * P.splitOn(',')('') // => ['']
  * ```
@@ -168,7 +168,7 @@ export function splitOn(sep: string): (s: string) => string[] {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.joinWith('-')(['a', 'b', 'c']) // => 'a-b-c'
  * ```
  */
@@ -181,7 +181,7 @@ export function joinWith(sep: string): (xs: readonly string[]) => string {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.toUpper('abc') // => 'ABC'
  * ```
  */
@@ -194,7 +194,7 @@ export function toUpper(s: string): string {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.toLower('ABC') // => 'abc'
  * ```
  */
@@ -207,7 +207,7 @@ export function toLower(s: string): string {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.trim('  a b  ') // => 'a b'
  * ```
  */
@@ -220,7 +220,7 @@ export function trim(s: string): string {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.words('  one  two ') // => ['one', 'two']
  * ```
  */
@@ -233,7 +233,7 @@ export function words(s: string): string[] {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.unwords(['one', 'two']) // => 'one two'
  * ```
  */
@@ -246,7 +246,7 @@ export function unwords(xs: readonly string[]): string {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.lines('a\nb\n') // => ['a', 'b']
  * P.lines('a\nb') // => ['a', 'b']
  * P.lines('') // => []
@@ -262,7 +262,7 @@ export function lines(s: string): string[] {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.unlines(['a', 'b']) // => 'a\nb\n'
  * ```
  */
@@ -277,7 +277,7 @@ const DIGITS = '0123456789abcdefghijklmnopqrstuvwxyz'
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.parseInt(10)('42') // => Just (42)
  * P.parseInt(10)('4.2') // => Nothing
  * P.parseInt(16)('ff') // => Just (255)
@@ -302,7 +302,7 @@ const FLOAT =
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.parseFloat('1.5e2') // => Just (150)
  * P.parseFloat('1,5') // => Nothing
  * ```
@@ -316,7 +316,7 @@ export function parseFloat(s: string): Maybe<number> {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.parseDate('2026-09-18') // => Just (Date ('2026-09-18T00:00:00.000Z'))
  * P.parseDate('nope') // => Nothing
  * ```
@@ -331,7 +331,7 @@ export function parseDate(s: string): Maybe<Date> {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.parseJson('{"a": 1}') // => Just ({ a: 1 })
  * P.parseJson('{') // => Nothing
  * ```

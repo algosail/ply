@@ -2,7 +2,6 @@
  * Operations and types for wrapping values with `of` and applying wrapped functions.
  */
 
-import type { Kind, Shape } from '../core/shape.ts'
 import type {
   Assert,
   MatchableIn,
@@ -13,6 +12,7 @@ import type {
   Superclass,
 } from '../core/kind.ts'
 import type { Instances } from '../core/named.ts'
+import type { Kind, Shape } from '../core/shape.ts'
 import type { ArrayShape } from '../natives/array.ts'
 import type { FnShape } from '../natives/function.ts'
 import type { SetShape } from '../natives/set.ts'
@@ -108,7 +108,7 @@ export const applicativeNatives: Instances<
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.of(P.Arr)(1) // => [1]
  * P.of(P.Sets)(1) // => Set ([1])
  * P.of(P.Maybe)(1) // => Just (1)

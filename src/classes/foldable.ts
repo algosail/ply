@@ -2,17 +2,17 @@
  * Operations and types for reducing contained values to a result.
  */
 
-import type { Kind, Nullary, Shape } from '../core/shape.ts'
 import type { MatchableIn, SlotAOf, SlotBOf } from '../core/kind.ts'
 import type { Instances } from '../core/named.ts'
+import type { Kind, Nullary, Shape } from '../core/shape.ts'
+import type { Maybe } from '../data/maybe.ts'
 import type { ArrayShape } from '../natives/array.ts'
 import type { StrMapShape } from '../natives/strmap.ts'
-import type { Maybe } from '../data/maybe.ts'
 import type { MonoidDict } from './monoid.ts'
 import { dispatch, lazily } from '../core/instance.ts'
+import { just, nothing } from '../data/maybe.ts'
 import { Arr } from '../natives/array.ts'
 import { StrMap } from '../natives/strmap.ts'
-import { just, nothing } from '../data/maybe.ts'
 import { equals } from './setoid.ts'
 
 /**
@@ -83,7 +83,7 @@ export const foldableNatives: Instances<
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.reduce((acc: number, a: number) => acc + a)(0)([1, 2, 3]) // => 6
  * P.reduce((acc: string, a: number) => acc + a)('')({ c: 3, a: 1, b: 2 })
  * // => '123'
@@ -101,7 +101,7 @@ export function reduce<A, Acc>(
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.reduce_((a: number) => (acc: number) => acc + a)(0)([1, 2, 3]) // => 6
  * ```
  * @see {@link reduce}
@@ -118,7 +118,7 @@ export function reduce_<A, Acc>(
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.foldr((a: number, acc: number) => a - acc)(0)([1, 2, 3]) // => 2
  * P.reduce((acc: number, a: number) => acc - a)(0)([1, 2, 3]) // => -6
  * ```
@@ -142,7 +142,7 @@ export function foldr<A, Acc>(
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.foldMap(P.Concat)((n: number) => `${n}`)([1, 2]) // => '12'
  * ```
  */
@@ -158,7 +158,7 @@ export function foldMap<B>(
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.intercalate(P.Concat)(', ')(['a', 'b']) // => 'a, b'
  * ```
  */
@@ -189,7 +189,7 @@ const reduceUntyped =
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.toArray(P.just(1)) // => [1]
  * P.toArray(P.nothing<number>()) // => []
  * P.toArray({ c: 3, a: 1, b: 2 }) // => [1, 2, 3]
@@ -212,7 +212,7 @@ export function toArray(fa: Foldable<unknown, unknown>): unknown[] {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.head([1, 2, 3]) // => Just (1)
  * P.head([]) // => Nothing
  * P.head({ c: 3, a: 1, b: 2 }) // => Just (1)
@@ -233,7 +233,7 @@ export function head(fa: Foldable<unknown, unknown>): Maybe<unknown> {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.last([1, 2, 3]) // => Just (3)
  * P.last({ c: 3, a: 1, b: 2 }) // => Just (3)
  * ```
@@ -253,7 +253,7 @@ export function last(fa: Foldable<unknown, unknown>): Maybe<unknown> {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.size({ a: 1, b: 2 }) // => 2
  * P.size(P.nothing<number>()) // => 0
  * ```
@@ -267,7 +267,7 @@ export function size(fa: Foldable<unknown, unknown>): number {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.isEmpty([]) // => true
  * P.isEmpty([1]) // => false
  * P.isEmpty({}) // => true
@@ -282,7 +282,7 @@ export function isEmpty(fa: Foldable<unknown, unknown>): boolean {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.all((n: number) => n > 0)([1, 2]) // => true
  * ```
  */
@@ -298,7 +298,7 @@ export function all<A>(
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.any((n: number) => n > 2)([1, 2]) // => false
  * ```
  */
@@ -314,7 +314,7 @@ export function any<A>(
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.none((n: number) => n > 2)([1, 2]) // => true
  * ```
  */
@@ -330,7 +330,7 @@ export function none<A>(
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.elem(2)([1, 2, 3]) // => true
  * P.elem({ a: 1 })([{ a: 1 }, { a: 2 }]) // => true
  * ```
@@ -338,7 +338,7 @@ export function none<A>(
 export function elem<A>(a: A): <F extends Foldable<F, A>>(fa: F) => boolean {
   return <F extends Foldable<F, A>>(fa: F): boolean =>
     reduce<A, boolean> ((acc: boolean, x: A) =>
-      acc || equals (a as never) (x as never)
+      acc || equals (a as never) (x as never),
     ) (false) (fa as never)
 }
 
@@ -347,7 +347,7 @@ export function elem<A>(a: A): <F extends Foldable<F, A>>(fa: F) => boolean {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.elem_(['yes', 'oui', 'ja'])('oui') // => true
  * ```
  * @see {@link elem}
@@ -363,7 +363,7 @@ export function elem_<F extends Foldable<F>>(
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.forEach((n: number) => console.log(n))([1, 2])
  * // logs 1, then 2, and gives back [1, 2]
  * ```

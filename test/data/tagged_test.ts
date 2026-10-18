@@ -1,5 +1,5 @@
+import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { assertEquals, assertThrows } from '../assert.ts'
 import { cases } from '../../src/data/tagged.ts'
 
 type Shape =
@@ -12,8 +12,8 @@ const area = cases<Shape, number> ({
 })
 
 test ('cases: answers with the branch that names the tag', () => {
-  assertEquals (area ({ tag: 'square', side: 3 }), 9)
-  assertEquals (area ({ tag: 'circle', r: 1 }), Math.PI)
+  assert.deepStrictEqual (area ({ tag: 'square', side: 3 }), 9)
+  assert.deepStrictEqual (area ({ tag: 'circle', r: 1 }), Math.PI)
 })
 
 test ('cases: the branch is handed its own variant, already narrowed', () => {
@@ -22,7 +22,7 @@ test ('cases: the branch is handed its own variant, already narrowed', () => {
     square: (s) => `side=${s.side}`,
   })
 
-  assertEquals (said ({ tag: 'circle', r: 2 }), 'r=2')
+  assert.deepStrictEqual (said ({ tag: 'circle', r: 2 }), 'r=2')
 })
 
 test ('cases: the branches are read once and the answer reused', () => {
@@ -34,10 +34,10 @@ test ('cases: the branches are read once and the answer reused', () => {
 
   counted ({ tag: 'circle', r: 1 })
   counted ({ tag: 'circle', r: 1 })
-  assertEquals (built, 2, 'the branch runs per value, not per build')
+  assert.deepStrictEqual (built, 2, 'the branch runs per value, not per build')
 })
 
 test ('cases: a tag nobody answered for is a run-time error', () => {
   const partial = { circle: (c: { r: number }) => c.r } as never
-  assertThrows (() => cases<Shape, number> (partial) ({ tag: 'square', side: 1 }))
+  assert.throws (() => cases<Shape, number> (partial) ({ tag: 'square', side: 1 }))
 })

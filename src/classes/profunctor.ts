@@ -2,9 +2,9 @@
  * Operations and types for adapting inputs and outputs.
  */
 
-import type { Kind, Shape } from '../core/shape.ts'
 import type { KindOf, MatchableIn, SlotAOf, SlotBOf } from '../core/kind.ts'
 import type { Instances } from '../core/named.ts'
+import type { Kind, Shape } from '../core/shape.ts'
 import type { FnShape } from '../natives/function.ts'
 import { dispatch, lazily } from '../core/instance.ts'
 import { Fn } from '../natives/function.ts'
@@ -72,9 +72,9 @@ export const profunctorNatives: Instances<
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * const step = (n: number) => n + 1
- * 
+ *
  * P.promap((s: string) => s.length)((n: number) => n > 3)(step)('abc')
  * // => true
  * P.promap((s: string) => s.length)((n: number) => n > 3)(step)('ab')

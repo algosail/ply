@@ -10,7 +10,7 @@ import { just, nothing } from '../data/maybe.ts'
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.set('a')(9)({ a: 0, b: 1 }) // => { a: 9, b: 1 }
  * ```
  */
@@ -28,7 +28,7 @@ export function set<K extends PropertyKey>(
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.modify('a')((n: number) => n + 1)({ a: 0, b: 'x' }) // => { a: 1, b: 'x' }
  * ```
  */
@@ -64,7 +64,7 @@ function lookupPath(
  * ```ts
  * import { assertThrows } from '@std/assert'
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.prop('a')({ a: 1, b: 2 }) // => 1
  * assertThrows(
  *   () => P.prop('c')({} as { c: number }),
@@ -94,7 +94,7 @@ export function prop<K extends PropertyKey>(
  * ```ts
  * import { assertThrows } from '@std/assert'
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.props(['a', 'b'])({ a: { b: 2 } }) // => 2
  * assertThrows(
  *   () => P.props(['a', 'b'])({ a: 1 }),
@@ -126,9 +126,9 @@ export function props(path: readonly PropertyKey[]): (a: unknown) => unknown {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * const isNumber = (x: unknown): x is number => typeof x === 'number'
- * 
+ *
  * P.get(isNumber)('a')({ a: 1 }) // => Just (1)
  * P.get(isNumber)('a')({ a: 'x' }) // => Nothing
  * P.get(isNumber)('c')({ a: 1 }) // => Nothing
@@ -153,9 +153,9 @@ export function get(p: (x: unknown) => boolean) {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * const isNumber = (x: unknown): x is number => typeof x === 'number'
- * 
+ *
  * P.gets(isNumber)(['a', 'b'])({ a: { b: 2 } }) // => Just (2)
  * P.gets(isNumber)(['a', 'b'])({ a: 1 }) // => Nothing
  * ```
@@ -179,7 +179,7 @@ export function gets(p: (x: unknown) => boolean) {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.remove('b')({ a: 1, b: 2 }) // => { a: 1 }
  * ```
  */

@@ -1,65 +1,63 @@
+import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { assertEquals, assertThrows } from '../assert.ts'
-import { altAll, plusNatives, zero } from '../../src/classes/plus.ts'
 import { alt } from '../../src/classes/alt.ts'
 import { map } from '../../src/classes/functor.ts'
-import { Arr } from '../../src/natives/array.ts'
-import { Sets } from '../../src/natives/set.ts'
-import { StrMap } from '../../src/natives/strmap.ts'
-import { Maps } from '../../src/natives/map.ts'
-import { just, Maybe, nothing } from '../../src/data/maybe.ts'
+import { altAll, plusNatives, zero } from '../../src/classes/plus.ts'
 import { Either, right } from '../../src/data/either.ts'
 import { Identity, identity } from '../../src/data/identity.ts'
+import { just, Maybe, nothing } from '../../src/data/maybe.ts'
 import { Pair } from '../../src/data/pair.ts'
+import { Arr } from '../../src/natives/array.ts'
+import { Maps } from '../../src/natives/map.ts'
+import { Sets } from '../../src/natives/set.ts'
+import { StrMap } from '../../src/natives/strmap.ts'
 
 test ('altAll: an empty list gives zero across supported types', () => {
   for (const [name, T] of samplesByType) {
-    assertEquals (chooseAll (T) ([]), zeroOf (T), name)
+    assert.deepStrictEqual (chooseAll (T) ([]), zeroOf (T), name)
   }
   noZero (() => chooseAll (Sets) ([]))
 })
 
 test ('altAll: a list of one gives that very one', () => {
   for (const [name, T, , x] of samplesByType) {
-    assertEquals (chooseAll (T) ([x]), x, name)
+    assert.deepStrictEqual (chooseAll (T) ([x]), x, name)
   }
   noZero (() => chooseAll (Sets) ([new Set ([1, 2])]))
 })
 
 test ('altAll: folds left to right', () => {
-  assertEquals (chooseAll (Arr) ([[1, 2], [3]]), [1, 2, 3])
-  assertEquals (chooseAll (Maybe) ([just (1), just (2)]), just (1))
+  assert.deepStrictEqual (chooseAll (Arr) ([[1, 2], [3]]), [1, 2, 3])
+  assert.deepStrictEqual (chooseAll (Maybe) ([just (1), just (2)]), just (1))
 })
 
 test ('zero: the neutrality law across supported types', () => {
   for (const [name, T, , x] of samplesByType) {
-    assertEquals (choose (zeroOf (T), x), x, `${name} on the left`)
-    assertEquals (choose (x, zeroOf (T)), x, `${name} on the right`)
+    assert.deepStrictEqual (choose (zeroOf (T), x), x, `${name} on the left`)
+    assert.deepStrictEqual (choose (x, zeroOf (T)), x, `${name} on the right`)
   }
 })
 
 test ('zero: the map annihilation law across supported types', () => {
   for (const [name, T] of samplesByType) {
-    assertEquals (map (increment) (zeroOf (T) as never) as unknown, zeroOf (T), name)
+    assert.deepStrictEqual (map (increment) (zeroOf (T) as never) as unknown, zeroOf (T), name)
   }
 })
 
 test ('altAll: a type without a neutral element throws immediately', () => {
-  assertThrows (
+  assert.throws (
     () => chooseAll (Either) ([right (1)]),
-    TypeError,
-    'zero: Either has no Plus',
+    (error: unknown) => error instanceof TypeError && error.message.includes ('zero: Either has no Plus'),
   )
-  assertThrows (
+  assert.throws (
     () => chooseAll (Identity) ([identity (1)]),
-    TypeError,
-    'zero: Identity has no Plus',
+    (error: unknown) => error instanceof TypeError && error.message.includes ('zero: Identity has no Plus'),
   )
 })
 
 test ('zero: returns the empty alternative for the chosen type', () => {
   for (const [name, T, empty] of samplesByType) {
-    assertEquals (zeroOf (T), empty, name)
+    assert.deepStrictEqual (zeroOf (T), empty, name)
   }
   // @ts-expect-error the Set type representative no longer has zero
   const _setCase = () => zero (Sets)
@@ -80,8 +78,16 @@ test ('zero: rejects the Set representative', () => {
 
   noZero (() => zeroOf (Sets))
   const message = 'alt: Set has no Alt'
-  assertThrows (() => choose (e, x), TypeError, message, 'Set on the left')
-  assertThrows (() => choose (x, e), TypeError, message, 'Set on the right')
+  assert.throws (
+    () => choose (e, x),
+    (error: unknown) => error instanceof TypeError && error.message.includes (message),
+    'Set on the left',
+  )
+  assert.throws (
+    () => choose (x, e),
+    (error: unknown) => error instanceof TypeError && error.message.includes (message),
+    'Set on the right',
+  )
 })
 
 test ('zero: cannot supply a Set value to map', () => {
@@ -89,7 +95,7 @@ test ('zero: cannot supply a Set value to map', () => {
   const _zero = () => zero (Sets)
   void _zero
   noZero (() => zeroOf (Sets))
-  assertEquals (
+  assert.deepStrictEqual (
     map (increment) (new Set<number> () as never) as unknown,
     new Set<number> (),
   )
@@ -104,7 +110,11 @@ test ('zero: a type without a neutral element throws a descriptive TypeError', (
     ['Set', Sets],
   ]
   for (const [name, T] of foreign) {
-    assertThrows (() => zeroOf (T), TypeError, `${name} has no Plus`, name)
+    assert.throws (
+      () => zeroOf (T),
+      (error: unknown) => error instanceof TypeError && error.message.includes (`${name} has no Plus`),
+      name,
+    )
   }
   // @ts-expect-error the Set type representative no longer has zero
   const _setCase = () => zero (Sets)
@@ -114,26 +124,26 @@ test ('zero: a type without a neutral element throws a descriptive TypeError', (
 })
 
 test ('altAll: combines an array of alternatives in order', () => {
-  assertEquals (chooseAll (Arr) ([[1, 2], [3], [4]]), [1, 2, 3, 4])
+  assert.deepStrictEqual (chooseAll (Arr) ([[1, 2], [3], [4]]), [1, 2, 3, 4])
   // @ts-expect-error the Set type representative no longer has zero
   const _setCase = () => altAll (Sets)
   void _setCase
   noZero (() => chooseAll (Sets) ([new Set ([1]), new Set ([2, 1])]))
-  assertEquals (chooseAll (Maybe) ([nothing (), just (2), just (3)]), just (2))
-  assertEquals (chooseAll (Maybe) ([nothing (), nothing ()]), nothing ())
-  assertEquals (chooseAll (StrMap) ([{ a: 1 }, { a: 2, b: 3 }]), { a: 1, b: 3 })
+  assert.deepStrictEqual (chooseAll (Maybe) ([nothing (), just (2), just (3)]), just (2))
+  assert.deepStrictEqual (chooseAll (Maybe) ([nothing (), nothing ()]), nothing ())
+  assert.deepStrictEqual (chooseAll (StrMap) ([{ a: 1 }, { a: 2, b: 3 }]), { a: 1, b: 3 })
 })
 
 test ('plusNatives: lists native zero implementations', () => {
-  assertEquals (Object.keys (plusNatives).sort (), ['Array', 'StrMap'])
+  assert.deepStrictEqual (Object.keys (plusNatives).sort (), ['Array', 'StrMap'])
   for (const [name, dict] of Object.entries (plusNatives)) {
-    assertEquals (typeof dict.zero, 'function', name)
-    assertEquals (typeof dict.alt, 'function', name)
+    assert.deepStrictEqual (typeof dict.zero, 'function', name)
+    assert.deepStrictEqual (typeof dict.alt, 'function', name)
   }
   // @ts-expect-error plusNatives has no Set cell
   const _cell = () => plusNatives.Set
   void _cell
-  assertEquals ('Set' in plusNatives, false)
+  assert.deepStrictEqual ('Set' in plusNatives, false)
 })
 
 const increment = (n: number) => n + 1
@@ -157,4 +167,7 @@ const samplesByType: [string, unknown, unknown, unknown][] = [
 ]
 
 const noZero = (f: () => unknown) =>
-  assertThrows (f, TypeError, 'zero: Set has no Plus')
+  assert.throws (
+    f,
+    (error: unknown) => error instanceof TypeError && error.message.includes ('zero: Set has no Plus'),
+  )

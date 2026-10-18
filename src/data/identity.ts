@@ -2,8 +2,6 @@
  * Wrap a single value for use with `map`, `chain`, and `traverse`.
  */
 
-import type { Shape, Shaped } from '../core/shape.ts'
-import type { KindOf, Satisfies, ShapeOf, SlotAOf } from '../core/kind.ts'
 import type { ApplicativeTypeRep } from '../classes/applicative.ts'
 import type { Apply, ApplyMethods } from '../classes/apply.ts'
 import type { ChainMethods } from '../classes/chain.ts'
@@ -12,13 +10,15 @@ import type { ComonadMethods } from '../classes/comonad.ts'
 import type { ExtendMethods } from '../classes/extend.ts'
 import type { FoldableMethods } from '../classes/foldable.ts'
 import type { FunctorMethods } from '../classes/functor.ts'
-import type { TraversableMethods } from '../classes/traversable.ts'
 import type { OrdMethods } from '../classes/ord.ts'
 import type { SetoidMethods } from '../classes/setoid.ts'
 import type { ShowMethods } from '../classes/show.ts'
+import type { TraversableMethods } from '../classes/traversable.ts'
+import type { KindOf, Satisfies, ShapeOf, SlotAOf } from '../core/kind.ts'
+import type { Shape, Shaped } from '../core/shape.ts'
 import { map } from '../classes/functor.ts'
-import { equals } from '../classes/setoid.ts'
 import { lte } from '../classes/ord.ts'
+import { equals } from '../classes/setoid.ts'
 import { show } from '../classes/show.ts'
 
 /**

@@ -10,8 +10,6 @@
  * ```
  */
 
-import type { Shape, Shaped } from '../core/shape.ts'
-import type { KindOf, Satisfies, ShapeOf, SlotAOf } from '../core/kind.ts'
 import type { AltMethods } from '../classes/alt.ts'
 import type { ApplicativeTypeRep } from '../classes/applicative.ts'
 import type { Apply, ApplyMethods } from '../classes/apply.ts'
@@ -20,11 +18,13 @@ import type { CheckableTypeRep } from '../classes/checkable.ts'
 import type { Filterable, FilterableMethods } from '../classes/filterable.ts'
 import type { FoldableMethods } from '../classes/foldable.ts'
 import type { FunctorMethods } from '../classes/functor.ts'
-import type { TraversableMethods } from '../classes/traversable.ts'
 import type { OrdMethods } from '../classes/ord.ts'
 import type { PlusTypeRep } from '../classes/plus.ts'
 import type { SetoidMethods } from '../classes/setoid.ts'
 import type { ShowMethods } from '../classes/show.ts'
+import type { TraversableMethods } from '../classes/traversable.ts'
+import type { KindOf, Satisfies, ShapeOf, SlotAOf } from '../core/kind.ts'
+import type { Shape, Shaped } from '../core/shape.ts'
 import type { Either } from './either.ts'
 import { of } from '../classes/applicative.ts'
 import { filter } from '../classes/filterable.ts'

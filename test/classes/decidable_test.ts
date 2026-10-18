@@ -1,20 +1,20 @@
+import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { assertEquals, assertThrows } from '../assert.ts'
 import type { Either } from '../../src/data/either.ts'
+import { contramap } from '../../src/classes/contravariant.ts'
 import { choose, decidableNatives, lose } from '../../src/classes/decidable.ts'
 import { divide } from '../../src/classes/divisible.ts'
-import { contramap } from '../../src/classes/contravariant.ts'
-import { Predicate, predicate } from '../../src/data/predicate.ts'
-import { equivalence } from '../../src/data/equivalence.ts'
 import { left, right } from '../../src/data/either.ts'
+import { equivalence } from '../../src/data/equivalence.ts'
 import { just } from '../../src/data/maybe.ts'
+import { Predicate, predicate } from '../../src/data/predicate.ts'
 
 test ('choose: validates each order status with its own rule', () => {
   const acceptable = choose (byStatus) (smallEnough) (knownCarrier)
-  assertEquals (acceptable (anOpen), true)
-  assertEquals (acceptable (bigOpen), false)
-  assertEquals (acceptable (aShipped), true)
-  assertEquals (
+  assert.deepStrictEqual (acceptable (anOpen), true)
+  assert.deepStrictEqual (acceptable (bigOpen), false)
+  assert.deepStrictEqual (acceptable (aShipped), true)
+  assert.deepStrictEqual (
     acceptable ({ status: 'shipped', carrier: 'ups' }),
     false,
   )
@@ -28,16 +28,16 @@ test ('choose: exactly one branch is consulted', () => {
 
   asked.length = 0
   rule (anOpen)
-  assertEquals (asked, ['open'])
+  assert.deepStrictEqual (asked, ['open'])
   asked.length = 0
   rule (aShipped)
-  assertEquals (asked, ['shipped'])
+  assert.deepStrictEqual (asked, ['shipped'])
 })
 
 test ('choose: dispatches by branch instead of checking every rule', () => {
   const lying = contramap ((o: Order) => o as Open) (smallEnough)
-  assertEquals (lying (aShipped), false)
-  assertEquals (choose (byStatus) (smallEnough) (knownCarrier) (aShipped), true)
+  assert.deepStrictEqual (lying (aShipped), false)
+  assert.deepStrictEqual (choose (byStatus) (smallEnough) (knownCarrier) (aShipped), true)
 
   const asked: string[] = []
   const open = predicate<Open> ((o) => (asked.push ('open'), o.total < 800))
@@ -46,24 +46,24 @@ test ('choose: dispatches by branch instead of checking every rule', () => {
     open,
   ) (shipped)
   asked.length = 0
-  assertEquals (viaDivide (aShipped), false)
-  assertEquals (asked, ['open'])
+  assert.deepStrictEqual (viaDivide (aShipped), false)
+  assert.deepStrictEqual (asked, ['open'])
   asked.length = 0
   divide ((o: Order) => [o as Shipped, o as Open] as const) (shipped) (open) (
     aShipped,
   )
-  assertEquals (asked, ['shipped', 'open'])
+  assert.deepStrictEqual (asked, ['shipped', 'open'])
 })
 
 test ('choose on Equivalence: different branches are never equal', () => {
   const sameTotal = equivalence<Open> ((a, b) => a.total === b.total)
   const sameCarrier = equivalence<Shipped> ((a, b) => a.carrier === b.carrier)
   const same = choose (byStatus) (sameTotal) (sameCarrier)
-  assertEquals (same (anOpen, anOpen), true)
-  assertEquals (same (anOpen, bigOpen), false)
-  assertEquals (same (aShipped, aShipped), true)
-  assertEquals (same (anOpen, aShipped), false)
-  assertEquals (same (aShipped, anOpen), false)
+  assert.deepStrictEqual (same (anOpen, anOpen), true)
+  assert.deepStrictEqual (same (anOpen, bigOpen), false)
+  assert.deepStrictEqual (same (aShipped, aShipped), true)
+  assert.deepStrictEqual (same (anOpen, aShipped), false)
+  assert.deepStrictEqual (same (aShipped, anOpen), false)
 })
 
 test ('lose: the unreachable branch is never evaluated', () => {
@@ -76,9 +76,9 @@ test ('lose: the unreachable branch is never evaluated', () => {
   const onlyOpen = choose (
     (o: OnlyOpen): Either<Open, never> => left (o),
   ) (smallEnough) (lose (Predicate) (absurd))
-  assertEquals (onlyOpen (anOpen), true)
-  assertEquals (onlyOpen (bigOpen), false)
-  assertEquals (called, 0)
+  assert.deepStrictEqual (onlyOpen (anOpen), true)
+  assert.deepStrictEqual (onlyOpen (bigOpen), false)
+  assert.deepStrictEqual (called, 0)
 })
 
 test ('choose: combines field validation with status-specific rules', () => {
@@ -89,7 +89,7 @@ test ('choose: combines field validation with status-specific rules', () => {
     predicate<string> ((c) => c.length === 3),
   )
   const rule = choose (byStatus) (openRule) (shippedRule)
-  assertEquals (
+  assert.deepStrictEqual (
     [anOpen, bigOpen, aShipped, { status: 'shipped', carrier: 'x' } as Order]
       .map (rule),
     [true, false, true, false],
@@ -97,20 +97,18 @@ test ('choose: combines field validation with status-specific rules', () => {
 })
 
 test ('a type without Decidable throws a descriptive TypeError', () => {
-  assertThrows (
+  assert.throws (
     () => choose (byStatus) ([1, 2] as never) (just (1) as never),
-    TypeError,
-    'choose: Array has no Decidable',
+    (error: unknown) => error instanceof TypeError && error.message.includes ('choose: Array has no Decidable'),
   )
-  assertThrows (
+  assert.throws (
     () => lose (just (1) as never) ((x: never) => x),
-    TypeError,
-    'lose: Maybe has no Decidable',
+    (error: unknown) => error instanceof TypeError && error.message.includes ('lose: Maybe has no Decidable'),
   )
 })
 
 test ('decidableNatives: has no native implementations', () => {
-  assertEquals (Object.keys (decidableNatives), [])
+  assert.deepStrictEqual (Object.keys (decidableNatives), [])
 })
 
 type Open = { readonly status: 'open'; readonly total: number }

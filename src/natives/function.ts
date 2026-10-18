@@ -2,15 +2,6 @@
  * Compose functions into pipelines and adapt their arguments.
  */
 
-import type { Matchable, Shape } from '../core/shape.ts'
-import type {
-  BothB,
-  KindOf,
-  SameTypeAs,
-  SlotAOf,
-  SlotBOf,
-} from '../core/kind.ts'
-import type { NativeTypeRep } from '../core/named.ts'
 import type { ApplicativeDict } from '../classes/applicative.ts'
 import type { ApplyDict } from '../classes/apply.ts'
 import type { CategoryDict } from '../classes/category.ts'
@@ -22,8 +13,17 @@ import type { FunctorDict } from '../classes/functor.ts'
 import type { ProfunctorDict } from '../classes/profunctor.ts'
 import type { SemigroupoidDict } from '../classes/semigroupoid.ts'
 import type { ShowDict } from '../classes/show.ts'
-import { reduce } from '../classes/foldable.ts'
+import type {
+  BothB,
+  KindOf,
+  SameTypeAs,
+  SlotAOf,
+  SlotBOf,
+} from '../core/kind.ts'
+import type { NativeTypeRep } from '../core/named.ts'
+import type { Matchable, Shape } from '../core/shape.ts'
 import { chain } from '../classes/chain.ts'
+import { reduce } from '../classes/foldable.ts'
 
 /**
  * The shape for functions.

@@ -1,30 +1,34 @@
+import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { assertEquals, assertThrows } from '../assert.ts'
 import { append, prepend } from '../../src/classes/_append.ts'
 import { toArray } from '../../src/classes/foldable.ts'
-import { identity } from '../../src/data/identity.ts'
-import { pair } from '../../src/data/pair.ts'
-import { just } from '../../src/data/maybe.ts'
 import { right } from '../../src/data/either.ts'
+import { identity } from '../../src/data/identity.ts'
+import { just } from '../../src/data/maybe.ts'
+import { pair } from '../../src/data/pair.ts'
 
 const withoutSemigroup = (name: string) => (f: () => unknown) =>
-  assertThrows (f, TypeError, `concat: ${name} has no Semigroup`, name)
+  assert.throws (
+    f,
+    (error: unknown) => error instanceof TypeError && error.message.includes (`concat: ${name} has no Semigroup`),
+    name,
+  )
 
 test ('prepend: adds a value to the start of an array', () => {
-  assertEquals (prepend (0) ([1, 2]), [0, 1, 2])
+  assert.deepStrictEqual (prepend (0) ([1, 2]), [0, 1, 2])
 })
 
 test ('append: adds a value to the end of an array', () => {
-  assertEquals (append (3) ([1, 2]), [1, 2, 3])
+  assert.deepStrictEqual (append (3) ([1, 2]), [1, 2, 3])
 })
 
 test ('append: the element lands at the end of the traversal across supported types', () => {
-  assertEquals (
+  assert.deepStrictEqual (
     toArray (append (9) ([1, 2])),
     [...(toArray ([1, 2]) as number[]), 9],
     'Array',
   )
-  assertEquals (
+  assert.deepStrictEqual (
     toArray (prepend (9) ([1, 2])),
     [9, ...(toArray ([1, 2]) as number[])],
     'Array',
@@ -32,26 +36,24 @@ test ('append: the element lands at the end of the traversal across supported ty
 })
 
 test ('append: changing the order changes the result', () => {
-  assertEquals (append (9) ([1, 2]), [1, 2, 9])
-  assertEquals (prepend (9) ([1, 2]), [9, 1, 2])
+  assert.deepStrictEqual (append (9) ([1, 2]), [1, 2, 9])
+  assert.deepStrictEqual (prepend (9) ([1, 2]), [9, 1, 2])
 })
 
 test ('append: rejects values without of', () => {
   const withoutOf = {
-    'StrMap': { a: 1 },
-    'Map': new Map ([['a', 1]]),
+    StrMap: { a: 1 },
+    Map: new Map ([['a', 1]]),
   }
   for (const [name, wrappedValue] of Object.entries (withoutOf)) {
-    assertThrows (
+    assert.throws (
       () => append (9) (wrappedValue as never),
-      TypeError,
-      'has no Applicative',
+      (error: unknown) => error instanceof TypeError && error.message.includes ('has no Applicative'),
       name,
     )
-    assertThrows (
+    assert.throws (
       () => prepend (9) (wrappedValue as never),
-      TypeError,
-      'has no Applicative',
+      (error: unknown) => error instanceof TypeError && error.message.includes ('has no Applicative'),
       name,
     )
   }
@@ -59,22 +61,20 @@ test ('append: rejects values without of', () => {
 
 test ('append: rejects values without concat', () => {
   const withoutConcat = {
-    'Maybe': just (1),
-    'Either': right<string, number> (1),
-    'Identity': identity (1),
-    'Set': new Set ([1, 2]),
+    Maybe: just (1),
+    Either: right<string, number> (1),
+    Identity: identity (1),
+    Set: new Set ([1, 2]),
   }
   for (const [name, wrappedValue] of Object.entries (withoutConcat)) {
-    assertThrows (
+    assert.throws (
       () => append (9) (wrappedValue as never),
-      TypeError,
-      'has no Semigroup',
+      (error: unknown) => error instanceof TypeError && error.message.includes ('has no Semigroup'),
       name,
     )
-    assertThrows (
+    assert.throws (
       () => prepend (9) (wrappedValue as never),
-      TypeError,
-      'has no Semigroup',
+      (error: unknown) => error instanceof TypeError && error.message.includes ('has no Semigroup'),
       name,
     )
   }
@@ -95,8 +95,8 @@ test ('prepend: Set fails the type check and throws at runtime', () => {
 })
 
 test ('append: on an empty value it gives a one-element one', () => {
-  assertEquals (append (1) ([] as number[] as never), [1])
-  assertEquals (prepend (1) ([] as number[] as never), [1])
+  assert.deepStrictEqual (append (1) ([] as number[] as never), [1])
+  assert.deepStrictEqual (prepend (1) ([] as number[] as never), [1])
 
   // @ts-expect-error Set is no longer an ApplicativeSemigroup: it has no concat
   const _set = () => append (1) (new Set<number> ())
@@ -116,10 +116,9 @@ test ('append: rejects Set because it has no concat operation', () => {
 
   withoutSemigroup ('Set') (() => append (9) (s as never))
   withoutSemigroup ('Set') (() => prepend (9) (s as never))
-  assertThrows (
+  assert.throws (
     () => toArray (s as never),
-    TypeError,
-    'reduce: Set has no Foldable',
+    (error: unknown) => error instanceof TypeError && error.message.includes ('reduce: Set has no Foldable'),
   )
 })
 
@@ -127,14 +126,14 @@ test ('append: the original value does not change', () => {
   const values = [1, 2]
   append (3) (values as never)
   prepend (0) (values as never)
-  assertEquals (values, [1, 2])
+  assert.deepStrictEqual (values, [1, 2])
 
   const s = new Set ([1, 2])
   // @ts-expect-error Set is no longer an ApplicativeSemigroup: it has no concat
   const _set = () => append (3) (s)
   void _set
   withoutSemigroup ('Set') (() => append (3) (s as never))
-  assertEquals (s, new Set ([1, 2]))
+  assert.deepStrictEqual (s, new Set ([1, 2]))
 })
 
 test ('append: rejects Set even when the value is already present', () => {
@@ -149,7 +148,7 @@ test ('append: rejects Set even when the value is already present', () => {
   withoutSemigroup ('Set') (() => append (2) (new Set ([1, 2]) as never))
   withoutSemigroup ('Set') (() => prepend (2) (new Set ([1, 2]) as never))
   withoutSemigroup ('Set') (() => append (3) (new Set ([1, 2]) as never))
-  assertEquals (append (2) ([1, 2] as never), [1, 2, 2])
+  assert.deepStrictEqual (append (2) ([1, 2] as never), [1, 2, 2])
 })
 
 test ('append: Pair is rejected by the type check', () => {
@@ -159,9 +158,8 @@ test ('append: Pair is rejected by the type check', () => {
   const _b = () => prepend (9) (pair ('log', 1))
   void _a, _b
 
-  assertThrows (
+  assert.throws (
     () => append (9) (pair ('log', 1) as never),
-    TypeError,
-    'Pair has no Applicative',
+    (error: unknown) => error instanceof TypeError && error.message.includes ('Pair has no Applicative'),
   )
 })

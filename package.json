@@ -1,6 +1,6 @@
 {
   "name": "@algosail/ply",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -277,14 +277,12 @@
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "check": "tsc -p tsconfig.json",
-    "lint": "eslint .",
+    "lint": "eslint . --fix",
     "prepare": "tsc -p tsconfig.build.json",
-    "test": "node --disable-warning=ExperimentalWarning --experimental-transform-types --test test/classes/*_test.ts test/core/*_test.ts test/data/*_test.ts test/natives/*_test.ts test/utils/*_test.ts"
+    "test": "node --disable-warning=ExperimentalWarning --experimental-transform-types --test **/*_test.ts"
   },
   "devDependencies": {
-    "@babel/core": "^8.0.7",
-    "@babel/eslint-parser": "^8.0.7",
-    "@stylistic/eslint-plugin": "^5.10.0",
+    "@algosail/eslint-config": "^0.2.0",
     "@types/node": "^24.7.0",
     "eslint": "^10.12.0",
     "typescript": "^7.0.2"

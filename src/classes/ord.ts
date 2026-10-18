@@ -2,7 +2,6 @@
  * Operations and types for ordering values.
  */
 
-import type { Kind, Shape } from '../core/shape.ts'
 import type {
   Assert,
   MatchableIn,
@@ -11,6 +10,7 @@ import type {
   SubclassOf,
 } from '../core/kind.ts'
 import type { Instances } from '../core/named.ts'
+import type { Kind, Shape } from '../core/shape.ts'
 import type { ArrayShape } from '../natives/array.ts'
 import type { BigShape } from '../natives/bigint.ts'
 import type { BoolShape } from '../natives/boolean.ts'
@@ -20,11 +20,11 @@ import type { StrShape } from '../natives/string.ts'
 import type { SetoidDict, SetoidMethods, SetoidShapes } from './setoid.ts'
 import { lazily, nameOf, opIn } from '../core/instance.ts'
 import { Arr } from '../natives/array.ts'
-import { Str } from '../natives/string.ts'
-import { Num } from '../natives/number.ts'
-import { Bool } from '../natives/boolean.ts'
 import { Big } from '../natives/bigint.ts'
+import { Bool } from '../natives/boolean.ts'
 import { Dates } from '../natives/date.ts'
+import { Num } from '../natives/number.ts'
+import { Str } from '../natives/string.ts'
 
 /**
  * Implement these methods on a custom value to support ordering values.
@@ -139,7 +139,7 @@ type WidenOrd<S> = S extends number ? number
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.lte(3)(2) // => true
  * P.lte(3)(4) // => false
  * P.lte('b')('a') // => true
@@ -170,7 +170,7 @@ export function lte(b: any): (a: any) => boolean {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.clamp(0, 10)(42) // => 10
  * P.clamp(0, 10)(-1) // => 0
  * P.clamp(0, 10)(7) // => 7
@@ -185,7 +185,7 @@ export function clamp<A>(lo: A, hi: A): (x: A) => A {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.lt(3)(2) // => true
  * P.lt(2)(2) // => false
  * ```
@@ -199,7 +199,7 @@ export function lt<A>(b: A): (a: A) => boolean {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.gte(2)(2) // => true
  * P.gte(3)(2) // => false
  * ```
@@ -213,7 +213,7 @@ export function gte<A>(b: A): (a: A) => boolean {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.gt(1)(2) // => true
  * P.gt(2)(2) // => false
  * ```
@@ -227,7 +227,7 @@ export function gt<A>(b: A): (a: A) => boolean {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.min(2)(5) // => 2
  * P.min('pear')('fig') // => 'fig'
  * ```
@@ -241,7 +241,7 @@ export function min<A>(a: A): (b: A) => A {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.max(2)(5) // => 5
  * P.max(5)(2) // => 5
  * ```

@@ -2,32 +2,32 @@
  * Operations and types for formatting values as strings.
  */
 
-import type { Kind, Shape } from '../core/shape.ts'
 import type { MatchableIn, SlotAOf, SlotBOf } from '../core/kind.ts'
 import type { Instances } from '../core/named.ts'
+import type { Kind, Shape } from '../core/shape.ts'
 import type { ArrayShape } from '../natives/array.ts'
-import type { SetShape } from '../natives/set.ts'
-import type { MapShape } from '../natives/map.ts'
-import type { StrMapShape } from '../natives/strmap.ts'
-import type { StrShape } from '../natives/string.ts'
-import type { NumShape } from '../natives/number.ts'
-import type { BoolShape } from '../natives/boolean.ts'
 import type { BigShape } from '../natives/bigint.ts'
+import type { BoolShape } from '../natives/boolean.ts'
 import type { DateShape } from '../natives/date.ts'
-import type { ReShape } from '../natives/regexp.ts'
 import type { FnShape } from '../natives/function.ts'
+import type { MapShape } from '../natives/map.ts'
+import type { NumShape } from '../natives/number.ts'
+import type { ReShape } from '../natives/regexp.ts'
+import type { SetShape } from '../natives/set.ts'
+import type { StrShape } from '../natives/string.ts'
+import type { StrMapShape } from '../natives/strmap.ts'
 import { lazily, opIn } from '../core/instance.ts'
 import { Arr } from '../natives/array.ts'
-import { Sets } from '../natives/set.ts'
-import { Maps } from '../natives/map.ts'
-import { StrMap } from '../natives/strmap.ts'
-import { Str } from '../natives/string.ts'
-import { Num } from '../natives/number.ts'
-import { Bool } from '../natives/boolean.ts'
 import { Big } from '../natives/bigint.ts'
+import { Bool } from '../natives/boolean.ts'
 import { Dates } from '../natives/date.ts'
-import { Re } from '../natives/regexp.ts'
 import { Fn } from '../natives/function.ts'
+import { Maps } from '../natives/map.ts'
+import { Num } from '../natives/number.ts'
+import { Re } from '../natives/regexp.ts'
+import { Sets } from '../natives/set.ts'
+import { Str } from '../natives/string.ts'
+import { StrMap } from '../natives/strmap.ts'
 
 /**
  * Implement these methods on a custom value to support formatting values as strings.
@@ -145,7 +145,7 @@ export const showNatives: Instances<
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.show([1, 'a']) // => '[1, "a"]'
  * P.show({ b: 2, a: 1 }) // => '{"a": 1, "b": 2}'
  * P.show(new Set([1, 2])) // => 'Set ([1, 2])'

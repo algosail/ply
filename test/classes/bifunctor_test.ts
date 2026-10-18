@@ -1,30 +1,30 @@
+import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { assertEquals, assertThrows } from '../assert.ts'
 import { bifunctorNatives, bimap, mapLeft } from '../../src/classes/bifunctor.ts'
 import { map } from '../../src/classes/functor.ts'
 import { left, right } from '../../src/data/either.ts'
-import { pair } from '../../src/data/pair.ts'
-import { just, nothing } from '../../src/data/maybe.ts'
 import { identity } from '../../src/data/identity.ts'
+import { just, nothing } from '../../src/data/maybe.ts'
+import { pair } from '../../src/data/pair.ts'
 
 test ('bimap: transforms both sides of a Pair, or the active branch of an Either', () => {
-  assertEquals (
+  assert.deepStrictEqual (
     bimap (bang) (doubleNumber) (left<string, number> ('oops')),
     left ('oops!'),
   )
-  assertEquals (bimap (bang) (doubleNumber) (right<string, number> (2)), right (4))
-  assertEquals (bimap (bang) (doubleNumber) (pair ('log', 2)), pair ('log!', 4))
+  assert.deepStrictEqual (bimap (bang) (doubleNumber) (right<string, number> (2)), right (4))
+  assert.deepStrictEqual (bimap (bang) (doubleNumber) (pair ('log', 2)), pair ('log!', 4))
 })
 
 test ('mapLeft: transforms a Left value or the first value of a Pair', () => {
-  assertEquals (mapLeft (bang) (left<string, number> ('oops')), left ('oops!'))
-  assertEquals (mapLeft (bang) (right<string, number> (1)), right (1))
-  assertEquals (mapLeft (bang) (pair ('log', 1)), pair ('log!', 1))
+  assert.deepStrictEqual (mapLeft (bang) (left<string, number> ('oops')), left ('oops!'))
+  assert.deepStrictEqual (mapLeft (bang) (right<string, number> (1)), right (1))
+  assert.deepStrictEqual (mapLeft (bang) (pair ('log', 1)), pair ('log!', 1))
 })
 
 test ('mapLeft: the same as bimap with an identity on the right', () => {
   for (const [name, wrappedValue] of Object.entries (samplesByType)) {
-    assertEquals (
+    assert.deepStrictEqual (
       mapLeft (bang) (wrappedValue),
       bimap (bang) (idf) (wrappedValue),
       name,
@@ -34,7 +34,7 @@ test ('mapLeft: the same as bimap with an identity on the right', () => {
 
 test ('bimap: identity law across supported types', () => {
   for (const [name, wrappedValue] of Object.entries (samplesByType)) {
-    assertEquals (bimap (idf) (idf) (wrappedValue), wrappedValue, name)
+    assert.deepStrictEqual (bimap (idf) (idf) (wrappedValue), wrappedValue, name)
   }
 })
 
@@ -48,7 +48,7 @@ test ('bimap: composition law across supported types', () => {
   }
 
   for (const [name, wrappedValue] of Object.entries (samplesByType)) {
-    assertEquals (
+    assert.deepStrictEqual (
       bimap (lengthAfterBang) (doubleThenIncrement) (wrappedValue),
       bimap (size) (increment) (bimap (bang) (doubleNumber) (wrappedValue)),
       name,
@@ -58,7 +58,7 @@ test ('bimap: composition law across supported types', () => {
 
 test ('bimap: agrees with map on the value channel', () => {
   for (const [name, wrappedValue] of Object.entries (samplesByType)) {
-    assertEquals (
+    assert.deepStrictEqual (
       bimap (idf) (doubleNumber) (wrappedValue),
       map (doubleNumber) (wrappedValue),
       name,
@@ -82,8 +82,8 @@ test ('bimap: Either.Left calls only its active branch', () => {
 
   bimap (transformLeft) (transformRight) (left<string, number> ('oops'))
 
-  assertEquals (leftCalls, 1)
-  assertEquals (rightCalls, 0)
+  assert.deepStrictEqual (leftCalls, 1)
+  assert.deepStrictEqual (rightCalls, 0)
 })
 
 test ('bimap: Either.Right calls only its active branch', () => {
@@ -102,8 +102,8 @@ test ('bimap: Either.Right calls only its active branch', () => {
 
   bimap (transformLeft) (transformRight) (right<string, number> (2))
 
-  assertEquals (leftCalls, 0)
-  assertEquals (rightCalls, 1)
+  assert.deepStrictEqual (leftCalls, 0)
+  assert.deepStrictEqual (rightCalls, 1)
 })
 
 test ('bimap: Pair calls both transformations', () => {
@@ -122,8 +122,8 @@ test ('bimap: Pair calls both transformations', () => {
 
   bimap (transformLeft) (transformRight) (pair ('log', 1))
 
-  assertEquals (leftCalls, 1)
-  assertEquals (rightCalls, 1)
+  assert.deepStrictEqual (leftCalls, 1)
+  assert.deepStrictEqual (rightCalls, 1)
 })
 
 test ('bimap: Either.Left passes only the left value to its first callback', () => {
@@ -136,7 +136,7 @@ test ('bimap: Either.Left passes only the left value to its first callback', () 
 
   bimap (recordArguments) (idf) (left<string, number> ('oops'))
 
-  assertEquals (calls, [['oops']])
+  assert.deepStrictEqual (calls, [['oops']])
 })
 
 test ('bimap: Either.Left passes only the right value to its second callback', () => {
@@ -149,7 +149,7 @@ test ('bimap: Either.Left passes only the right value to its second callback', (
 
   bimap (idf) (recordArguments) (left<string, number> ('oops'))
 
-  assertEquals (calls, [])
+  assert.deepStrictEqual (calls, [])
 })
 
 test ('mapLeft: Either.Left passes only the left value', () => {
@@ -162,7 +162,7 @@ test ('mapLeft: Either.Left passes only the left value', () => {
 
   mapLeft (recordArguments) (left<string, number> ('oops'))
 
-  assertEquals (calls, [['oops']])
+  assert.deepStrictEqual (calls, [['oops']])
 })
 
 test ('bimap: Either.Right passes only the left value to its first callback', () => {
@@ -175,7 +175,7 @@ test ('bimap: Either.Right passes only the left value to its first callback', ()
 
   bimap (recordArguments) (idf) (right<string, number> (1))
 
-  assertEquals (calls, [])
+  assert.deepStrictEqual (calls, [])
 })
 
 test ('bimap: Either.Right passes only the right value to its second callback', () => {
@@ -188,7 +188,7 @@ test ('bimap: Either.Right passes only the right value to its second callback', 
 
   bimap (idf) (recordArguments) (right<string, number> (1))
 
-  assertEquals (calls, [[1]])
+  assert.deepStrictEqual (calls, [[1]])
 })
 
 test ('mapLeft: Either.Right passes only the left value', () => {
@@ -201,7 +201,7 @@ test ('mapLeft: Either.Right passes only the left value', () => {
 
   mapLeft (recordArguments) (right<string, number> (1))
 
-  assertEquals (calls, [])
+  assert.deepStrictEqual (calls, [])
 })
 
 test ('bimap: Pair passes only the left value to its first callback', () => {
@@ -214,7 +214,7 @@ test ('bimap: Pair passes only the left value to its first callback', () => {
 
   bimap (recordArguments) (idf) (pair ('log', 1))
 
-  assertEquals (calls, [['log']])
+  assert.deepStrictEqual (calls, [['log']])
 })
 
 test ('bimap: Pair passes only the right value to its second callback', () => {
@@ -227,7 +227,7 @@ test ('bimap: Pair passes only the right value to its second callback', () => {
 
   bimap (idf) (recordArguments) (pair ('log', 1))
 
-  assertEquals (calls, [[1]])
+  assert.deepStrictEqual (calls, [[1]])
 })
 
 test ('mapLeft: Pair passes only the left value', () => {
@@ -240,7 +240,7 @@ test ('mapLeft: Pair passes only the left value', () => {
 
   mapLeft (recordArguments) (pair ('log', 1))
 
-  assertEquals (calls, [['log']])
+  assert.deepStrictEqual (calls, [['log']])
 })
 
 test ('bimap: rejects values without Bifunctor', () => {
@@ -253,21 +253,19 @@ test ('bimap: rejects values without Bifunctor', () => {
       ['Identity', identity (1)],
     ] as const
   ) {
-    assertThrows (
+    assert.throws (
       () => bimap (bang) (doubleNumber) (wrappedValue as never),
-      TypeError,
-      `bimap: ${name} has no Bifunctor`,
+      (error: unknown) => error instanceof TypeError && error.message.includes (`bimap: ${name} has no Bifunctor`),
     )
-    assertThrows (
+    assert.throws (
       () => mapLeft (bang) (wrappedValue as never),
-      TypeError,
-      `bimap: ${name} has no Bifunctor`,
+      (error: unknown) => error instanceof TypeError && error.message.includes (`bimap: ${name} has no Bifunctor`),
     )
   }
 })
 
 test ('bifunctorNatives: has no native implementations', () => {
-  assertEquals (Object.keys (bifunctorNatives), [])
+  assert.deepStrictEqual (Object.keys (bifunctorNatives), [])
 })
 
 const bang = (s: string) => s + '!'
@@ -283,5 +281,5 @@ const idf = <A>(a: A): A => a
 const samplesByType = {
   'Either.Left': left<string, number> ('oops'),
   'Either.Right': right<string, number> (1),
-  'Pair': pair ('log', 1),
+  Pair: pair ('log', 1),
 }

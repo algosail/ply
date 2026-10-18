@@ -2,7 +2,6 @@
  * Operations and types for extracting values and computing from their wrappers.
  */
 
-import type { Kind, Shape } from '../core/shape.ts'
 import type {
   Assert,
   MatchableIn,
@@ -10,9 +9,10 @@ import type {
   SlotBOf,
   SubclassOf,
 } from '../core/kind.ts'
+import type { Instances } from '../core/named.ts'
+import type { Kind, Shape } from '../core/shape.ts'
 import type { ExtendDict, ExtendMethods, ExtendShapes } from './extend.ts'
 import { dispatch } from '../core/instance.ts'
-import type { Instances } from '../core/named.ts'
 
 /**
  * Implement these methods on a custom value to support extracting values and computing from their wrappers.
@@ -71,7 +71,7 @@ export const comonadNatives: Instances<ComonadDicts, ComonadShapes> = {}
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.extract(P.identity(1)) // => 1
  * P.extract(P.pair('log', 42)) // => 42
  * ```

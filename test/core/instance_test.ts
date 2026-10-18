@@ -1,22 +1,14 @@
+import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { assertEquals, assertThrows } from '../assert.ts'
 import type { SetoidDict, SetoidShapes } from '../../src/classes/setoid.ts'
 import type { NativeTable, OpsOf } from '../../src/core/instance.ts'
 import type { Instances } from '../../src/core/named.ts'
 import type { Shape } from '../../src/core/shape.ts'
-import { functorNatives } from '../../src/classes/functor.ts'
-import { foldableNatives } from '../../src/classes/foldable.ts'
-import { setoidNatives } from '../../src/classes/setoid.ts'
 import { applicativeNatives } from '../../src/classes/applicative.ts'
+import { foldableNatives } from '../../src/classes/foldable.ts'
+import { functorNatives } from '../../src/classes/functor.ts'
 import { monoidNatives } from '../../src/classes/monoid.ts'
-import { Arr } from '../../src/natives/array.ts'
-import { StrMap } from '../../src/natives/strmap.ts'
-import { just, Maybe, nothing } from '../../src/data/maybe.ts'
-import { Either, left, right } from '../../src/data/either.ts'
-import { Pair, pair } from '../../src/data/pair.ts'
-import { Identity, identity } from '../../src/data/identity.ts'
-import { equivalence } from '../../src/data/equivalence.ts'
-import { predicate } from '../../src/data/predicate.ts'
+import { setoidNatives } from '../../src/classes/setoid.ts'
 import {
   dispatch,
   emptyIn,
@@ -27,9 +19,17 @@ import {
   opIn,
   typeRepIn,
 } from '../../src/core/instance.ts'
+import { Either, left, right } from '../../src/data/either.ts'
+import { equivalence } from '../../src/data/equivalence.ts'
+import { Identity, identity } from '../../src/data/identity.ts'
+import { just, Maybe, nothing } from '../../src/data/maybe.ts'
+import { Pair, pair } from '../../src/data/pair.ts'
+import { predicate } from '../../src/data/predicate.ts'
+import { Arr } from '../../src/natives/array.ts'
+import { StrMap } from '../../src/natives/strmap.ts'
 
 test ('nameOf: recognizes native and named custom values', () => {
-  assertEquals (
+  assert.deepStrictEqual (
     [nameOf ([1]), nameOf (new Set ()), nameOf (just (1)), nameOf ({}), nameOf (null)],
     ['Array', 'Set', 'Maybe', 'StrMap', 'Null'],
   )
@@ -50,7 +50,7 @@ test ('nameOf: every native is recognized by value', () => {
     [new Date (0), 'Date'],
     [/a/g, 'RegExp'],
   ]
-  for (const [x, name] of pairs) assertEquals (nameOf (x), name, name)
+  for (const [x, name] of pairs) assert.deepStrictEqual (nameOf (x), name, name)
 })
 
 test ('nameOf: reads a name once, and never one a proxy lacks', () => {
@@ -61,96 +61,96 @@ test ('nameOf: reads a name once, and never one a proxy lacks', () => {
       return Reflect.get (target, key)
     },
   }
-  assertEquals (nameOf (new Proxy ({ a: 1 }, counting)), 'StrMap')
-  assertEquals (reads, 0)
-  assertEquals (nameOf (new Proxy (just (1), counting)), 'Maybe')
-  assertEquals (reads, 0)
-  assertEquals (nameOf (new Proxy ({ '@@type': 'Mine' }, counting)), 'Mine')
-  assertEquals (reads, 1)
+  assert.deepStrictEqual (nameOf (new Proxy ({ a: 1 }, counting)), 'StrMap')
+  assert.deepStrictEqual (reads, 0)
+  assert.deepStrictEqual (nameOf (new Proxy (just (1), counting)), 'Maybe')
+  assert.deepStrictEqual (reads, 0)
+  assert.deepStrictEqual (nameOf (new Proxy ({ '@@type': 'Mine' }, counting)), 'Mine')
+  assert.deepStrictEqual (reads, 1)
 })
 
 test ('nameOf: an unfamiliar value is Unknown', () => {
-  assertEquals (nameOf (Symbol ('s')), 'Unknown')
-  assertEquals (nameOf (new WeakMap ()), 'Unknown')
-  assertEquals (nameOf (Promise.resolve (1)), 'Unknown')
-  assertEquals (nameOf (new Boolean (true)), 'Unknown')
-  assertEquals (nameOf (new Number (1)), 'Unknown')
+  assert.deepStrictEqual (nameOf (Symbol ('s')), 'Unknown')
+  assert.deepStrictEqual (nameOf (new WeakMap ()), 'Unknown')
+  assert.deepStrictEqual (nameOf (Promise.resolve (1)), 'Unknown')
+  assert.deepStrictEqual (nameOf (new Boolean (true)), 'Unknown')
+  assert.deepStrictEqual (nameOf (new Number (1)), 'Unknown')
 })
 
 test ('nameOf: uses the custom @@type name', () => {
-  assertEquals (nameOf (just (1)), 'Maybe')
-  assertEquals (nameOf (nothing<number> ()), 'Maybe')
-  assertEquals (nameOf (left<string, number> ('err')), 'Either')
-  assertEquals (nameOf (right<string, number> (1)), 'Either')
-  assertEquals (nameOf (pair ('x', 1)), 'Pair')
-  assertEquals (nameOf (identity (1)), 'Identity')
-  assertEquals (nameOf (Maybe), 'Maybe')
-  assertEquals (nameOf (Either), 'Either')
-  assertEquals (nameOf (Pair), 'Pair')
-  assertEquals (nameOf (Identity), 'Identity')
-  assertEquals (nameOf (predicate (() => true)), 'Predicate')
-  assertEquals (nameOf (equivalence (() => true)), 'Equivalence')
-  assertEquals (nameOf ({ constructor: { '@@type': 'Own' } }), 'Own')
+  assert.deepStrictEqual (nameOf (just (1)), 'Maybe')
+  assert.deepStrictEqual (nameOf (nothing<number> ()), 'Maybe')
+  assert.deepStrictEqual (nameOf (left<string, number> ('err')), 'Either')
+  assert.deepStrictEqual (nameOf (right<string, number> (1)), 'Either')
+  assert.deepStrictEqual (nameOf (pair ('x', 1)), 'Pair')
+  assert.deepStrictEqual (nameOf (identity (1)), 'Identity')
+  assert.deepStrictEqual (nameOf (Maybe), 'Maybe')
+  assert.deepStrictEqual (nameOf (Either), 'Either')
+  assert.deepStrictEqual (nameOf (Pair), 'Pair')
+  assert.deepStrictEqual (nameOf (Identity), 'Identity')
+  assert.deepStrictEqual (nameOf (predicate (() => true)), 'Predicate')
+  assert.deepStrictEqual (nameOf (equivalence (() => true)), 'Equivalence')
+  assert.deepStrictEqual (nameOf ({ constructor: { '@@type': 'Own' } }), 'Own')
 })
 
 test ('nameOf: gives @@type precedence over structural recognition', () => {
-  assertEquals (nameOf ({ '@@type': 'Fiction' }), 'Fiction')
-  assertEquals (nameOf (Object.assign ([1], { '@@type': 'Forgery' })), 'Forgery')
+  assert.deepStrictEqual (nameOf ({ '@@type': 'Fiction' }), 'Fiction')
+  assert.deepStrictEqual (nameOf (Object.assign ([1], { '@@type': 'Forgery' })), 'Forgery')
 })
 
 test ('nameOf: distinguishes Date, RegExp, Map, and plain records', () => {
-  assertEquals (StrMap.is (new Date (0)), false)
-  assertEquals (nameOf (new Date (0)), 'Date')
-  assertEquals (nameOf (/a/), 'RegExp')
-  assertEquals (nameOf (new Map ()), 'Map')
-  assertEquals (nameOf (new Set ()), 'Set')
-  assertEquals (nameOf (Object.create (null)), 'StrMap')
-  assertEquals (nameOf (class {}), 'Fn')
+  assert.deepStrictEqual (StrMap.is (new Date (0)), false)
+  assert.deepStrictEqual (nameOf (new Date (0)), 'Date')
+  assert.deepStrictEqual (nameOf (/a/), 'RegExp')
+  assert.deepStrictEqual (nameOf (new Map ()), 'Map')
+  assert.deepStrictEqual (nameOf (new Set ()), 'Set')
+  assert.deepStrictEqual (nameOf (Object.create (null)), 'StrMap')
+  assert.deepStrictEqual (nameOf (class {}), 'Fn')
 })
 
 test ('hasMethod: recognizes callable properties', () => {
-  assertEquals (hasMethod (just (1), 'map'), true)
-  assertEquals (hasMethod ([1], 'map'), true)
-  assertEquals (hasMethod ((n: number) => n, 'call'), true)
-  assertEquals (hasMethod ({ map: 1 }, 'map'), false)
-  assertEquals (hasMethod ({}, 'map'), false)
-  assertEquals (hasMethod (null, 'map'), false)
-  assertEquals (hasMethod (undefined, 'map'), false)
+  assert.deepStrictEqual (hasMethod (just (1), 'map'), true)
+  assert.deepStrictEqual (hasMethod ([1], 'map'), true)
+  assert.deepStrictEqual (hasMethod ((n: number) => n, 'call'), true)
+  assert.deepStrictEqual (hasMethod ({ map: 1 }, 'map'), false)
+  assert.deepStrictEqual (hasMethod ({}, 'map'), false)
+  assert.deepStrictEqual (hasMethod (null, 'map'), false)
+  assert.deepStrictEqual (hasMethod (undefined, 'map'), false)
 })
 
 test ('hasMethod: a primitive does not count as having a method', () => {
-  assertEquals (hasMethod ('text', 'toUpperCase'), false)
-  assertEquals (hasMethod (42, 'toFixed'), false)
-  assertEquals (hasMethod (10n, 'toString'), false)
+  assert.deepStrictEqual (hasMethod ('text', 'toUpperCase'), false)
+  assert.deepStrictEqual (hasMethod (42, 'toFixed'), false)
+  assert.deepStrictEqual (hasMethod (10n, 'toString'), false)
 })
 
 test ('hasMethod: an inherited method is a method too', () => {
-  assertEquals (hasMethod ({}, 'toString'), true)
-  assertEquals (hasMethod (Object.create ({ step: () => 1 }), 'step'), true)
+  assert.deepStrictEqual (hasMethod ({}, 'toString'), true)
+  assert.deepStrictEqual (hasMethod (Object.create ({ step: () => 1 }), 'step'), true)
 })
 
 test ('opIn: gives a native table entry precedence over a value method', () => {
   const f = opIn (functorNatives, [1, 2, 3], 'map')
 
-  assertEquals (typeof f, 'function')
-  assertEquals (f?. ([1, 2, 3] as never, increment as never), [2, 3, 4])
+  assert.deepStrictEqual (typeof f, 'function')
+  assert.deepStrictEqual (f?. ([1, 2, 3] as never, increment as never), [2, 3, 4])
 })
 
 test ('opIn: does not fall back to a value method when its native entry exists', () => {
-  assertEquals (typeof [1].join, 'function')
-  assertEquals (opIn (functorNatives, [1], 'join'), undefined)
-  assertEquals (typeof [1].at, 'function')
-  assertEquals (opIn (setoidNatives, [1], 'at'), undefined)
+  assert.deepStrictEqual (typeof [1].join, 'function')
+  assert.deepStrictEqual (opIn (functorNatives, [1], 'join'), undefined)
+  assert.deepStrictEqual (typeof [1].at, 'function')
+  assert.deepStrictEqual (opIn (setoidNatives, [1], 'at'), undefined)
 })
 
 test ('opIn: uses a value method when no native entry exists', () => {
   const f = opIn (functorNatives, just (1), 'map')
 
-  assertEquals (typeof f, 'function')
-  assertEquals (f?. (just (1) as never, increment as never), just (2))
-  assertEquals (opIn (functorNatives, 'text', 'map'), undefined)
-  assertEquals (opIn (functorNatives, null, 'map'), undefined)
-  assertEquals (opIn (functorNatives, undefined, 'map'), undefined)
+  assert.deepStrictEqual (typeof f, 'function')
+  assert.deepStrictEqual (f?. (just (1) as never, increment as never), just (2))
+  assert.deepStrictEqual (opIn (functorNatives, 'text', 'map'), undefined)
+  assert.deepStrictEqual (opIn (functorNatives, null, 'map'), undefined)
+  assert.deepStrictEqual (opIn (functorNatives, undefined, 'map'), undefined)
 })
 
 test ('typeRepIn: gives a representative method precedence over the native table', () => {
@@ -158,20 +158,20 @@ test ('typeRepIn: gives a representative method precedence over the native table
   const f = typeRepIn (applicativeNatives, own, 'of')
   const byName = typeRepIn (applicativeNatives, { '@@type': 'Array' }, 'of')
 
-  assertEquals (f?. (1 as never), ['own', 1])
-  assertEquals (byName?. (1 as never), [1])
+  assert.deepStrictEqual (f?. (1 as never), ['own', 1])
+  assert.deepStrictEqual (byName?. (1 as never), [1])
 })
 
 test ('typeRepIn: a field that is not callable is not the operation', () => {
   const f = typeRepIn (applicativeNatives, { '@@type': 'Array', of: 5 }, 'of')
 
-  assertEquals (f?. (1 as never), [1])
-  assertEquals (typeRepIn (applicativeNatives, { of: 5 }, 'of'), undefined)
+  assert.deepStrictEqual (f?. (1 as never), [1])
+  assert.deepStrictEqual (typeRepIn (applicativeNatives, { of: 5 }, 'of'), undefined)
 })
 
 test ('ofIn: lifts a single value into the type of the sample', () => {
-  assertEquals (ofIn (applicativeNatives, [1, 2]) (9), [9])
-  assertEquals (ofIn (applicativeNatives, just (1)) (9), just (9))
+  assert.deepStrictEqual (ofIn (applicativeNatives, [1, 2]) (9), [9])
+  assert.deepStrictEqual (ofIn (applicativeNatives, just (1)) (9), just (9))
 })
 
 test ("ofIn and emptyIn: use a custom value's constructor representative", () => {
@@ -184,8 +184,8 @@ test ("ofIn and emptyIn: use a custom value's constructor representative", () =>
     },
   }
 
-  assertEquals (ofIn ({}, own) (7), { '@@type': 'Own', value: 7 })
-  assertEquals (emptyIn ({}, own) (), { '@@type': 'Own', value: null })
+  assert.deepStrictEqual (ofIn ({}, own) (7), { '@@type': 'Own', value: 7 })
+  assert.deepStrictEqual (emptyIn ({}, own) (), { '@@type': 'Own', value: null })
 })
 
 test ('lazily: defers each entry until it is accessed', () => {
@@ -197,9 +197,9 @@ test ('lazily: defers each entry until it is accessed', () => {
     }) as never,
   })
 
-  assertEquals (calls, 0)
-  assertEquals (table.One, { value: 1 } as never)
-  assertEquals (calls, 1)
+  assert.deepStrictEqual (calls, 0)
+  assert.deepStrictEqual (table.One, { value: 1 } as never)
+  assert.deepStrictEqual (calls, 1)
 })
 
 test ('lazily: calls the getter on every access', () => {
@@ -211,9 +211,9 @@ test ('lazily: calls the getter on every access', () => {
     }) as never,
   })
 
-  assertEquals (table.One, Arr as never)
-  assertEquals (table.One, Arr as never)
-  assertEquals (calls, 2)
+  assert.deepStrictEqual (table.One, Arr as never)
+  assert.deepStrictEqual (table.One, Arr as never)
+  assert.deepStrictEqual (calls, 2)
 })
 
 test ('lazily: the table is enumerable and holds exactly the declared cells', () => {
@@ -223,14 +223,14 @@ test ('lazily: the table is enumerable and holds exactly the declared cells', ()
     StrMap: () => StrMap,
   })
 
-  assertEquals (Object.keys (table), ['Array', 'StrMap'])
-  assertEquals (table.Array, Arr)
-  assertEquals (table.StrMap, StrMap)
+  assert.deepStrictEqual (Object.keys (table), ['Array', 'StrMap'])
+  assert.deepStrictEqual (table.Array, Arr)
+  assert.deepStrictEqual (table.StrMap, StrMap)
 })
 
 test ('nameOf: null and undefined are named, not dumped into Unknown', () => {
-  assertEquals (nameOf (null), 'Null')
-  assertEquals (nameOf (undefined), 'Undefined')
+  assert.deepStrictEqual (nameOf (null), 'Null')
+  assert.deepStrictEqual (nameOf (undefined), 'Undefined')
 })
 
 test ('opIn: preserves this and forwards only the operation arguments', () => {
@@ -244,30 +244,30 @@ test ('opIn: preserves this and forwards only the operation arguments', () => {
   }
   const f = opIn ({}, value, 'collect')
 
-  assertEquals (f?. (value as never, 1 as never, 2 as never), [1, 2])
-  assertEquals (received, [[true, 1, 2]])
+  assert.deepStrictEqual (f?. (value as never, 1 as never, 2 as never), [1, 2])
+  assert.deepStrictEqual (received, [[true, 1, 2]])
 })
 
 test ('dispatch: calls the native operation with the value and remaining arguments', () => {
-  assertEquals (dispatch ('map', 'Functor', functorNatives, [1, 2], increment), [
+  assert.deepStrictEqual (dispatch ('map', 'Functor', functorNatives, [1, 2], increment), [
     2,
     3,
   ])
-  assertEquals (
+  assert.deepStrictEqual (
     dispatch ('map', 'Functor', functorNatives, new Set ([1, 2]), increment),
     new Set ([2, 3]),
   )
-  assertEquals (
+  assert.deepStrictEqual (
     dispatch ('map', 'Functor', functorNatives, new Map ([['a', 1]]), increment),
     new Map ([['a', 2]]),
   )
-  assertEquals (
+  assert.deepStrictEqual (
     dispatch ('map', 'Functor', functorNatives, { a: 1 }, increment),
     {
       a: 2,
     },
   )
-  assertEquals (
+  assert.deepStrictEqual (
     dispatch (
       'reduce',
       'Foldable',
@@ -281,45 +281,40 @@ test ('dispatch: calls the native operation with the value and remaining argumen
 })
 
 test ('dispatch: calls custom value methods with the operation arguments', () => {
-  assertEquals (
+  assert.deepStrictEqual (
     dispatch ('map', 'Functor', functorNatives, just (1), increment),
     just (2),
   )
-  assertEquals (
+  assert.deepStrictEqual (
     dispatch ('map', 'Functor', functorNatives, nothing<number> (), increment),
     nothing<number> (),
   )
-  assertEquals (
+  assert.deepStrictEqual (
     dispatch ('map', 'Functor', functorNatives, pair ('x', 1), increment),
     pair ('x', 2),
   )
 })
 
 test ('dispatch: a value without the operation throws a descriptive TypeError', () => {
-  assertThrows (
+  assert.throws (
     () => dispatch ('map', 'Functor', functorNatives, 'text', increment),
-    TypeError,
-    'map: String has no Functor',
+    (error: unknown) => error instanceof TypeError && error.message.includes ('map: String has no Functor'),
   )
-  assertThrows (
+  assert.throws (
     () => dispatch ('map', 'Functor', functorNatives, null, increment),
-    TypeError,
-    'map: Null has no Functor',
+    (error: unknown) => error instanceof TypeError && error.message.includes ('map: Null has no Functor'),
   )
-  assertThrows (
+  assert.throws (
     () => dispatch ('map', 'Functor', functorNatives, undefined, increment),
-    TypeError,
-    'map: Undefined has no Functor',
+    (error: unknown) => error instanceof TypeError && error.message.includes ('map: Undefined has no Functor'),
   )
-  assertThrows (
+  assert.throws (
     () => dispatch ('map', 'Functor', functorNatives, 42, increment),
-    TypeError,
-    'map: Number has no Functor',
+    (error: unknown) => error instanceof TypeError && error.message.includes ('map: Number has no Functor'),
   )
-  assertThrows (
+  assert.throws (
     () => dispatch ('map', 'Functor', functorNatives, Symbol ('s'), increment),
-    TypeError,
-    'map: Unknown has no Functor',
+    (error: unknown) => error instanceof TypeError && error.message.includes ('map: Unknown has no Functor'),
   )
 })
 
@@ -334,69 +329,62 @@ test ('dispatch: forwards the supplied argument list unchanged', () => {
   }
   const table = {} as { readonly Counter: { op(): number } }
 
-  assertEquals (dispatch ('op', 'Probing', table, value), 0)
-  assertEquals (dispatch ('op', 'Probing', table, value, 'a'), 1)
-  assertEquals (dispatch ('op', 'Probing', table, value, 'a', 'b'), 2)
-  assertEquals (calls, [[], ['a'], ['a', 'b']])
+  assert.deepStrictEqual (dispatch ('op', 'Probing', table, value), 0)
+  assert.deepStrictEqual (dispatch ('op', 'Probing', table, value, 'a'), 1)
+  assert.deepStrictEqual (dispatch ('op', 'Probing', table, value, 'a', 'b'), 2)
+  assert.deepStrictEqual (calls, [[], ['a'], ['a', 'b']])
 })
 
 test ('typeRepIn: returns undefined when no representative operation exists', () => {
-  assertEquals (typeRepIn (applicativeNatives, null, 'of'), undefined)
-  assertEquals (typeRepIn (applicativeNatives, undefined, 'of'), undefined)
-  assertEquals (typeRepIn (applicativeNatives, Pair, 'of'), undefined)
-  assertEquals (
+  assert.deepStrictEqual (typeRepIn (applicativeNatives, null, 'of'), undefined)
+  assert.deepStrictEqual (typeRepIn (applicativeNatives, undefined, 'of'), undefined)
+  assert.deepStrictEqual (typeRepIn (applicativeNatives, Pair, 'of'), undefined)
+  assert.deepStrictEqual (
     typeof typeRepIn (monoidNatives, { '@@type': 'String' }, 'empty'),
     'function',
   )
 })
 
 test ('ofIn: a value without Applicative throws a descriptive TypeError', () => {
-  assertThrows (
+  assert.throws (
     () => ofIn (applicativeNatives, 'text'),
-    TypeError,
-    'String has no Applicative',
+    (error: unknown) => error instanceof TypeError && error.message.includes ('String has no Applicative'),
   )
-  assertThrows (
+  assert.throws (
     () => ofIn (applicativeNatives, pair ('x', 1)),
-    TypeError,
-    'Pair has no Applicative',
+    (error: unknown) => error instanceof TypeError && error.message.includes ('Pair has no Applicative'),
   )
-  assertThrows (
+  assert.throws (
     () => ofIn (applicativeNatives, null),
-    TypeError,
-    'Null has no Applicative',
+    (error: unknown) => error instanceof TypeError && error.message.includes ('Null has no Applicative'),
   )
 })
 
 test ('emptyIn: the neutral element by a sample of a value', () => {
-  assertEquals (emptyIn (monoidNatives, [1, 2]) (), [])
-  assertEquals (emptyIn (monoidNatives, 'text') (), '')
+  assert.deepStrictEqual (emptyIn (monoidNatives, [1, 2]) (), [])
+  assert.deepStrictEqual (emptyIn (monoidNatives, 'text') (), '')
 
-  assertThrows (
+  assert.throws (
     () => emptyIn (monoidNatives, new Set ([1])),
-    TypeError,
-    'Set has no Monoid',
+    (error: unknown) => error instanceof TypeError && error.message.includes ('Set has no Monoid'),
   )
 })
 
 test ('emptyIn: a value without Monoid throws a descriptive TypeError', () => {
-  assertThrows (
+  assert.throws (
     () => emptyIn (monoidNatives, 42),
-    TypeError,
-    'Number has no Monoid',
+    (error: unknown) => error instanceof TypeError && error.message.includes ('Number has no Monoid'),
   )
-  assertThrows (
+  assert.throws (
     () => emptyIn (monoidNatives, just (1)),
-    TypeError,
-    'Maybe has no Monoid',
+    (error: unknown) => error instanceof TypeError && error.message.includes ('Maybe has no Monoid'),
   )
-  assertThrows (
+  assert.throws (
     () => emptyIn (monoidNatives, new Map ([['a', 1]])),
-    TypeError,
-    'Map has no Monoid',
+    (error: unknown) => error instanceof TypeError && error.message.includes ('Map has no Monoid'),
   )
   for (const dropped of ['Set', 'Map']) {
-    assertEquals (dropped in monoidNatives, false, dropped)
+    assert.deepStrictEqual (dropped in monoidNatives, false, dropped)
   }
 })
 
@@ -406,10 +394,9 @@ test ('ofIn: foreign statics are not accepted', () => {
     constructor: { '@@type': 'Own', of: (a: unknown) => a },
   }
 
-  assertThrows (
+  assert.throws (
     () => ofIn ({}, trickster),
-    TypeError,
-    'Trickster has no Applicative',
+    (error: unknown) => error instanceof TypeError && error.message.includes ('Trickster has no Applicative'),
   )
 })
 

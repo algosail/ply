@@ -2,16 +2,16 @@
  * Operations and types for combining values with `concat`.
  */
 
-import type { Kind, Shape } from '../core/shape.ts'
 import type { MatchableIn, SlotAOf, SlotBOf } from '../core/kind.ts'
 import type { Instances } from '../core/named.ts'
+import type { Kind, Shape } from '../core/shape.ts'
 import type { ArrayShape } from '../natives/array.ts'
-import type { StrMapShape } from '../natives/strmap.ts'
 import type { StrShape } from '../natives/string.ts'
+import type { StrMapShape } from '../natives/strmap.ts'
 import { dispatch, lazily } from '../core/instance.ts'
 import { Arr } from '../natives/array.ts'
-import { StrMap } from '../natives/strmap.ts'
 import { Str } from '../natives/string.ts'
+import { StrMap } from '../natives/strmap.ts'
 
 /**
  * Implement these methods on a custom value to support combining values with `concat`.
@@ -89,7 +89,7 @@ export const semigroupNatives: Instances<
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.concat([1, 2])([3]) // => [1, 2, 3]
  * P.concat('ab')('cd') // => 'abcd'
  * P.concat({ a: 1 })({ a: 2, b: 2 }) // => { a: 1, b: 2 }

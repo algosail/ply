@@ -2,7 +2,6 @@
  * Operations and types for collecting wrapped results with `traverse`.
  */
 
-import type { Kind, Shape } from '../core/shape.ts'
 import type {
   Assert,
   KindOf,
@@ -15,7 +14,9 @@ import type {
   Superclass,
 } from '../core/kind.ts'
 import type { Instances } from '../core/named.ts'
+import type { Kind, Shape } from '../core/shape.ts'
 import type { ArrayShape } from '../natives/array.ts'
+import type { ApplicativeTypeRep } from './applicative.ts'
 import type { ApplyKeys, ApplyMethods, ApplyShapes } from './apply.ts'
 import type {
   FoldableDict,
@@ -23,7 +24,6 @@ import type {
   FoldableShapes,
 } from './foldable.ts'
 import type { FunctorDict, FunctorMethods, FunctorShapes } from './functor.ts'
-import type { ApplicativeTypeRep } from './applicative.ts'
 import { dispatch, lazily } from '../core/instance.ts'
 import { Arr } from '../natives/array.ts'
 
@@ -109,7 +109,7 @@ export const traversableNatives: Instances<
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.traverse(P.Maybe)((n: number) => n > 0 ? P.just(n) : P.nothing())([1, 2])
  * // => Just ([1, 2])
  * P.traverse(P.Maybe)((n: number) => n > 0 ? P.just(n) : P.nothing())([1, -2])
@@ -146,7 +146,7 @@ export type ApplyRep<S extends Shape, R> =
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.sequence(P.Maybe)([P.just(1), P.just(2)]) // => Just ([1, 2])
  * P.sequence(P.Maybe)([P.just(1), P.nothing()]) // => Nothing
  * P.sequence(P.Arr)([[1, 2], [3]]) // => [[1, 3], [2, 3]]

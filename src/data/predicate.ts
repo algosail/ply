@@ -2,14 +2,14 @@
  * Build reusable validation rules, adapt them to properties, and combine them.
  */
 
-import type { Shape, Shaped } from '../core/shape.ts'
-import type { Satisfies } from '../core/kind.ts'
 import type { CheckableTypeRep } from '../classes/checkable.ts'
 import type { DecidableMethods } from '../classes/decidable.ts'
 import type { DecidableTypeRep } from '../classes/decidable.ts'
 import type { DivisibleTypeRep } from '../classes/divisible.ts'
 import type { MonoidTypeRep } from '../classes/monoid.ts'
 import type { SemigroupMethods } from '../classes/semigroup.ts'
+import type { Satisfies } from '../core/kind.ts'
+import type { Shape, Shaped } from '../core/shape.ts'
 import type { Either } from './either.ts'
 import { either } from './either.ts'
 
@@ -101,7 +101,7 @@ export interface PredicateMethods<A>
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * const long = P.predicate((s: string) => s.length > 3)
  * long('hello') // => true
  * ```
@@ -189,7 +189,7 @@ export class Predicate<A> implements PredicateMethods<A> {
     that: Predicate<C>,
   ): Predicate<X> {
     return predicate<X> ((x) =>
-      either ((b: A) => this (b)) ((c: C) => that (c)) (split (x))
+      either ((b: A) => this (b)) ((c: C) => that (c)) (split (x)),
     )
   }
 
@@ -206,7 +206,7 @@ export class Predicate<A> implements PredicateMethods<A> {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * const long = P.predicate((s: string) => s.length > 3)
  * P.predicateNot(long)('hi') // => true
  * ```
@@ -220,7 +220,7 @@ export function predicateNot<A>(p: Predicate<A>): Predicate<A> {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * const long = P.predicate((s: string) => s.length > 3)
  * const startsA = P.predicate((s: string) => s.startsWith('a'))
  * P.predicateAnd(long)(startsA)('abcd') // => true
@@ -238,7 +238,7 @@ export function predicateAnd<A>(
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * const long = P.predicate((s: string) => s.length > 3)
  * const startsA = P.predicate((s: string) => s.startsWith('a'))
  * P.predicateOr(long)(startsA)('ax') // => true
@@ -256,7 +256,7 @@ export function predicateOr<A>(
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * const long = P.predicate((s: string) => s.length > 3)
  * const startsA = P.predicate((s: string) => s.startsWith('a'))
  * P.allPass([long, startsA])('abcd') // => true
@@ -272,7 +272,7 @@ export function allPass<A>(ps: readonly Predicate<A>[]): Predicate<A> {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * const long = P.predicate((s: string) => s.length > 3)
  * const startsA = P.predicate((s: string) => s.startsWith('a'))
  * P.anyPass([long, startsA])('ax') // => true

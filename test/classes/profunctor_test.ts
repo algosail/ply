@@ -1,32 +1,32 @@
+import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { assertEquals, assertThrows } from '../assert.ts'
-import { profunctorNatives, promap } from '../../src/classes/profunctor.ts'
 import { contramap } from '../../src/classes/contravariant.ts'
 import { map } from '../../src/classes/functor.ts'
-import { just } from '../../src/data/maybe.ts'
+import { profunctorNatives, promap } from '../../src/classes/profunctor.ts'
 import { right } from '../../src/data/either.ts'
+import { just } from '../../src/data/maybe.ts'
 import { pair } from '../../src/data/pair.ts'
 
 test ('promap: adapts both the input and output of a function', () => {
   const f = promap (len) (hash) (doubleNumber)
 
-  assertEquals (f ('ab'), '#4')
-  assertEquals (f (''), '#0')
+  assert.deepStrictEqual (f ('ab'), '#4')
+  assert.deepStrictEqual (f (''), '#0')
 })
 
 test ('promap: identity law', () => {
   const p = (n: number) => n * 3
   const same = promap (idf<number>) (idf<number>) (p)
-  for (const n of [0, 1, -4, 9]) assertEquals (same (n), p (n))
+  for (const n of [0, 1, -4, 9]) assert.deepStrictEqual (same (n), p (n))
 })
 
 test ('promap: composition law', () => {
   const p = (n: number) => n + 100
   const twice = promap (increment) (hash) (promap (doubleNumber) (increment) (p))
   const once = promap ((n: number) => doubleNumber (increment (n))) ((n: number) =>
-    hash (increment (n))
+    hash (increment (n)),
   ) (p)
-  for (const n of [0, 1, 5]) assertEquals (twice (n), once (n))
+  for (const n of [0, 1, 5]) assert.deepStrictEqual (twice (n), once (n))
 })
 
 test ('promap: agrees with map and contramap', () => {
@@ -35,9 +35,9 @@ test ('promap: agrees with map and contramap', () => {
   const viaMap = map (hash) (p)
   const asContramap = promap (len) (idf<number>) (p)
   const viaContramap = contramap (len) (p)
-  for (const n of [0, 2, 7]) assertEquals (asMap (n), viaMap (n))
+  for (const n of [0, 2, 7]) assert.deepStrictEqual (asMap (n), viaMap (n))
   for (const s of ['', 'ab', 'abcd']) {
-    assertEquals (asContramap (s), viaContramap (s))
+    assert.deepStrictEqual (asContramap (s), viaContramap (s))
   }
 })
 
@@ -57,8 +57,8 @@ test ('promap: each adapter receives only the value it transforms', () => {
 
   promap (adaptInput) (adaptOutput) (doubleNumber) ('abc')
 
-  assertEquals (inputCalls, [['abc']])
-  assertEquals (outputCalls, [[2]])
+  assert.deepStrictEqual (inputCalls, [['abc']])
+  assert.deepStrictEqual (outputCalls, [[2]])
 })
 
 test ('promap: rejects values without Profunctor', () => {
@@ -70,17 +70,16 @@ test ('promap: rejects values without Profunctor', () => {
       ['Pair', pair ('l', 1)],
     ] as const
   ) {
-    assertThrows (
+    assert.throws (
       () => promap (len) (hash) (wrappedValue as never),
-      TypeError,
-      `promap: ${name} has no Profunctor`,
+      (error: unknown) => error instanceof TypeError && error.message.includes (`promap: ${name} has no Profunctor`),
     )
   }
 })
 
 test ('profunctorNatives: provides only Fn operations', () => {
-  assertEquals (Object.keys (profunctorNatives), ['Fn'])
-  assertEquals (typeof profunctorNatives.Fn.promap, 'function')
+  assert.deepStrictEqual (Object.keys (profunctorNatives), ['Fn'])
+  assert.deepStrictEqual (typeof profunctorNatives.Fn.promap, 'function')
 })
 
 const len = (s: string) => s.length

@@ -2,7 +2,6 @@
  * Operations and types for sequencing wrapped computations with `chain`.
  */
 
-import type { Kind, Shape } from '../core/shape.ts'
 import type {
   Assert,
   BothB,
@@ -14,6 +13,7 @@ import type {
   SubclassOf,
 } from '../core/kind.ts'
 import type { Instances } from '../core/named.ts'
+import type { Kind, Shape } from '../core/shape.ts'
 import type { ArrayShape } from '../natives/array.ts'
 import type { FnShape } from '../natives/function.ts'
 import type { SetShape } from '../natives/set.ts'
@@ -100,7 +100,7 @@ export const chainNatives: Instances<
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.chain((n: number) => [n, -n])([1, 2]) // => [1, -1, 2, -2]
  * P.chain((n: number) => P.just(n + 1))(P.just(1)) // => Just (2)
  * P.chain((n: number) => P.just(n + 1))(P.nothing<number>()) // => Nothing
@@ -124,7 +124,7 @@ export function chain<A, G>(
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.join([[1, 2], [3]]) // => [1, 2, 3]
  * P.join(P.just(P.just(1))) // => Just (1)
  * P.join(P.just(P.nothing<number>())) // => Nothing

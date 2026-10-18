@@ -1,16 +1,16 @@
+import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { assertEquals, assertThrows } from '../assert.ts'
-import { compose, semigroupoidNatives } from '../../src/classes/semigroupoid.ts'
-import { size } from '../../src/classes/foldable.ts'
-import { toUpper, words } from '../../src/natives/string.ts'
-import { pair } from '../../src/data/pair.ts'
 import type { Pair } from '../../src/data/pair.ts'
+import { size } from '../../src/classes/foldable.ts'
+import { compose, semigroupoidNatives } from '../../src/classes/semigroupoid.ts'
 import { just } from '../../src/data/maybe.ts'
+import { pair } from '../../src/data/pair.ts'
+import { toUpper, words } from '../../src/natives/string.ts'
 
 test ('compose: runs the second function before the first', () => {
-  assertEquals (compose ((n: number) => n * 10) ((n: number) => n + 1) (2), 30)
-  assertEquals (compose ((n: number) => n + 1) ((n: number) => n * 10) (2), 21)
-  assertEquals (compose (size) (words) ('one two three'), 3)
+  assert.deepStrictEqual (compose ((n: number) => n * 10) ((n: number) => n + 1) (2), 30)
+  assert.deepStrictEqual (compose ((n: number) => n + 1) ((n: number) => n * 10) (2), 21)
+  assert.deepStrictEqual (compose (size) (words) ('one two three'), 3)
 })
 
 test ('compose: Pair as an arrow', () => {
@@ -18,39 +18,37 @@ test ('compose: Pair as an arrow', () => {
     pair ('a' as const, 'b' as const),
   )
   typed<Pair<'a', 'c'>> () (arrow, true)
-  assertEquals ([arrow.fst, arrow.snd], ['a', 'c'])
+  assert.deepStrictEqual ([arrow.fst, arrow.snd], ['a', 'c'])
 
   const chained = compose (compose (pair (2, 3)) (pair (1, 2))) (pair (0, 1))
   typed<Pair<number, number>> () (chained, true)
-  assertEquals ([chained.fst, chained.snd], [0, 3])
+  assert.deepStrictEqual ([chained.fst, chained.snd], [0, 3])
 })
 
 test ('compose: Pair does not require Semigroup at the ends', () => {
   const c = compose (pair (2, 3)) (pair (1, 2))
-  assertEquals ([c.fst, c.snd], [1, 3])
+  assert.deepStrictEqual ([c.fst, c.snd], [1, 3])
 })
 
 test ('compose: associativity law across supported types', () => {
   const lhsFn = compose (compose (str) (big)) (len)
   const rhsFn = compose (str) (compose (big) (len))
-  for (const s of ['', 'ab', 'abcd']) assertEquals (lhsFn (s), rhsFn (s))
+  for (const s of ['', 'ab', 'abcd']) assert.deepStrictEqual (lhsFn (s), rhsFn (s))
 
   const a1 = pair ('a' as const, 'b' as const)
   const a2 = pair ('b' as const, 'c' as const)
   const a3 = pair ('c' as const, 'd' as const)
-  assertEquals (compose (compose (a3) (a2)) (a1), compose (a3) (compose (a2) (a1)))
+  assert.deepStrictEqual (compose (compose (a3) (a2)) (a1), compose (a3) (compose (a2) (a1)))
 })
 
 test ('compose: rejects values without Semigroupoid', () => {
-  assertThrows (
+  assert.throws (
     () => compose ((n: number) => n) ([1, 2, 3] as never),
-    TypeError,
-    'compose: Array has no Semigroupoid',
+    (error: unknown) => error instanceof TypeError && error.message.includes ('compose: Array has no Semigroupoid'),
   )
-  assertThrows (
+  assert.throws (
     () => compose ((n: number) => n) (just (1) as never),
-    TypeError,
-    'compose: Maybe has no Semigroupoid',
+    (error: unknown) => error instanceof TypeError && error.message.includes ('compose: Maybe has no Semigroupoid'),
   )
 })
 
@@ -59,17 +57,17 @@ test ('compose: the type of a function composition is inferred exactly', () => {
   typed<(i: string) => number> () (wordCount, true)
 
   const shout = compose (toUpper) ((values: readonly string[]) =>
-    values.join (' ')
+    values.join (' '),
   )
   typed<(i: readonly string[]) => string> () (shout, true)
-  assertEquals (shout (['ab', 'cd']), 'AB CD')
+  assert.deepStrictEqual (shout (['ab', 'cd']), 'AB CD')
 
   const deep = compose (compose (big) (len)) ((values: readonly string[]) =>
-    values.join ('')
+    values.join (''),
   )
   typed<(i: readonly string[]) => boolean> () (deep, true)
-  assertEquals (deep (['a', 'b']), false)
-  assertEquals (deep (['abc', 'd']), true)
+  assert.deepStrictEqual (deep (['a', 'b']), false)
+  assert.deepStrictEqual (deep (['abc', 'd']), true)
 })
 
 test ('compose: the ends of the arrows must meet', () => {
@@ -99,7 +97,7 @@ test ('compose: widening one end does not glue arrows that do not meet', () => {
 test ('compose: a consumed end may be widened, a carried one may not', () => {
   const wide = compose ((x: string) => x.length) ((_n: number): 'b' => 'b')
   typed<(i: number) => number> () (wide, true)
-  assertEquals (wide (1), 1)
+  assert.deepStrictEqual (wide (1), 1)
 
   // @ts-expect-error the output of g is wider than the input of f
   const bad = compose ((x: 'b') => x.length) ((_n: number): 'b' | 'c' => 'b')
@@ -127,8 +125,8 @@ test ('compose: an unsound first arrow does not pass the type check', () => {
 })
 
 test ('semigroupoidNatives: provides only Fn operations', () => {
-  assertEquals (Object.keys (semigroupoidNatives), ['Fn'])
-  assertEquals (typeof semigroupoidNatives.Fn.compose, 'function')
+  assert.deepStrictEqual (Object.keys (semigroupoidNatives), ['Fn'])
+  assert.deepStrictEqual (typeof semigroupoidNatives.Fn.compose, 'function')
 })
 
 type Eq<A, B> = (<T>() => T extends A ? 1 : 2) extends

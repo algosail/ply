@@ -2,11 +2,11 @@
  * Match, replace, and split text using regular expressions.
  */
 
-import type { Shape } from '../core/shape.ts'
-import type { NativeTypeRep } from '../core/named.ts'
 import type { CheckableDict } from '../classes/checkable.ts'
 import type { SetoidDict } from '../classes/setoid.ts'
 import type { ShowDict } from '../classes/show.ts'
+import type { NativeTypeRep } from '../core/named.ts'
+import type { Shape } from '../core/shape.ts'
 import type { Maybe } from '../data/maybe.ts'
 import { just, nothing } from '../data/maybe.ts'
 
@@ -34,7 +34,7 @@ export type ReTypeRep =
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.Re.equals(/hello/i, /hello/i) // => true
  * ```
  */
@@ -57,7 +57,7 @@ export const Re: ReTypeRep = {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.test(/^a/)('abc') // => true
  * P.test(/^a/)('bc') // => false
  * ```
@@ -90,7 +90,7 @@ export type Matched = {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.match(/(\d)(\w)?/)('1a')
  * // => Just ({ match: '1a', groups: [Just ('1'), Just ('a')] })
  * P.match(/x(a)?/)('x') // => Just ({ match: 'x', groups: [Nothing] })
@@ -111,7 +111,7 @@ export function match(pattern: RegExp): (s: string) => Maybe<Matched> {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.matchAll(/(\d)/)('1 2')
  * // => [{ match: '1', groups: [Just ('1')] },
  * //     { match: '2', groups: [Just ('2')] }]
@@ -144,7 +144,7 @@ export function matchAll(pattern: RegExp): (s: string) => Matched[] {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.firstCaptures(/(\d)-/)('1- 2-') // => [Just ('1'), Just ('2')]
  * ```
  */
@@ -158,7 +158,7 @@ export function firstCaptures(pattern: RegExp): (s: string) => Maybe<string>[] {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.escape('a-b') // => '\\x61\\x2db'
  * new RegExp(`[${P.escape('a-b')}]`, 'u') // catches the hyphen, not the range
  * ```
@@ -175,7 +175,7 @@ export function escape(s: string): string {
  * ```ts
  * import { assertThrows } from '@std/assert'
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.regex('gi')('ab+c') // => /ab+c/gi
  * assertThrows(
  *   () => P.regex('q'),
@@ -200,11 +200,11 @@ export function regex(flags: string): (source: string) => RegExp {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * const upperGroup = P.replace(([g]) =>
  *   g.match(() => '', (s: string) => s.toUpperCase())
  * )
- * 
+ *
  * upperGroup(/-(\w)/g)('a-b-c') // => 'aBC'
  * ```
  */
@@ -230,7 +230,7 @@ export function replace(
  * ```ts
  * import { assertThrows } from '@std/assert'
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.splitOnRegex(/,/g)('a,b,c') // => ['a', 'b', 'c']
  * assertThrows(
  *   () => P.splitOnRegex(/,/),

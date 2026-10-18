@@ -2,7 +2,6 @@
  * Operations and types for combining values and undoing them with `invert`.
  */
 
-import type { Kind, Shape } from '../core/shape.ts'
 import type {
   Assert,
   MatchableIn,
@@ -10,10 +9,11 @@ import type {
   SlotBOf,
   SubclassOf,
 } from '../core/kind.ts'
+import type { Instances } from '../core/named.ts'
+import type { Kind, Shape } from '../core/shape.ts'
 import type { MonoidDict, MonoidShapes } from './monoid.ts'
 import type { SemigroupMethods } from './semigroup.ts'
 import { hasMethod, nameOf } from '../core/instance.ts'
-import type { Instances } from '../core/named.ts'
 
 /**
  * Implement these methods on a custom value to support combining values and undoing them with `invert`.
@@ -70,17 +70,17 @@ export const groupNatives: Instances<GroupDicts, GroupShapes> = {}
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * const add = (value: number) => ({
  *   '@@type': 'Add' as const,
  *   value,
  *   concat(that: { value: number }) { return add(this.value + that.value) },
  *   invert() { return add(-this.value) },
  * })
- * 
+ *
  * P.invert(add(3)).value // => -3
  * P.invert(P.invert(add(3))).value // => 3
- * 
+ *
  * P.concat(add(3))(P.invert(add(3))).value // => 0
  * P.concat(P.invert(add(3)))(add(3)).value // => 0
  * ```

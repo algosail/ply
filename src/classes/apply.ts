@@ -2,7 +2,6 @@
  * Operations and types for applying wrapped functions with `ap`.
  */
 
-import type { Kind, Shape } from '../core/shape.ts'
 import type {
   Assert,
   BothB,
@@ -15,6 +14,7 @@ import type {
   SubclassOf,
 } from '../core/kind.ts'
 import type { Instances } from '../core/named.ts'
+import type { Kind, Shape } from '../core/shape.ts'
 import type { ArrayShape } from '../natives/array.ts'
 import type { FnShape } from '../natives/function.ts'
 import type { SetShape } from '../natives/set.ts'
@@ -102,7 +102,7 @@ export const applyNatives: Instances<
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.ap([(n: number) => n + 1])([1, 2]) // => [2, 3]
  * P.ap([Math.floor, Math.ceil])([1.5, 2.5]) // => [1, 2, 2, 3]
  * P.ap(P.just((n: number) => n + 1))(P.just(1)) // => Just (2)
@@ -127,7 +127,7 @@ export function ap<G extends Apply<G>>(
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * const sum = (a: number) => (b: number) => a + b
  * P.lift2(sum)([1, 2])([10, 20]) // => [11, 21, 12, 22]
  * P.lift2(sum)(P.just(1))(P.nothing<number>()) // => Nothing
@@ -150,7 +150,7 @@ export function lift2<A, B, C>(
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * const sum3 = (a: number) => (b: number) => (c: number) => a + b + c
  * P.lift3(sum3)(P.just(1))(P.just(2))(P.just(3)) // => Just (6)
  * P.lift3(sum3)([1, 2])([10])([100]) // => [111, 112]
@@ -178,7 +178,7 @@ export function lift3<A, B, C, D>(
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.apFirst([1, 2])([3, 4]) // => [1, 1, 2, 2]
  * P.apFirst(P.just(1))(P.nothing<number>()) // => Nothing
  * ```
@@ -205,7 +205,7 @@ export function apFirst<G extends Apply<G>>(
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.apSecond([1, 2])([3, 4]) // => [3, 4, 3, 4]
  * P.apSecond(P.just(1))(P.just(2)) // => Just (2)
  * ```

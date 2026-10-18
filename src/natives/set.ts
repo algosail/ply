@@ -2,8 +2,6 @@
  * Create sets and compare membership by value with `setMember` and `setDifference`.
  */
 
-import type { Matchable, Shape } from '../core/shape.ts'
-import type { NativeTypeRep } from '../core/named.ts'
 import type { ApplicativeDict } from '../classes/applicative.ts'
 import type { ApplyDict } from '../classes/apply.ts'
 import type { ChainDict } from '../classes/chain.ts'
@@ -11,6 +9,8 @@ import type { CheckableDict } from '../classes/checkable.ts'
 import type { FilterableDict } from '../classes/filterable.ts'
 import type { FunctorDict } from '../classes/functor.ts'
 import type { ShowDict } from '../classes/show.ts'
+import type { NativeTypeRep } from '../core/named.ts'
+import type { Matchable, Shape } from '../core/shape.ts'
 import { equals } from '../classes/setoid.ts'
 import { show } from '../classes/show.ts'
 
@@ -54,7 +54,7 @@ export type SetTypeRep =
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.of(P.Sets)(1) // => Set ([1])
  * ```
  */
@@ -89,7 +89,7 @@ export const Sets: SetTypeRep = {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.setFromIterable('aab') // => Set (["a", "b"])
  * P.setFromIterable([1, 1, 2]) // => Set ([1, 2])
  * ```
@@ -103,7 +103,7 @@ export function setFromIterable<A>(xs: Iterable<A>): Set<A> {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.setDifference(new Set([1, 2, 3]), new Set([2])) // => Set ([1, 3])
  * P.setDifference(new Set([[1], [2]]), new Set([[1]])) // => Set ([[2]])
  * ```
@@ -117,7 +117,7 @@ export function setDifference<A>(a: Set<A>, b: Set<A>): Set<A> {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.setMember([1])(new Set([[1]])) // => true
  * new Set([[1]]).has([1]) // => false
  * ```

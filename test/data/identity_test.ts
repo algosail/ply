@@ -1,54 +1,54 @@
+import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { assertEquals, assertThrows } from '../assert.ts'
-import { Identity, identity } from '../../src/data/identity.ts'
-import { just, Maybe, nothing } from '../../src/data/maybe.ts'
-import { Either, left, right } from '../../src/data/either.ts'
 import { alt } from '../../src/classes/alt.ts'
-import { duplicate, extend } from '../../src/classes/extend.ts'
 import { extract } from '../../src/classes/comonad.ts'
+import { duplicate, extend } from '../../src/classes/extend.ts'
 import { filter } from '../../src/classes/filterable.ts'
 import { size, toArray } from '../../src/classes/foldable.ts'
 import { map } from '../../src/classes/functor.ts'
 import { empty } from '../../src/classes/monoid.ts'
 import { concat } from '../../src/classes/semigroup.ts'
+import { Either, left, right } from '../../src/data/either.ts'
+import { Identity, identity } from '../../src/data/identity.ts'
+import { just, Maybe, nothing } from '../../src/data/maybe.ts'
 
 test ('Identity: uses its public name and supports detached static functions', () => {
   const { is, of } = Identity
 
-  assertEquals (Object.getPrototypeOf (of (42)).constructor.name, 'Identity')
-  assertEquals (of (42), identity (42))
-  assertEquals (is (of (42)), true)
-  assertEquals (is (42), false)
+  assert.deepStrictEqual (Object.getPrototypeOf (of (42)).constructor.name, 'Identity')
+  assert.deepStrictEqual (of (42), identity (42))
+  assert.deepStrictEqual (is (of (42)), true)
+  assert.deepStrictEqual (is (42), false)
 })
 
 test ('Identity: instances store the payload and share their methods', () => {
   const first = identity (1)
   const second = identity (2)
 
-  assertEquals (Object.keys (first), ['value'])
-  assertEquals (first.map === second.map, true)
-  assertEquals (JSON.stringify (first), '{"value":1}')
+  assert.deepStrictEqual (Object.keys (first), ['value'])
+  assert.deepStrictEqual (first.map === second.map, true)
+  assert.deepStrictEqual (JSON.stringify (first), '{"value":1}')
 })
 
 test ('identity: wraps a value so it can be used with operations such as map and chain', () => {
   const w = identity (1)
 
-  assertEquals (w.value, 1)
-  assertEquals (w.constructor['@@type'], 'Identity')
-  assertEquals (identity (identity (1)).value, identity (1))
+  assert.deepStrictEqual (w.value, 1)
+  assert.deepStrictEqual (w.constructor['@@type'], 'Identity')
+  assert.deepStrictEqual (identity (identity (1)).value, identity (1))
 })
 
 test ('Identity: creates values and identifies their type', () => {
-  assertEquals (Identity['@@type'], 'Identity')
-  assertEquals (Identity.of (1), identity (1))
+  assert.deepStrictEqual (Identity['@@type'], 'Identity')
+  assert.deepStrictEqual (Identity.of (1), identity (1))
   const rep: unknown = identity (1).constructor
 
-  assertEquals (rep, Identity)
+  assert.deepStrictEqual (rep, Identity)
 })
 
 test ('map: transforms contained values', () => {
-  assertEquals (identity (1).map (increment), identity (2))
-  assertEquals (map (increment) (identity (1)), identity (2))
+  assert.deepStrictEqual (identity (1).map (increment), identity (2))
+  assert.deepStrictEqual (map (increment) (identity (1)), identity (2))
   let calls = 0
 
   function recordValue(n: number) {
@@ -58,93 +58,93 @@ test ('map: transforms contained values', () => {
 
   identity (1).map (recordValue)
 
-  assertEquals (calls, 1)
+  assert.deepStrictEqual (calls, 1)
 })
 
 test ('ap: applies wrapped functions to wrapped values', () => {
-  assertEquals (identity (1).ap (identity (increment)), identity (2))
+  assert.deepStrictEqual (identity (1).ap (identity (increment)), identity (2))
 })
 
 test ('chain: sequences computations that return the same wrapper', () => {
-  assertEquals (identity (4).chain ((n) => identity (n / 2)), identity (2))
-  assertEquals (
+  assert.deepStrictEqual (identity (4).chain ((n) => identity (n / 2)), identity (2))
+  assert.deepStrictEqual (
     identity (1).chain ((n) => identity (identity (n))),
     identity (identity (1)),
   )
 })
 
 test ('extract: unwraps an Identity, or returns the second value of a Pair', () => {
-  assertEquals (identity (1).extract (), 1)
-  assertEquals (extract (identity (1)), 1)
-  assertEquals (extract (Identity.of ('x')), 'x')
-  assertEquals (Identity.of (extract (identity ('x'))), identity ('x'))
+  assert.deepStrictEqual (identity (1).extract (), 1)
+  assert.deepStrictEqual (extract (identity (1)), 1)
+  assert.deepStrictEqual (extract (Identity.of ('x')), 'x')
+  assert.deepStrictEqual (Identity.of (extract (identity ('x'))), identity ('x'))
 })
 
 test ('reduce: combines values from left to right, starting with an initial accumulator', () => {
-  assertEquals (
+  assert.deepStrictEqual (
     identity (3).reduce ((accumulator: number, a) => accumulator + a, 10),
     13,
   )
-  assertEquals (toArray (identity (1)), [1])
-  assertEquals (size (identity (1)), 1)
+  assert.deepStrictEqual (toArray (identity (1)), [1])
+  assert.deepStrictEqual (size (identity (1)), 1)
 })
 
 test ('traverse: transforms values into a chosen wrapper and collects them inside one result', () => {
-  assertEquals (
+  assert.deepStrictEqual (
     identity (1).traverse (Maybe, (n: number) => just (n * 2)),
     just (identity (2)),
   )
-  assertEquals (
+  assert.deepStrictEqual (
     identity (1).traverse (Maybe, () => nothing<number> ()),
     nothing<Identity<number>> (),
   )
-  assertEquals (
+  assert.deepStrictEqual (
     identity (1).traverse (Identity, (n: number) => identity (n)),
     identity (identity (1)),
   )
-  assertEquals (
+  assert.deepStrictEqual (
     identity (-1).traverse (Identity, (n: number) => identity (n)),
     identity (identity (-1)),
   )
 })
 
 test ('equals: compares values by content, including nested arrays and records', () => {
-  assertEquals (identity (1).equals (identity (1)), true)
-  assertEquals (identity (1).equals (identity (2)), false)
-  assertEquals (identity ([1, [2]]).equals (identity ([1, [2]])), true)
-  assertEquals (identity (just (1)).equals (identity (just (1))), true)
-  assertEquals (identity (just (1)).equals (identity (nothing<number> ())), false)
+  assert.deepStrictEqual (identity (1).equals (identity (1)), true)
+  assert.deepStrictEqual (identity (1).equals (identity (2)), false)
+  assert.deepStrictEqual (identity ([1, [2]]).equals (identity ([1, [2]])), true)
+  assert.deepStrictEqual (identity (just (1)).equals (identity (just (1))), true)
+  assert.deepStrictEqual (identity (just (1)).equals (identity (nothing<number> ())), false)
 })
 
 test ('lte: checks whether the value is at most the supplied bound', () => {
-  assertEquals (identity (1).lte (identity (2)), true)
-  assertEquals (identity (2).lte (identity (1)), false)
-  assertEquals (identity (1).lte (identity (1)), true)
-  assertEquals (identity ('a').lte (identity ('b')), true)
-  assertEquals (identity ([1, 1]).lte (identity ([1, 2])), true)
+  assert.deepStrictEqual (identity (1).lte (identity (2)), true)
+  assert.deepStrictEqual (identity (2).lte (identity (1)), false)
+  assert.deepStrictEqual (identity (1).lte (identity (1)), true)
+  assert.deepStrictEqual (identity ('a').lte (identity ('b')), true)
+  assert.deepStrictEqual (identity ([1, 1]).lte (identity ([1, 2])), true)
 })
 
 test ("show: formats a value as a readable string, including ply's wrapped values", () => {
-  assertEquals (identity (1).show (), 'Identity (1)')
-  assertEquals (identity ('foo').show (), 'Identity ("foo")')
-  assertEquals (identity (identity (1)).show (), 'Identity (Identity (1))')
-  assertEquals (identity (just (1)).show (), 'Identity (Just (1))')
-  assertEquals (identity ([1, 2]).show (), 'Identity ([1, 2])')
+  assert.deepStrictEqual (identity (1).show (), 'Identity (1)')
+  assert.deepStrictEqual (identity ('foo').show (), 'Identity ("foo")')
+  assert.deepStrictEqual (identity (identity (1)).show (), 'Identity (Identity (1))')
+  assert.deepStrictEqual (identity (just (1)).show (), 'Identity (Just (1))')
+  assert.deepStrictEqual (identity ([1, 2]).show (), 'Identity ([1, 2])')
 })
 
 test ('duplicate: wraps a value together with its existing wrapper', () => {
-  assertEquals (duplicate (identity (1)), identity (identity (1)))
-  assertEquals (duplicate (identity (1)), identity (1).extend (id))
+  assert.deepStrictEqual (duplicate (identity (1)), identity (identity (1)))
+  assert.deepStrictEqual (duplicate (identity (1)), identity (1).extend (id))
 })
 
 test ('lte: the order is total and antisymmetric', () => {
   const values = [identity (1), identity (2), identity (3)]
   for (const a of values) {
     for (const b of values) {
-      assertEquals (a.lte (b) || b.lte (a), true, 'totality')
-      if (a.lte (b) && b.lte (a)) assertEquals (a.equals (b), true, 'antisymm.')
+      assert.deepStrictEqual (a.lte (b) || b.lte (a), true, 'totality')
+      if (a.lte (b) && b.lte (a)) assert.deepStrictEqual (a.equals (b), true, 'antisymm.')
       for (const c of values) {
-        if (a.lte (b) && b.lte (c)) assertEquals (a.lte (c), true, 'transitivity')
+        if (a.lte (b) && b.lte (c)) assert.deepStrictEqual (a.lte (c), true, 'transitivity')
       }
     }
   }
@@ -153,8 +153,8 @@ test ('lte: the order is total and antisymmetric', () => {
 test ('map: functor laws', () => {
   const w = identity (3)
 
-  assertEquals (w.map (id), w, 'identity')
-  assertEquals (
+  assert.deepStrictEqual (w.map (id), w, 'identity')
+  assert.deepStrictEqual (
     w.map ((n) => increment (doubleNumber (n))),
     w.map (doubleNumber).map (increment),
     'composition',
@@ -165,13 +165,13 @@ test ('ap: applicative laws', () => {
   const f = (n: number) => n + 3
   const v = identity (7)
 
-  assertEquals (v.ap (Identity.of (id)), v, 'identity')
-  assertEquals (
+  assert.deepStrictEqual (v.ap (Identity.of (id)), v, 'identity')
+  assert.deepStrictEqual (
     Identity.of (7).ap (Identity.of (f)),
     Identity.of (f (7)),
     'homomorphism',
   )
-  assertEquals (
+  assert.deepStrictEqual (
     Identity.of (7).ap (identity (f)),
     identity (f).ap (Identity.of ((g: (n: number) => number) => g (7))),
     'interchange',
@@ -183,7 +183,7 @@ test ('ap: applicative laws', () => {
   const vv = identity (doubleNumber)
   const w = identity (5)
 
-  assertEquals (
+  assert.deepStrictEqual (
     w.ap (vv.ap (u.map (composeFunctions))),
     w.ap (vv).ap (u),
     'composition',
@@ -199,9 +199,9 @@ test ('chain: monad laws', () => {
   const g = incrementIdentity
   const m = identity (3)
 
-  assertEquals (m.chain (f).chain (g), m.chain ((n) => f (n).chain (g)), 'assoc.')
-  assertEquals (m.chain ((a) => Identity.of (a)), m, 'right identity')
-  assertEquals (Identity.of (3).chain (f), f (3), 'left identity')
+  assert.deepStrictEqual (m.chain (f).chain (g), m.chain ((n) => f (n).chain (g)), 'assoc.')
+  assert.deepStrictEqual (m.chain ((a) => Identity.of (a)), m, 'right identity')
+  assert.deepStrictEqual (Identity.of (3).chain (f), f (3), 'left identity')
 })
 
 test ('extend: comonad laws', () => {
@@ -209,9 +209,9 @@ test ('extend: comonad laws', () => {
   const f = (x: Identity<number>) => x.extract () + 1
   const g = (x: Identity<number>) => x.extract () * 2
 
-  assertEquals (w.extend ((x) => x.extract ()), w, 'left identity')
-  assertEquals (w.extend (f).extract (), f (w), 'right identity')
-  assertEquals (
+  assert.deepStrictEqual (w.extend ((x) => x.extract ()), w, 'left identity')
+  assert.deepStrictEqual (w.extend (f).extract (), f (w), 'right identity')
+  assert.deepStrictEqual (
     w.extend (g).extend (f),
     w.extend ((x) => f (x.extend (g))),
     'extend associativity',
@@ -221,12 +221,12 @@ test ('extend: comonad laws', () => {
 test ('equals: Setoid laws', () => {
   const values = [identity (1), identity (2), identity (1)]
   for (const a of values) {
-    assertEquals (a.equals (a), true, 'reflexivity')
+    assert.deepStrictEqual (a.equals (a), true, 'reflexivity')
     for (const b of values) {
-      assertEquals (a.equals (b), b.equals (a), 'symmetry')
+      assert.deepStrictEqual (a.equals (b), b.equals (a), 'symmetry')
       for (const c of values) {
         if (a.equals (b) && b.equals (c)) {
-          assertEquals (a.equals (c), true, 'transitivity')
+          assert.deepStrictEqual (a.equals (c), true, 'transitivity')
         }
       }
     }
@@ -234,44 +234,40 @@ test ('equals: Setoid laws', () => {
 })
 
 test ('extend: computes a new value from the whole wrapper', () => {
-  assertEquals (identity (1).extend ((w) => w.value + 1), identity (2))
-  assertEquals (
+  assert.deepStrictEqual (identity (1).extend ((w) => w.value + 1), identity (2))
+  assert.deepStrictEqual (
     extend ((w: Identity<number>) => w.extract () * 10) (identity (3)),
     identity (30),
   )
 })
 
 test ('traverse: preserves the failure returned by the callback', () => {
-  assertEquals (
+  assert.deepStrictEqual (
     identity (1).traverse (Either, (n: number) => right<string, number> (n)),
     right<string, Identity<number>> (identity (1)),
   )
-  assertEquals (
+  assert.deepStrictEqual (
     identity (1).traverse (Either, () => left<string, number> ('err')),
     left<string, Identity<number>> ('err'),
   )
 })
 
 test ('Identity: alt, filter, concat and empty all refuse', () => {
-  assertThrows (
+  assert.throws (
     () => alt (identity (2) as never) (identity (1) as never),
-    TypeError,
-    'alt: Identity has no Alt',
+    (error: unknown) => error instanceof TypeError && error.message.includes ('alt: Identity has no Alt'),
   )
-  assertThrows (
+  assert.throws (
     () => filter (((n: number) => n > 0) as never) (identity (1) as never),
-    TypeError,
-    'filter: Identity has no Filterable',
+    (error: unknown) => error instanceof TypeError && error.message.includes ('filter: Identity has no Filterable'),
   )
-  assertThrows (
+  assert.throws (
     () => concat (identity ('a') as never) (identity ('b') as never),
-    TypeError,
-    'concat: Identity has no Semigroup',
+    (error: unknown) => error instanceof TypeError && error.message.includes ('concat: Identity has no Semigroup'),
   )
-  assertThrows (
+  assert.throws (
     () => empty (Identity as never),
-    TypeError,
-    'empty: Identity has no Monoid',
+    (error: unknown) => error instanceof TypeError && error.message.includes ('empty: Identity has no Monoid'),
   )
 })
 
@@ -285,7 +281,7 @@ test ('map: Identity passes only its value', () => {
 
   identity (1).map (recordArguments)
 
-  assertEquals (calls, [[1]])
+  assert.deepStrictEqual (calls, [[1]])
 })
 
 test ('chain: Identity passes only its value', () => {
@@ -298,7 +294,7 @@ test ('chain: Identity passes only its value', () => {
 
   identity (1).chain (recordArguments)
 
-  assertEquals (calls, [[1]])
+  assert.deepStrictEqual (calls, [[1]])
 })
 
 test ('extend: Identity passes the whole wrapper', () => {
@@ -311,7 +307,7 @@ test ('extend: Identity passes the whole wrapper', () => {
 
   identity (1).extend (recordArguments)
 
-  assertEquals (calls, [[identity (1)]])
+  assert.deepStrictEqual (calls, [[identity (1)]])
 })
 
 test ('traverse: Identity passes only its value', () => {
@@ -324,7 +320,7 @@ test ('traverse: Identity passes only its value', () => {
 
   identity (1).traverse (Identity, recordArguments)
 
-  assertEquals (calls, [[1]])
+  assert.deepStrictEqual (calls, [[1]])
 })
 
 test ('reduce: Identity passes accumulator and value', () => {
@@ -337,7 +333,7 @@ test ('reduce: Identity passes accumulator and value', () => {
 
   identity (1).reduce (recordArguments, 0)
 
-  assertEquals (calls, [[0, 1]])
+  assert.deepStrictEqual (calls, [[0, 1]])
 })
 
 const increment = (n: number) => n + 1

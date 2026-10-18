@@ -14,16 +14,16 @@ export type Cases<T extends { readonly tag: string }, B> = {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * type Shape =
  *   | { readonly tag: 'circle'; readonly r: number }
  *   | { readonly tag: 'square'; readonly side: number }
- * 
+ *
  * const area = P.cases<Shape, number>({
  *   circle: (c) => Math.PI * c.r * c.r,
  *   square: (s) => s.side * s.side,
  * })
- * 
+ *
  * area({ tag: 'square', side: 3 }) // => 9
  * ```
  */

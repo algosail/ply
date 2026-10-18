@@ -11,7 +11,7 @@ const shown = (n: number): string => Object.is (n, -0) ? '-0' : String (n)
  * ```ts
  * import { assertThrows } from '@std/assert'
  * import { integer } from './domain.ts'
- * 
+ *
  * integer('take', 2) // => 2
  * assertThrows(
  *   () => integer('take', 2.5),
@@ -34,7 +34,7 @@ export function integer(op: string, n: number): number {
  * ```ts
  * import { assertThrows } from '@std/assert'
  * import { integerFrom } from './domain.ts'
- * 
+ *
  * integerFrom('chunksOf', 1, 3) // => 3
  * assertThrows(
  *   () => integerFrom('chunksOf', 1, 0),
@@ -57,7 +57,7 @@ export function integerFrom(op: string, least: number, n: number): number {
  * ```ts
  * import { assertThrows } from '@std/assert'
  * import { finiteFrom } from './domain.ts'
- * 
+ *
  * finiteFrom('after', 0, 12.5) // => 12.5
  * assertThrows(
  *   () => finiteFrom('after', 0, NaN),

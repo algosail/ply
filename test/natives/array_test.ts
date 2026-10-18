@@ -1,5 +1,16 @@
+import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { assertEquals, assertThrows } from '../assert.ts'
+import { done, loop, type Step } from '../../src/classes/chainrec.ts'
+import { sequence, traverse } from '../../src/classes/traversable.ts'
+import {
+  type Either,
+  Either as EitherRep,
+  left,
+  right,
+} from '../../src/data/either.ts'
+import { Identity, identity } from '../../src/data/identity.ts'
+import { just, type Maybe, Maybe as MaybeRep, nothing } from '../../src/data/maybe.ts'
+import { type Pair, pair } from '../../src/data/pair.ts'
 import {
   Arr,
   array,
@@ -20,24 +31,13 @@ import {
   zip,
   zipWith,
 } from '../../src/natives/array.ts'
-import { just, type Maybe, Maybe as MaybeRep, nothing } from '../../src/data/maybe.ts'
-import { type Pair, pair } from '../../src/data/pair.ts'
-import {
-  type Either,
-  Either as EitherRep,
-  left,
-  right,
-} from '../../src/data/either.ts'
-import { Identity, identity } from '../../src/data/identity.ts'
-import { done, loop, type Step } from '../../src/classes/chainrec.ts'
-import { sequence, traverse } from '../../src/classes/traversable.ts'
 
 test ('fromIterable: copies an iterable into an array', () => {
-  assertEquals (fromIterable ('ab'), ['a', 'b'])
-  assertEquals (fromIterable (new Set ([1, 1, 2])), [1, 2])
-  assertEquals (fromIterable (new Map ([['a', 1]])), [['a', 1]])
-  assertEquals (fromIterable ([1, 2]), [1, 2])
-  assertEquals (fromIterable (new Set<number> ()), [])
+  assert.deepStrictEqual (fromIterable ('ab'), ['a', 'b'])
+  assert.deepStrictEqual (fromIterable (new Set ([1, 1, 2])), [1, 2])
+  assert.deepStrictEqual (fromIterable (new Map ([['a', 1]])), [['a', 1]])
+  assert.deepStrictEqual (fromIterable ([1, 2]), [1, 2])
+  assert.deepStrictEqual (fromIterable (new Set<number> ()), [])
 })
 
 test ('fromIterable: drains the iterator exactly once', () => {
@@ -47,38 +47,38 @@ test ('fromIterable: drains the iterator exactly once', () => {
     yield 3
   }
 
-  assertEquals (fromIterable (counted ()), [1, 2, 3])
+  assert.deepStrictEqual (fromIterable (counted ()), [1, 2, 3])
 })
 
 test ('range: creates consecutive integers from start up to, but excluding, end', () => {
-  assertEquals (range (0) (5), [0, 1, 2, 3, 4])
-  assertEquals (range (-5) (0), [-5, -4, -3, -2, -1])
-  assertEquals (range (3) (3), [])
-  assertEquals (range (5) (1), [])
+  assert.deepStrictEqual (range (0) (5), [0, 1, 2, 3, 4])
+  assert.deepStrictEqual (range (-5) (0), [-5, -4, -3, -2, -1])
+  assert.deepStrictEqual (range (3) (3), [])
+  assert.deepStrictEqual (range (5) (1), [])
 })
 
 test ('takeWhile: keeps the leading values that pass the predicate', () => {
   const odd = (n: number) => n % 2 !== 0
 
-  assertEquals (takeWhile (odd) ([3, 3, 3, 7, 6, 3, 5, 4]), [3, 3, 3, 7])
-  assertEquals (takeWhile (odd) ([]), [])
-  assertEquals (takeWhile (odd) ([2, 4]), [])
-  assertEquals (takeWhile (odd) ([1, 3]), [1, 3])
+  assert.deepStrictEqual (takeWhile (odd) ([3, 3, 3, 7, 6, 3, 5, 4]), [3, 3, 3, 7])
+  assert.deepStrictEqual (takeWhile (odd) ([]), [])
+  assert.deepStrictEqual (takeWhile (odd) ([2, 4]), [])
+  assert.deepStrictEqual (takeWhile (odd) ([1, 3]), [1, 3])
 })
 
 test ('dropWhile: removes the leading values that pass the predicate', () => {
   const odd = (n: number) => n % 2 !== 0
 
-  assertEquals (dropWhile (odd) ([3, 3, 3, 7, 6, 3, 5, 4]), [6, 3, 5, 4])
-  assertEquals (dropWhile (odd) ([]), [])
-  assertEquals (dropWhile (odd) ([2, 4]), [2, 4])
-  assertEquals (dropWhile (odd) ([1, 3]), [])
+  assert.deepStrictEqual (dropWhile (odd) ([3, 3, 3, 7, 6, 3, 5, 4]), [6, 3, 5, 4])
+  assert.deepStrictEqual (dropWhile (odd) ([]), [])
+  assert.deepStrictEqual (dropWhile (odd) ([2, 4]), [2, 4])
+  assert.deepStrictEqual (dropWhile (odd) ([1, 3]), [])
 })
 
 test ('takeWhile and dropWhile cut the array at exactly one point', () => {
   const values = [1, 3, 5, 2, 7, 4]
   for (const p of [even, (n: number) => n < 5, () => true, () => false]) {
-    assertEquals ([...takeWhile (p) (values), ...dropWhile (p) (values)], values)
+    assert.deepStrictEqual ([...takeWhile (p) (values), ...dropWhile (p) (values)], values)
   }
 })
 
@@ -87,22 +87,22 @@ test ('takeWhile and dropWhile do not touch the input', () => {
   takeWhile (even) (values)
   dropWhile (even) (values)
 
-  assertEquals (values, [1, 2, 3])
+  assert.deepStrictEqual (values, [1, 2, 3])
 })
 
 test ('chunksOf: splits an array into chunks of at most n values', () => {
-  assertEquals (chunksOf (2) ([1, 2, 3, 4, 5]), [[1, 2], [3, 4], [5]])
-  assertEquals (chunksOf (2) ([1, 2, 3, 4]), [[1, 2], [3, 4]])
-  assertEquals (chunksOf (1) ([1, 2]), [[1], [2]])
-  assertEquals (chunksOf (5) ([1, 2]), [[1, 2]])
-  assertEquals (chunksOf (2) ([]), [])
+  assert.deepStrictEqual (chunksOf (2) ([1, 2, 3, 4, 5]), [[1, 2], [3, 4], [5]])
+  assert.deepStrictEqual (chunksOf (2) ([1, 2, 3, 4]), [[1, 2], [3, 4]])
+  assert.deepStrictEqual (chunksOf (1) ([1, 2]), [[1], [2]])
+  assert.deepStrictEqual (chunksOf (5) ([1, 2]), [[1, 2]])
+  assert.deepStrictEqual (chunksOf (2) ([]), [])
 })
 
 test ('find: returns the first matching value as Just, or Nothing if none match', () => {
-  assertEquals (find (even) ([1, 2, 3, 4]), just (2))
-  assertEquals (find (even) ([1, 3]), nothing ())
-  assertEquals (find (even) ([]), nothing ())
-  assertEquals (find ((n: number) => n > 1) ([1, 2, 3]), just (2))
+  assert.deepStrictEqual (find (even) ([1, 2, 3, 4]), just (2))
+  assert.deepStrictEqual (find (even) ([1, 3]), nothing ())
+  assert.deepStrictEqual (find (even) ([]), nothing ())
+  assert.deepStrictEqual (find ((n: number) => n > 1) ([1, 2, 3]), just (2))
 })
 
 test ('find: stops at the first hit', () => {
@@ -115,22 +115,22 @@ test ('find: stops at the first hit', () => {
 
   find (recordAndFindTwo) ([1, 2, 3, 4])
 
-  assertEquals (seen, [1, 2])
+  assert.deepStrictEqual (seen, [1, 2])
 })
 
 test ('findIndex: returns the zero-based index of the first match as Just', () => {
-  assertEquals (findIndex (even) ([1, 2, 3, 4]), just (1))
-  assertEquals (findIndex (even) ([2]), just (0))
-  assertEquals (findIndex (even) ([1, 3]), nothing ())
-  assertEquals (findIndex (even) ([]), nothing ())
+  assert.deepStrictEqual (findIndex (even) ([1, 2, 3, 4]), just (1))
+  assert.deepStrictEqual (findIndex (even) ([2]), just (0))
+  assert.deepStrictEqual (findIndex (even) ([1, 3]), nothing ())
+  assert.deepStrictEqual (findIndex (even) ([]), nothing ())
 })
 
 test ('findMap: returns the first successful result', () => {
   const half = (n: number) => even (n) ? just (n / 2) : nothing<number> ()
 
-  assertEquals (findMap (half) ([1, 3, 4, 6]), just (2))
-  assertEquals (findMap (half) ([1, 3]), nothing ())
-  assertEquals (findMap (half) ([]), nothing ())
+  assert.deepStrictEqual (findMap (half) ([1, 3, 4, 6]), just (2))
+  assert.deepStrictEqual (findMap (half) ([1, 3]), nothing ())
+  assert.deepStrictEqual (findMap (half) ([]), nothing ())
 })
 
 test ('findMap: does not call the function after the first Just', () => {
@@ -143,34 +143,34 @@ test ('findMap: does not call the function after the first Just', () => {
 
   findMap (recordAndMatchTwo) ([1, 2, 3])
 
-  assertEquals (seen, [1, 2])
+  assert.deepStrictEqual (seen, [1, 2])
 })
 
 test ('index: returns the value at a zero-based index as Just', () => {
-  assertEquals (index (0) ([1, 2, 3]), just (1))
-  assertEquals (index (2) ([1, 2, 3]), just (3))
-  assertEquals (index (3) ([1, 2, 3]), nothing ())
-  assertEquals (index (-1) ([1, 2, 3]), nothing ())
-  assertEquals (index (0) ([]), nothing ())
+  assert.deepStrictEqual (index (0) ([1, 2, 3]), just (1))
+  assert.deepStrictEqual (index (2) ([1, 2, 3]), just (3))
+  assert.deepStrictEqual (index (3) ([1, 2, 3]), nothing ())
+  assert.deepStrictEqual (index (-1) ([1, 2, 3]), nothing ())
+  assert.deepStrictEqual (index (0) ([]), nothing ())
 })
 
 test ('zipWith: combines corresponding values up to the shorter length', () => {
-  assertEquals (zipWith ((a: number, b: number) => a + b) ([1, 2]) ([10, 20]), [
+  assert.deepStrictEqual (zipWith ((a: number, b: number) => a + b) ([1, 2]) ([10, 20]), [
     11,
     22,
   ])
-  assertEquals (zipWith ((a: number, b: number) => a + b) ([1, 2, 3]) ([10]), [11])
-  assertEquals (zipWith ((a: number, b: number) => a + b) ([]) ([10]), [])
-  assertEquals (
+  assert.deepStrictEqual (zipWith ((a: number, b: number) => a + b) ([1, 2, 3]) ([10]), [11])
+  assert.deepStrictEqual (zipWith ((a: number, b: number) => a + b) ([]) ([10]), [])
+  assert.deepStrictEqual (
     zipWith ((a: number, b: string) => `${a}${b}`) ([1, 2]) (['a', 'b']),
     ['1a', '2b'],
   )
 })
 
 test ('zip: pairs corresponding values up to the shorter length', () => {
-  assertEquals (zip ([1, 2]) (['a', 'b']), [[1, 'a'], [2, 'b']])
-  assertEquals (zip ([1, 2, 3]) (['a']), [[1, 'a']])
-  assertEquals (zip<number> ([]) (['a']), [])
+  assert.deepStrictEqual (zip ([1, 2]) (['a', 'b']), [[1, 'a'], [2, 'b']])
+  assert.deepStrictEqual (zip ([1, 2, 3]) (['a']), [[1, 'a']])
+  assert.deepStrictEqual (zip<number> ([]) (['a']), [])
 })
 
 test ('unfold: builds an array by repeatedly applying a function to a seed', () => {
@@ -178,11 +178,11 @@ test ('unfold: builds an array by repeatedly applying a function to a seed', () 
     return n < 1000 ? just (pair (n, 2 * n)) : nothing<Pair<number, number>> ()
   }
 
-  assertEquals (
+  assert.deepStrictEqual (
     unfold (doubleUntilThousand) (1),
     [1, 2, 4, 8, 16, 32, 64, 128, 256, 512],
   )
-  assertEquals (unfold ((_n: number) => nothing<Pair<number, number>> ()) (1), [])
+  assert.deepStrictEqual (unfold ((_n: number) => nothing<Pair<number, number>> ()) (1), [])
 })
 
 test ('unfoldr: builds an array from a seed. Alias of unfold', () => {
@@ -190,7 +190,7 @@ test ('unfoldr: builds an array from a seed. Alias of unfold', () => {
     return n < 5 ? just (pair (n, n + 1)) : nothing<Pair<number, number>> ()
   }
 
-  assertEquals (
+  assert.deepStrictEqual (
     unfoldr (countUpToFive) (1),
     [1, 2, 3, 4],
   )
@@ -200,7 +200,7 @@ test ('unfold and unfoldr are one operation under two names', () => {
   const step = (n: number) =>
     n < 6 ? just (pair (n * n, n + 1)) : nothing<Pair<number, number>> ()
   for (const seed of [0, 1, 5, 6, 100]) {
-    assertEquals (unfold (step) (seed), unfoldr (step) (seed))
+    assert.deepStrictEqual (unfold (step) (seed), unfoldr (step) (seed))
   }
 })
 
@@ -209,12 +209,12 @@ test ('groupBy: groups consecutive values that match the first value in each gro
     return (b: number) => a === b
   }
 
-  assertEquals (
+  assert.deepStrictEqual (
     groupBy (sameNumber) ([1, 1, 2, 1, 1]),
     [[1, 1], [2], [1, 1]],
   )
-  assertEquals (groupBy (sameNumber) ([]), [])
-  assertEquals (groupBy (sameNumber) ([1]), [[1]])
+  assert.deepStrictEqual (groupBy (sameNumber) ([]), [])
+  assert.deepStrictEqual (groupBy (sameNumber) ([1]), [[1]])
 })
 
 test ('groupBy: compares against the group leader, not against the neighbour', () => {
@@ -222,7 +222,7 @@ test ('groupBy: compares against the group leader, not against the neighbour', (
     return (b: number) => a + b === 0
   }
 
-  assertEquals (
+  assert.deepStrictEqual (
     groupBy (oppositeNumbers) ([
       2,
       -3,
@@ -240,7 +240,7 @@ test ('groupBy: compares against the group leader, not against the neighbour', (
     return (b: number) => Math.abs (a) === Math.abs (b)
   }
 
-  assertEquals (
+  assert.deepStrictEqual (
     groupBy (sameMagnitude) ([
       2,
       -3,
@@ -264,93 +264,93 @@ test ('groupBy: gluing the groups back gives the original array', () => {
       (_a: number) => (_b: number) => false,
     ]
   ) {
-    assertEquals (groupBy (same) (values).flat (), values)
+    assert.deepStrictEqual (groupBy (same) (values).flat (), values)
   }
 })
 
 test ('Arr.map: passes no array index to Number.parseInt', () => {
-  assertEquals (['1', '2', '3'].map (Number.parseInt), [1, NaN, NaN])
-  assertEquals (Arr.map (['1', '2', '3'], Number.parseInt), [1, 2, 3])
+  assert.deepStrictEqual (['1', '2', '3'].map (Number.parseInt), [1, NaN, NaN])
+  assert.deepStrictEqual (Arr.map (['1', '2', '3'], Number.parseInt), [1, 2, 3])
 })
 
 test ('Arr: recognizes values and provides the declared operations', () => {
-  assertEquals (Arr['@@type'], 'Array')
-  assertEquals (Arr.is ([]), true)
-  assertEquals (Arr.is ([1, 2]), true)
-  assertEquals (Arr.is ('string'), false)
-  assertEquals (Arr.is (new Set ([1])), false)
-  assertEquals (Arr.is ({ length: 0 }), false)
-  assertEquals (Arr.is (null), false)
+  assert.deepStrictEqual (Arr['@@type'], 'Array')
+  assert.deepStrictEqual (Arr.is ([]), true)
+  assert.deepStrictEqual (Arr.is ([1, 2]), true)
+  assert.deepStrictEqual (Arr.is ('string'), false)
+  assert.deepStrictEqual (Arr.is (new Set ([1])), false)
+  assert.deepStrictEqual (Arr.is ({ length: 0 }), false)
+  assert.deepStrictEqual (Arr.is (null), false)
 })
 
 test ('Arr.of: wraps a single value', () => {
-  assertEquals (Arr.of (1), [1])
-  assertEquals (Arr.of ([1, 2]), [[1, 2]])
+  assert.deepStrictEqual (Arr.of (1), [1])
+  assert.deepStrictEqual (Arr.of ([1, 2]), [[1, 2]])
 })
 
 test ('Arr.empty and Arr.zero', () => {
-  assertEquals (Arr.empty (), [])
-  assertEquals (Arr.zero (), [])
-  assertEquals (Arr.empty<number> () === Arr.empty<number> (), false)
-  assertEquals (Arr.zero<number> () === Arr.zero<number> (), false)
+  assert.deepStrictEqual (Arr.empty (), [])
+  assert.deepStrictEqual (Arr.zero (), [])
+  assert.deepStrictEqual (Arr.empty<number> () === Arr.empty<number> (), false)
+  assert.deepStrictEqual (Arr.zero<number> () === Arr.zero<number> (), false)
 })
 
 test ('Arr.equals: compares values by content', () => {
-  assertEquals (Arr.equals ([], []), true)
-  assertEquals (Arr.equals ([1, 2], [1, 2]), true)
-  assertEquals (Arr.equals ([1, 2], [2, 1]), false)
-  assertEquals (Arr.equals ([1], [1, 2]), false)
-  assertEquals (Arr.equals ([[1], [2]], [[1], [2]]), true)
-  assertEquals (Arr.equals ([{ a: [1] }], [{ a: [1] }]), true)
-  assertEquals (Arr.equals ([{ a: 1 }], [{ a: 1 }]), true)
-  assertEquals (Arr.equals ([{ a: 1 }], [{ a: 2 }]), false)
+  assert.deepStrictEqual (Arr.equals ([], []), true)
+  assert.deepStrictEqual (Arr.equals ([1, 2], [1, 2]), true)
+  assert.deepStrictEqual (Arr.equals ([1, 2], [2, 1]), false)
+  assert.deepStrictEqual (Arr.equals ([1], [1, 2]), false)
+  assert.deepStrictEqual (Arr.equals ([[1], [2]], [[1], [2]]), true)
+  assert.deepStrictEqual (Arr.equals ([{ a: [1] }], [{ a: [1] }]), true)
+  assert.deepStrictEqual (Arr.equals ([{ a: 1 }], [{ a: 1 }]), true)
+  assert.deepStrictEqual (Arr.equals ([{ a: 1 }], [{ a: 2 }]), false)
 })
 
 test ('Arr.lte: lexicographic order', () => {
-  assertEquals (Arr.lte ([1, 1], [1, 2]), true)
-  assertEquals (Arr.lte ([1, 2], [1, 1]), false)
-  assertEquals (Arr.lte ([1], [1, 2]), true)
-  assertEquals (Arr.lte ([1, 2], [1]), false)
-  assertEquals (Arr.lte ([], []), true)
-  assertEquals (Arr.lte ([], [1]), true)
-  assertEquals (Arr.lte ([2], [1, 5]), false)
-  assertEquals (Arr.lte ([1, 5], [2]), true)
-  assertEquals (Arr.lte (['a', 'b'], ['a', 'c']), true)
+  assert.deepStrictEqual (Arr.lte ([1, 1], [1, 2]), true)
+  assert.deepStrictEqual (Arr.lte ([1, 2], [1, 1]), false)
+  assert.deepStrictEqual (Arr.lte ([1], [1, 2]), true)
+  assert.deepStrictEqual (Arr.lte ([1, 2], [1]), false)
+  assert.deepStrictEqual (Arr.lte ([], []), true)
+  assert.deepStrictEqual (Arr.lte ([], [1]), true)
+  assert.deepStrictEqual (Arr.lte ([2], [1, 5]), false)
+  assert.deepStrictEqual (Arr.lte ([1, 5], [2]), true)
+  assert.deepStrictEqual (Arr.lte (['a', 'b'], ['a', 'c']), true)
 })
 
 test ('Arr.show: formats values as readable strings', () => {
-  assertEquals (Arr.show ([]), '[]')
-  assertEquals (Arr.show ([1, 2, 3]), '[1, 2, 3]')
-  assertEquals (Arr.show ([1, 'a', [2]]), '[1, "a", [2]]')
-  assertEquals (Arr.show ([true, null, undefined]), '[true, null, undefined]')
+  assert.deepStrictEqual (Arr.show ([]), '[]')
+  assert.deepStrictEqual (Arr.show ([1, 2, 3]), '[1, 2, 3]')
+  assert.deepStrictEqual (Arr.show ([1, 'a', [2]]), '[1, "a", [2]]')
+  assert.deepStrictEqual (Arr.show ([true, null, undefined]), '[true, null, undefined]')
 })
 
 test ('Arr.concat: combines values in argument order', () => {
-  assertEquals (Arr.concat ([1, 2], [3, 4]), [1, 2, 3, 4])
-  assertEquals (Arr.concat ([], [1]), [1])
-  assertEquals (Arr.concat ([1], []), [1])
+  assert.deepStrictEqual (Arr.concat ([1, 2], [3, 4]), [1, 2, 3, 4])
+  assert.deepStrictEqual (Arr.concat ([], [1]), [1])
+  assert.deepStrictEqual (Arr.concat ([1], []), [1])
 })
 
 test ('Arr.alt: combines alternatives', () => {
-  assertEquals (Arr.alt ([1, 2], [3]), [1, 2, 3])
-  assertEquals (Arr.alt ([], [3]), [3])
-  assertEquals (Arr.alt ([1], []), [1])
-  assertEquals (Arr.alt ([1, 2], [3]), Arr.concat ([1, 2], [3]))
+  assert.deepStrictEqual (Arr.alt ([1, 2], [3]), [1, 2, 3])
+  assert.deepStrictEqual (Arr.alt ([], [3]), [3])
+  assert.deepStrictEqual (Arr.alt ([1], []), [1])
+  assert.deepStrictEqual (Arr.alt ([1, 2], [3]), Arr.concat ([1, 2], [3]))
 })
 
 test ('Arr.map: transforms values', () => {
-  assertEquals (Arr.map ([1, 2, 3], increment), [2, 3, 4])
-  assertEquals (Arr.map ([], increment), [])
+  assert.deepStrictEqual (Arr.map ([1, 2, 3], increment), [2, 3, 4])
+  assert.deepStrictEqual (Arr.map ([], increment), [])
 })
 
 test ('Arr.ap: applies every wrapped function to the wrapped values', () => {
-  assertEquals (Arr.ap ([1, 2], [increment]), [2, 3])
-  assertEquals (Arr.ap ([1, 2], []), [])
-  assertEquals (Arr.ap ([], [increment]), [])
+  assert.deepStrictEqual (Arr.ap ([1, 2], [increment]), [2, 3])
+  assert.deepStrictEqual (Arr.ap ([1, 2], []), [])
+  assert.deepStrictEqual (Arr.ap ([], [increment]), [])
 })
 
 test ('Arr.ap: functions are the outer loop, values the inner one', () => {
-  assertEquals (Arr.ap ([1, 2], [(n: number) => n, (n: number) => -n]), [
+  assert.deepStrictEqual (Arr.ap ([1, 2], [(n: number) => n, (n: number) => -n]), [
     1,
     2,
     -1,
@@ -363,20 +363,20 @@ test ('Arr.chain: transforms values and flattens the results', () => {
     return [n, n]
   }
 
-  assertEquals (Arr.chain ([1, 2], repeatNumber), [1, 1, 2, 2])
-  assertEquals (Arr.chain ([1, 2], (_n: number) => []), [])
-  assertEquals (Arr.chain ([], (n: number) => [n]), [])
-  assertEquals (Arr.chain ([1], (n: number) => [[n]]), [[1]])
+  assert.deepStrictEqual (Arr.chain ([1, 2], repeatNumber), [1, 1, 2, 2])
+  assert.deepStrictEqual (Arr.chain ([1, 2], (_n: number) => []), [])
+  assert.deepStrictEqual (Arr.chain ([], (n: number) => [n]), [])
+  assert.deepStrictEqual (Arr.chain ([1], (n: number) => [[n]]), [[1]])
 })
 
 test ('Arr.filter: keeps values that pass the predicate', () => {
-  assertEquals (Arr.filter ([1, 2, 3, 4], even), [2, 4])
-  assertEquals (Arr.filter ([1, 3], even), [])
-  assertEquals (Arr.filter ([], even), [])
+  assert.deepStrictEqual (Arr.filter ([1, 2, 3, 4], even), [2, 4])
+  assert.deepStrictEqual (Arr.filter ([1, 3], even), [])
+  assert.deepStrictEqual (Arr.filter ([], even), [])
 })
 
 test ('Arr.reduce: combines values with an initial accumulator', () => {
-  assertEquals (
+  assert.deepStrictEqual (
     Arr.reduce (
       [1, 2, 3],
       (accumulator: number, n: number) => accumulator + n,
@@ -384,11 +384,11 @@ test ('Arr.reduce: combines values with an initial accumulator', () => {
     ),
     6,
   )
-  assertEquals (
+  assert.deepStrictEqual (
     Arr.reduce ([], (accumulator: number, n: number) => accumulator + n, 0),
     0,
   )
-  assertEquals (
+  assert.deepStrictEqual (
     Arr.reduce (
       ['a', 'b', 'c'],
       (accumulator: string, s: string) => accumulator + s,
@@ -396,7 +396,7 @@ test ('Arr.reduce: combines values with an initial accumulator', () => {
     ),
     'abc',
   )
-  assertEquals (
+  assert.deepStrictEqual (
     Arr.reduce (
       [1, 2, 3],
       (accumulator: string, n: number) => `(${accumulator} ${n})`,
@@ -407,16 +407,16 @@ test ('Arr.reduce: combines values with an initial accumulator', () => {
 })
 
 test ('Arr.traverse: collects wrapped results', () => {
-  assertEquals (travMaybe ((n: number) => just (n)) ([1, 2, 3]), just ([1, 2, 3]))
-  assertEquals (travMaybe ((n: number) => just (n)) ([]), just ([]))
-  assertEquals (
+  assert.deepStrictEqual (travMaybe ((n: number) => just (n)) ([1, 2, 3]), just ([1, 2, 3]))
+  assert.deepStrictEqual (travMaybe ((n: number) => just (n)) ([]), just ([]))
+  assert.deepStrictEqual (
     travMaybe ((n: number) => n < 3 ? just (n) : nothing<number> ()) ([1, 2, 3]),
     nothing (),
   )
 })
 
 test ('Arr.traverse: the accumulator is the first operand of ap', () => {
-  assertEquals (sequence (Arr) ([[1, 2], [3, 4]]) as number[][], [
+  assert.deepStrictEqual (sequence (Arr) ([[1, 2], [3, 4]]) as number[][], [
     [1, 3],
     [1, 4],
     [2, 3],
@@ -424,10 +424,10 @@ test ('Arr.traverse: the accumulator is the first operand of ap', () => {
   ])
   const triple = sequence (Arr) ([[1, 2], [3, 4], [5, 6]]) as number[][]
 
-  assertEquals (triple.length, 8)
-  assertEquals (triple[0], [1, 3, 5])
-  assertEquals (triple[1], [1, 3, 6])
-  assertEquals (triple[7], [2, 4, 6])
+  assert.deepStrictEqual (triple.length, 8)
+  assert.deepStrictEqual (triple[0], [1, 3, 5])
+  assert.deepStrictEqual (triple[1], [1, 3, 6])
+  assert.deepStrictEqual (triple[7], [2, 4, 6])
 })
 
 test ('Arr.traverse: the effects go left to right', () => {
@@ -442,7 +442,7 @@ test ('Arr.traverse: the effects go left to right', () => {
   ) {
     const got = traverse (EitherRep) (boom) (values) as Either<string, number[]>
 
-    assertEquals (
+    assert.deepStrictEqual (
       got.match ((e: string) => e, () => 'there was no refusal'),
       want,
     )
@@ -450,20 +450,20 @@ test ('Arr.traverse: the effects go left to right', () => {
 })
 
 test ('Arr.chainRec: repeats loop steps until done', () => {
-  assertEquals (Arr.chainRec<number, number> ((n) => [done (n + 1)], 0), [1])
-  assertEquals (
+  assert.deepStrictEqual (Arr.chainRec<number, number> ((n) => [done (n + 1)], 0), [1])
+  assert.deepStrictEqual (
     Arr.chainRec<number, number> ((n) => n < 3 ? [loop (n + 1)] : [done (n)], 0),
     [3],
   )
-  assertEquals (Arr.chainRec<number, number> (() => [], 0), [])
+  assert.deepStrictEqual (Arr.chainRec<number, number> (() => [], 0), [])
 })
 
 test ('Arr.chainRec: the order matches recursion through chain', () => {
   const viaChain = (n: number): string[] =>
     branch (n).flatMap ((s) => s.tag === 'done' ? [s.value] : viaChain (s.value))
 
-  assertEquals (Arr.chainRec (branch, 0), viaChain (0))
-  assertEquals (Arr.chainRec (branch, 0), [
+  assert.deepStrictEqual (Arr.chainRec (branch, 0), viaChain (0))
+  assert.deepStrictEqual (Arr.chainRec (branch, 0), [
     'd0',
     'd1',
     'd2',
@@ -479,37 +479,37 @@ test ('takeWhile and dropWhile return an array detached from the input', () => {
   const all = takeWhile (() => true) (values)
   all.push (99)
 
-  assertEquals (values, [1, 2, 3])
+  assert.deepStrictEqual (values, [1, 2, 3])
 
   const none = dropWhile (() => false) (values)
   none.push (99)
 
-  assertEquals (values, [1, 2, 3])
+  assert.deepStrictEqual (values, [1, 2, 3])
 })
 
 test ('groupBy calls the predicate as same(leader)(candidate)', () => {
   const notLess = (leader: number) => (x: number) => x >= leader
 
-  assertEquals (groupBy (notLess) ([3, 1, 4, 1]), [[3], [1, 4, 1]])
+  assert.deepStrictEqual (groupBy (notLess) ([3, 1, 4, 1]), [[3], [1, 4, 1]])
 })
 
 test ('nubBy calls the relation as same(kept, candidate)', () => {
   const less = (kept: number, candidate: number) => kept < candidate
 
-  assertEquals (nubBy (less) ([3, 1, 5]), [3, 1])
+  assert.deepStrictEqual (nubBy (less) ([3, 1, 5]), [3, 1])
 })
 
 test ('Arr.equals: Setoid laws', () => {
   const probes = [[], [1], [1, 2], [2, 1], [[1], [2]], [{
     a: 1,
   }]] as unknown[][]
-  for (const a of probes) assertEquals (Arr.equals (a, a), true)
+  for (const a of probes) assert.deepStrictEqual (Arr.equals (a, a), true)
   for (const a of probes) {
     for (const b of probes) {
-      assertEquals (Arr.equals (a, b), Arr.equals (b, a))
+      assert.deepStrictEqual (Arr.equals (a, b), Arr.equals (b, a))
       for (const c of probes) {
         if (Arr.equals (a, b) && Arr.equals (b, c)) {
-          assertEquals (Arr.equals (a, c), true)
+          assert.deepStrictEqual (Arr.equals (a, c), true)
         }
       }
     }
@@ -520,11 +520,11 @@ test ('Arr.lte: Ord laws', () => {
   const probes = [[], [1], [1, 1], [1, 2], [2], [2, 0]]
   for (const a of probes) {
     for (const b of probes) {
-      assertEquals (Arr.lte (a, b) || Arr.lte (b, a), true)
-      if (Arr.lte (a, b) && Arr.lte (b, a)) assertEquals (Arr.equals (a, b), true)
+      assert.deepStrictEqual (Arr.lte (a, b) || Arr.lte (b, a), true)
+      if (Arr.lte (a, b) && Arr.lte (b, a)) assert.deepStrictEqual (Arr.equals (a, b), true)
       for (const c of probes) {
         if (Arr.lte (a, b) && Arr.lte (b, c)) {
-          assertEquals (Arr.lte (a, c), true)
+          assert.deepStrictEqual (Arr.lte (a, c), true)
         }
       }
     }
@@ -536,9 +536,9 @@ test ('Arr.concat: Semigroup and Monoid laws', () => {
   const b = [3]
   const c = [4, 5]
 
-  assertEquals (Arr.concat (Arr.concat (a, b), c), Arr.concat (a, Arr.concat (b, c)))
-  assertEquals (Arr.concat (Arr.empty<number> (), a), a)
-  assertEquals (Arr.concat (a, Arr.empty<number> ()), a)
+  assert.deepStrictEqual (Arr.concat (Arr.concat (a, b), c), Arr.concat (a, Arr.concat (b, c)))
+  assert.deepStrictEqual (Arr.concat (Arr.empty<number> (), a), a)
+  assert.deepStrictEqual (Arr.concat (a, Arr.empty<number> ()), a)
 })
 
 test ('Arr.alt: Alt and Plus laws', () => {
@@ -546,14 +546,14 @@ test ('Arr.alt: Alt and Plus laws', () => {
   const b = [3]
   const c = [4]
 
-  assertEquals (Arr.alt (Arr.alt (a, b), c), Arr.alt (a, Arr.alt (b, c)))
-  assertEquals (
+  assert.deepStrictEqual (Arr.alt (Arr.alt (a, b), c), Arr.alt (a, Arr.alt (b, c)))
+  assert.deepStrictEqual (
     Arr.map (Arr.alt (a, b), increment),
     Arr.alt (Arr.map (a, increment), Arr.map (b, increment)),
   )
-  assertEquals (Arr.alt (Arr.zero<number> (), a), a)
-  assertEquals (Arr.alt (a, Arr.zero<number> ()), a)
-  assertEquals (Arr.map (Arr.zero<number> (), increment), [])
+  assert.deepStrictEqual (Arr.alt (Arr.zero<number> (), a), a)
+  assert.deepStrictEqual (Arr.alt (a, Arr.zero<number> ()), a)
+  assert.deepStrictEqual (Arr.map (Arr.zero<number> (), increment), [])
 })
 
 test ('Arr.map: Functor laws', () => {
@@ -563,8 +563,8 @@ test ('Arr.map: Functor laws', () => {
 
   const values = [1, 2, 3]
 
-  assertEquals (Arr.map (values, (n: number) => n), values)
-  assertEquals (
+  assert.deepStrictEqual (Arr.map (values, (n: number) => n), values)
+  assert.deepStrictEqual (
     Arr.map (values, doubleThenIncrement),
     Arr.map (Arr.map (values, doubleNumber), increment),
   )
@@ -578,7 +578,7 @@ test ('Arr.ap: the Apply composition law', () => {
   const v = [(n: number) => n - 1, doubleNumber]
   const w = [1, 2]
 
-  assertEquals (
+  assert.deepStrictEqual (
     Arr.ap (w, Arr.ap (v, Arr.map (u, compose))),
     Arr.ap (Arr.ap (w, v), u),
   )
@@ -590,9 +590,9 @@ test ('Arr.of and Arr.ap: Applicative laws', () => {
   const y = 7
   const u = [increment, doubleNumber]
 
-  assertEquals (Arr.ap (v, Arr.of ((a: number) => a)), v)
-  assertEquals (Arr.ap (Arr.of (y), Arr.of (f)), Arr.of (f (y)))
-  assertEquals (
+  assert.deepStrictEqual (Arr.ap (v, Arr.of ((a: number) => a)), v)
+  assert.deepStrictEqual (Arr.ap (Arr.of (y), Arr.of (f)), Arr.of (f (y)))
+  assert.deepStrictEqual (
     Arr.ap (Arr.of (y), u),
     Arr.ap (u, Arr.of ((g: (n: number) => number) => g (y))),
   )
@@ -603,12 +603,12 @@ test ('Arr.chain: Chain and Monad laws', () => {
   const f = (n: number) => [n, n * 10]
   const g = (n: number) => [n + 1]
 
-  assertEquals (
+  assert.deepStrictEqual (
     Arr.chain (Arr.chain (m, f), g),
     Arr.chain (m, (x: number) => Arr.chain (f (x), g)),
   )
-  assertEquals (Arr.chain (Arr.of (1), f), f (1))
-  assertEquals (Arr.chain (m, (a: number) => Arr.of (a)), m)
+  assert.deepStrictEqual (Arr.chain (Arr.of (1), f), f (1))
+  assert.deepStrictEqual (Arr.chain (m, (a: number) => Arr.of (a)), m)
 })
 
 test ('Arr.filter: Filterable laws', () => {
@@ -616,16 +616,16 @@ test ('Arr.filter: Filterable laws', () => {
   const p = even
   const q = (n: number) => n > 2
 
-  assertEquals (
+  assert.deepStrictEqual (
     Arr.filter (v, (x: number) => p (x) && q (x)),
     Arr.filter (Arr.filter (v, p), q),
   )
-  assertEquals (Arr.filter (v, () => true), v)
-  assertEquals (Arr.filter (v, () => false), Arr.filter ([9, 9], () => false))
+  assert.deepStrictEqual (Arr.filter (v, () => true), v)
+  assert.deepStrictEqual (Arr.filter (v, () => false), Arr.filter ([9, 9], () => false))
 })
 
 test ('Arr.traverse: identity law', () => {
-  assertEquals (
+  assert.deepStrictEqual (
     traverse (Identity) ((n: number) => identity (n)) ([1, 2, 3]) as Identity<
       number[]
     >,
@@ -639,7 +639,7 @@ test ('Arr.traverse: the naturality law', () => {
   for (const values of [[1, 2], [1, 2, 3], []]) {
     const f = (n: number) => n < 3 ? just (n) : nothing<number> ()
 
-    assertEquals (
+    assert.deepStrictEqual (
       t (travMaybe (f) (values)),
       traverse (Arr) ((n: number) => tf (f (n))) (values) as number[][],
     )
@@ -648,46 +648,54 @@ test ('Arr.traverse: the naturality law', () => {
 
 test ('chunksOf: a non-positive or fractional step is refused', () => {
   for (const bad of [0, -1, 2.5, NaN, Infinity]) {
-    assertThrows (
+    assert.throws (
       () => chunksOf (bad) ([1, 2, 3]),
-      TypeError,
-      'chunksOf:',
+      (error: unknown) => error instanceof TypeError && error.message.includes ('chunksOf:'),
       String (bad),
     )
   }
 
-  assertThrows (() => chunksOf (0), TypeError, 'is not an integer >= 1')
+  assert.throws (
+    () => chunksOf (0),
+    (error: unknown) => error instanceof TypeError && error.message.includes ('is not an integer >= 1'),
+  )
 })
 
 test ('index: a fractional index is refused instead of giving Just (undefined)', () => {
-  assertThrows (() => index (1.5), TypeError, 'index: 1.5 is not an integer')
-  assertThrows (() => index (NaN), TypeError, 'is not an integer')
-  assertEquals (index (-1) ([1, 2]), nothing ())
-  assertEquals (index (99) ([1, 2]), nothing ())
-  assertEquals (index (0) ([1, 2]), just (1))
+  assert.throws (
+    () => index (1.5),
+    (error: unknown) => error instanceof TypeError && error.message.includes ('index: 1.5 is not an integer'),
+  )
+  assert.throws (
+    () => index (NaN),
+    (error: unknown) => error instanceof TypeError && error.message.includes ('is not an integer'),
+  )
+  assert.deepStrictEqual (index (-1) ([1, 2]), nothing ())
+  assert.deepStrictEqual (index (99) ([1, 2]), nothing ())
+  assert.deepStrictEqual (index (0) ([1, 2]), just (1))
 })
 
 test ("nub: removes duplicates using ply's equals, keeping the first occurrence", () => {
-  assertEquals (nub ([1, 1, 2, 1, 3]), [1, 2, 3])
-  assertEquals (nub ([]), [])
-  assertEquals (nub ([3, 1, 3, 2, 1]), [3, 1, 2])
-  assertEquals (nub ([[1], [1], [2]]), [[1], [2]])
-  assertEquals (nub ([{ a: 1 }, { a: 1 }]), [{ a: 1 }])
+  assert.deepStrictEqual (nub ([1, 1, 2, 1, 3]), [1, 2, 3])
+  assert.deepStrictEqual (nub ([]), [])
+  assert.deepStrictEqual (nub ([3, 1, 3, 2, 1]), [3, 1, 2])
+  assert.deepStrictEqual (nub ([[1], [1], [2]]), [[1], [2]])
+  assert.deepStrictEqual (nub ([{ a: 1 }, { a: 1 }]), [{ a: 1 }])
 })
 
 test ('nub: does not touch the input', () => {
   const values = [1, 1, 2]
 
-  assertEquals (nub (values), [1, 2])
-  assertEquals (values, [1, 1, 2])
+  assert.deepStrictEqual (nub (values), [1, 2])
+  assert.deepStrictEqual (values, [1, 1, 2])
 })
 
 test ('nubBy: removes duplicates using the supplied comparison, keeping the first occurrence', () => {
   const sameParity = (a: number, b: number) => a % 2 === b % 2
 
-  assertEquals (nubBy (sameParity) ([1, 2, 3, 4]), [1, 2])
-  assertEquals (nubBy (sameParity) ([]), [])
-  assertEquals (
+  assert.deepStrictEqual (nubBy (sameParity) ([1, 2, 3, 4]), [1, 2])
+  assert.deepStrictEqual (nubBy (sameParity) ([]), [])
+  assert.deepStrictEqual (
     nubBy ((a: number, b: number) => Math.abs (a) === Math.abs (b)) ([1, -1, 2]),
     [1, 2],
   )
@@ -706,17 +714,17 @@ test ('array: handles empty arrays or passes the first value and remaining tail 
 
   const tail = array (nothing<number[]> ()) (keepTail)
 
-  assertEquals (head ([]), nothing ())
-  assertEquals (head ([1, 2, 3]), just (1))
-  assertEquals (tail ([]), nothing ())
-  assertEquals (tail ([1, 2, 3]), just ([2, 3]))
+  assert.deepStrictEqual (head ([]), nothing ())
+  assert.deepStrictEqual (head ([1, 2, 3]), just (1))
+  assert.deepStrictEqual (tail ([]), nothing ())
+  assert.deepStrictEqual (tail ([1, 2, 3]), just ([2, 3]))
 
   function showHead(h: number) {
     return (_t: number[]) => String (h)
   }
 
-  assertEquals (array ('e') (showHead) ([]), 'e')
-  assertEquals (
+  assert.deepStrictEqual (array ('e') (showHead) ([]), 'e')
+  assert.deepStrictEqual (
     array ('e') (showHead) ([1, 2]),
     '1',
   )
@@ -727,8 +735,8 @@ test ('array: the empty branch does not evaluate the tail', () => {
     throw new Error ('should not have been called')
   }
 
-  assertEquals (array ('empty') (boom) ([]), 'empty')
-  assertThrows (() => array ('empty') (boom) ([1]))
+  assert.deepStrictEqual (array ('empty') (boom) ([]), 'empty')
+  assert.throws (() => array ('empty') (boom) ([1]))
 })
 
 test ('takeWhile: passes only the current value', () => {
@@ -741,7 +749,7 @@ test ('takeWhile: passes only the current value', () => {
 
   takeWhile (recordArguments) ([1, 2, 3])
 
-  assertEquals (calls, [[1], [2], [3]])
+  assert.deepStrictEqual (calls, [[1], [2], [3]])
 })
 
 test ('dropWhile: passes only the current value', () => {
@@ -754,7 +762,7 @@ test ('dropWhile: passes only the current value', () => {
 
   dropWhile (recordArguments) ([1, 2, 3])
 
-  assertEquals (calls, [[1]])
+  assert.deepStrictEqual (calls, [[1]])
 })
 
 test ('find: passes only the current value', () => {
@@ -767,7 +775,7 @@ test ('find: passes only the current value', () => {
 
   find (recordArguments) ([1, 2, 3])
 
-  assertEquals (calls, [[1], [2], [3]])
+  assert.deepStrictEqual (calls, [[1], [2], [3]])
 })
 
 test ('findIndex: passes only the current value', () => {
@@ -780,7 +788,7 @@ test ('findIndex: passes only the current value', () => {
 
   findIndex (recordArguments) ([1, 2, 3])
 
-  assertEquals (calls, [[1], [2], [3]])
+  assert.deepStrictEqual (calls, [[1], [2], [3]])
 })
 
 test ('findMap: passes only the current value', () => {
@@ -793,7 +801,7 @@ test ('findMap: passes only the current value', () => {
 
   findMap (recordArguments) ([1, 2, 3])
 
-  assertEquals (calls, [[1], [2], [3]])
+  assert.deepStrictEqual (calls, [[1], [2], [3]])
 })
 
 test ('unfold: passes only the seed', () => {
@@ -806,7 +814,7 @@ test ('unfold: passes only the seed', () => {
 
   unfold (recordArguments) (0)
 
-  assertEquals (calls, [[0]])
+  assert.deepStrictEqual (calls, [[0]])
 })
 
 test ('unfoldr: passes only the seed', () => {
@@ -819,7 +827,7 @@ test ('unfoldr: passes only the seed', () => {
 
   unfoldr (recordArguments) (0)
 
-  assertEquals (calls, [[0]])
+  assert.deepStrictEqual (calls, [[0]])
 })
 
 test ('groupBy: passes the group leader and candidate in separate calls', () => {
@@ -838,8 +846,8 @@ test ('groupBy: passes the group leader and candidate in separate calls', () => 
 
   groupBy (leader) ([1, 2, 3])
 
-  assertEquals (leaderCalls, [[1], [1]])
-  assertEquals (candidateCalls, [[2], [3]])
+  assert.deepStrictEqual (leaderCalls, [[1], [1]])
+  assert.deepStrictEqual (candidateCalls, [[2], [3]])
 })
 
 test ('array: passes the head and tail in separate calls', () => {
@@ -858,8 +866,8 @@ test ('array: passes the head and tail in separate calls', () => {
 
   array (0) (head) ([1, 2, 3])
 
-  assertEquals (headCalls, [[1]])
-  assertEquals (tailCalls, [[[2, 3]]])
+  assert.deepStrictEqual (headCalls, [[1]])
+  assert.deepStrictEqual (tailCalls, [[[2, 3]]])
 })
 
 test ('zipWith: passes one value from each array', () => {
@@ -872,7 +880,7 @@ test ('zipWith: passes one value from each array', () => {
 
   zipWith (recordArguments) ([1, 2]) ([3, 4])
 
-  assertEquals (calls, [[1, 3], [2, 4]])
+  assert.deepStrictEqual (calls, [[1, 3], [2, 4]])
 })
 
 test ('nubBy: passes the retained value and candidate', () => {
@@ -885,7 +893,7 @@ test ('nubBy: passes the retained value and candidate', () => {
 
   nubBy (recordArguments) ([1, 2])
 
-  assertEquals (calls, [[1, 2]])
+  assert.deepStrictEqual (calls, [[1, 2]])
 })
 
 test ('Arr.map: passes only the value', () => {
@@ -898,7 +906,7 @@ test ('Arr.map: passes only the value', () => {
 
   Arr.map ([1, 2], recordArguments)
 
-  assertEquals (calls, [[1], [2]])
+  assert.deepStrictEqual (calls, [[1], [2]])
 })
 
 test ('Arr.filter: passes only the value', () => {
@@ -911,7 +919,7 @@ test ('Arr.filter: passes only the value', () => {
 
   Arr.filter ([1, 2], recordArguments)
 
-  assertEquals (calls, [[1], [2]])
+  assert.deepStrictEqual (calls, [[1], [2]])
 })
 
 test ('Arr.chain: passes only the value', () => {
@@ -924,7 +932,7 @@ test ('Arr.chain: passes only the value', () => {
 
   Arr.chain ([1, 2], recordArguments)
 
-  assertEquals (calls, [[1], [2]])
+  assert.deepStrictEqual (calls, [[1], [2]])
 })
 
 test ('Arr.ap: passes only the value to each function', () => {
@@ -937,7 +945,7 @@ test ('Arr.ap: passes only the value to each function', () => {
 
   Arr.ap ([1, 2], [recordArguments])
 
-  assertEquals (calls, [[1], [2]])
+  assert.deepStrictEqual (calls, [[1], [2]])
 })
 
 test ('Arr.chainRec: passes only the current value', () => {
@@ -950,7 +958,7 @@ test ('Arr.chainRec: passes only the current value', () => {
 
   Arr.chainRec<number, number> (recordArguments, 0)
 
-  assertEquals (calls, [[0]])
+  assert.deepStrictEqual (calls, [[0]])
 })
 
 test ('Arr.reduce: passes only accumulator and value', () => {
@@ -963,25 +971,24 @@ test ('Arr.reduce: passes only accumulator and value', () => {
 
   Arr.reduce ([1, 2], recordArguments, 0)
 
-  assertEquals (calls, [[0, 1], [0, 2]])
+  assert.deepStrictEqual (calls, [[0, 1], [0, 2]])
 })
 
 test ('Arr.equals: a hole is not the same thing as undefined', () => {
   const holed = new Array<number> (2)
   holed[1] = 1
 
-  assertEquals (Arr.equals (holed, [undefined, 1]), false)
+  assert.deepStrictEqual (Arr.equals (holed, [undefined, 1]), false)
   const alsoHoled = new Array<number> (2)
   alsoHoled[1] = 1
 
-  assertEquals (Arr.equals (holed, alsoHoled), true)
+  assert.deepStrictEqual (Arr.equals (holed, alsoHoled), true)
 })
 
 test ('Arr.lte: an element with no order throws a descriptive TypeError', () => {
-  assertThrows (
+  assert.throws (
     () => Arr.lte ([{ a: 1 }], [{ a: 2 }]),
-    TypeError,
-    'has no Ord',
+    (error: unknown) => error instanceof TypeError && error.message.includes ('has no Ord'),
   )
 })
 
@@ -990,7 +997,7 @@ test ('Arr.show: a hole prints as empty space', () => {
   holed[0] = 1
   holed[2] = 3
 
-  assertEquals (Arr.show (holed), '[1, , 3]')
+  assert.deepStrictEqual (Arr.show (holed), '[1, , 3]')
 })
 
 test ('Arr.concat: does not touch the operands', () => {
@@ -998,22 +1005,21 @@ test ('Arr.concat: does not touch the operands', () => {
   const b = [3]
   Arr.concat (a, b)
 
-  assertEquals ([a, b], [[1, 2], [3]])
+  assert.deepStrictEqual ([a, b], [[1, 2], [3]])
 })
 
 test ('Arr.traverse: an applicative with no of throws a descriptive TypeError', () => {
-  assertThrows (
+  assert.throws (
     () =>
       traverse ({ '@@type': 'Number' } as never) (((n: number) => [n]) as never) (
         [1] as never,
       ),
-    TypeError,
-    'has no Applicative',
+    (error: unknown) => error instanceof TypeError && error.message.includes ('has no Applicative'),
   )
 })
 
 test ('Arr.chainRec: the stack does not grow with depth', () => {
-  assertEquals (
+  assert.deepStrictEqual (
     Arr.chainRec<number, number> (
       (n) => n < 200000 ? [loop (n + 1)] : [done (n)],
       0,

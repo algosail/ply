@@ -2,7 +2,6 @@
  * Operations and types for transforming contained values with `map`.
  */
 
-import type { Kind, Shape } from '../core/shape.ts'
 import type {
   KindOf,
   MatchableIn,
@@ -11,6 +10,7 @@ import type {
   SlotBOf,
 } from '../core/kind.ts'
 import type { Instances } from '../core/named.ts'
+import type { Kind, Shape } from '../core/shape.ts'
 import type { ArrayShape } from '../natives/array.ts'
 import type { FnShape } from '../natives/function.ts'
 import type { MapShape } from '../natives/map.ts'
@@ -102,9 +102,9 @@ export const functorNatives: Instances<
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * const double = P.map((n: number) => n * 2)
- * 
+ *
  * double([1, 2, 3]) // => [2, 4, 6]
  * double(P.just(5)) // => Just (10)
  * double(P.nothing<number>()) // => Nothing
@@ -128,7 +128,7 @@ export type ArgOfSlotA<F> = SlotAOf<F> extends (a: infer A) => unknown ? A
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.flip([Math.floor, Math.ceil])(1.5)
  * // => [1, 2]
  * P.flip({ floor: Math.floor, ceil: Math.ceil })(1.5)
@@ -149,7 +149,7 @@ export function flip<F extends Functor<F, (a: never) => unknown>>(
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.voidRight('x')([1, 2, 3]) // => ['x', 'x', 'x']
  * P.voidRight('x')(P.just(1)) // => Just ('x')
  * P.voidRight('x')(P.nothing<number>()) // => Nothing
@@ -167,7 +167,7 @@ export function voidRight<B>(
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.voided([1, 2, 3]) // => [undefined, undefined, undefined]
  * P.voided(P.just(1)) // => Just (undefined)
  * ```

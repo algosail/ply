@@ -1,5 +1,15 @@
+import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { assertEquals, assertThrows } from '../assert.ts'
+import { alt } from '../../src/classes/alt.ts'
+import { bimap } from '../../src/classes/bifunctor.ts'
+import { extract } from '../../src/classes/comonad.ts'
+import { size, toArray } from '../../src/classes/foldable.ts'
+import { map } from '../../src/classes/functor.ts'
+import { empty } from '../../src/classes/monoid.ts'
+import { concat } from '../../src/classes/semigroup.ts'
+import { sequence, traverse } from '../../src/classes/traversable.ts'
+import { Either, left, right } from '../../src/data/either.ts'
+import { Identity, identity } from '../../src/data/identity.ts'
 import {
   fromMaybe,
   fromMaybe_,
@@ -20,132 +30,122 @@ import {
   safeAfter,
   safeLift,
 } from '../../src/data/maybe.ts'
-import { Either, left, right } from '../../src/data/either.ts'
-import { Identity, identity } from '../../src/data/identity.ts'
-import { bimap } from '../../src/classes/bifunctor.ts'
-import { extract } from '../../src/classes/comonad.ts'
-import { alt } from '../../src/classes/alt.ts'
-import { map } from '../../src/classes/functor.ts'
-import { empty } from '../../src/classes/monoid.ts'
-import { concat } from '../../src/classes/semigroup.ts'
-import { size, toArray } from '../../src/classes/foldable.ts'
-import { sequence, traverse } from '../../src/classes/traversable.ts'
 
 test ('Maybe: values contain only their tag and payload', () => {
   const first = just (1)
   const second = just (2)
 
-  assertEquals (Object.keys (first), ['tag', 'value'])
-  assertEquals (Object.keys (nothing ()), ['tag'])
-  assertEquals (first.map === second.map, true)
-  assertEquals (JSON.stringify (first), '{"tag":"just","value":1}')
+  assert.deepStrictEqual (Object.keys (first), ['tag', 'value'])
+  assert.deepStrictEqual (Object.keys (nothing ()), ['tag'])
+  assert.deepStrictEqual (first.map === second.map, true)
+  assert.deepStrictEqual (JSON.stringify (first), '{"tag":"just","value":1}')
 })
 
 test ('nothing: shares one frozen value across type arguments', () => {
-  assertEquals (Object.is (nothing<number> (), nothing<string> ()), true)
-  assertEquals (Object.isFrozen (nothing ()), true)
-  assertEquals (Object.hasOwn (nothing (), 'value'), false)
+  assert.deepStrictEqual (Object.is (nothing<number> (), nothing<string> ()), true)
+  assert.deepStrictEqual (Object.isFrozen (nothing ()), true)
+  assert.deepStrictEqual (Object.hasOwn (nothing (), 'value'), false)
 })
 
 test ('just: stores a present value, including undefined', () => {
   const result = just (1)
 
-  assertEquals (result.tag, 'just')
+  assert.deepStrictEqual (result.tag, 'just')
   if (!isJust (result)) throw new Error ('Expected Just')
 
-  assertEquals (result.value, 1)
-  assertEquals (result.constructor['@@type'], 'Maybe')
-  assertEquals (just (undefined).tag, 'just')
+  assert.deepStrictEqual (result.value, 1)
+  assert.deepStrictEqual (result.constructor['@@type'], 'Maybe')
+  assert.deepStrictEqual (just (undefined).tag, 'just')
 })
 
 test ('nothing: creates a Maybe with no value', () => {
   const m = nothing<number> ()
 
-  assertEquals (m.tag, 'nothing')
-  assertEquals ('value' in m, false)
-  assertEquals (m.constructor['@@type'], 'Maybe')
+  assert.deepStrictEqual (m.tag, 'nothing')
+  assert.deepStrictEqual ('value' in m, false)
+  assert.deepStrictEqual (m.constructor['@@type'], 'Maybe')
 })
 
 test ('match: calls the handler for the active branch', () => {
-  assertEquals (just (4).match (() => 'n', (a) => 'j' + a), 'j4')
-  assertEquals (nothing<number> ().match (() => 'n', (a) => 'j' + a), 'n')
+  assert.deepStrictEqual (just (4).match (() => 'n', (a) => 'j' + a), 'j4')
+  assert.deepStrictEqual (nothing<number> ().match (() => 'n', (a) => 'j' + a), 'n')
 })
 
 test ('maybe: transforms a Just value, or returns the supplied default for Nothing', () => {
-  assertEquals (maybe (0) ((a: number) => a * 2) (just (4)), 8)
-  assertEquals (maybe (0) ((a: number) => a * 2) (nothing<number> ()), 0)
+  assert.deepStrictEqual (maybe (0) ((a: number) => a * 2) (just (4)), 8)
+  assert.deepStrictEqual (maybe (0) ((a: number) => a * 2) (nothing<number> ()), 0)
 })
 
 test ('fromMaybe: unwraps a Just, or returns the supplied default for Nothing', () => {
-  assertEquals (fromMaybe (0) (just (1)), 1)
-  assertEquals (fromMaybe (0) (nothing<number> ()), 0)
+  assert.deepStrictEqual (fromMaybe (0) (just (1)), 1)
+  assert.deepStrictEqual (fromMaybe (0) (nothing<number> ()), 0)
 })
 
 test ('fromMaybe_: unwraps Just or computes a default for Nothing', () => {
-  assertEquals (fromMaybe_ (() => 9) (just (1)), 1)
-  assertEquals (fromMaybe_ (() => 9) (nothing<number> ()), 9)
+  assert.deepStrictEqual (fromMaybe_ (() => 9) (just (1)), 1)
+  assert.deepStrictEqual (fromMaybe_ (() => 9) (nothing<number> ()), 9)
 })
 
 test ('fromNullable: preserves present values, including falsy values', () => {
-  assertEquals (fromNullable (1), just (1))
-  assertEquals (fromNullable (0), just (0))
-  assertEquals (fromNullable (''), just (''))
-  assertEquals (fromNullable (false), just (false))
-  assertEquals (fromNullable (NaN), just (NaN))
+  assert.deepStrictEqual (fromNullable (1), just (1))
+  assert.deepStrictEqual (fromNullable (0), just (0))
+  assert.deepStrictEqual (fromNullable (''), just (''))
+  assert.deepStrictEqual (fromNullable (false), just (false))
+  assert.deepStrictEqual (fromNullable (NaN), just (NaN))
 })
 
 test ('fromPredicate: wraps a value in Just if it passes the predicate, or returns Nothing', () => {
-  assertEquals (fromPredicate (isPositive) (1), just (1))
-  assertEquals (fromPredicate (isPositive) (-1), nothing ())
+  assert.deepStrictEqual (fromPredicate (isPositive) (1), just (1))
+  assert.deepStrictEqual (fromPredicate (isPositive) (-1), nothing ())
 })
 
 test ('safeLift: checks the input before transforming it', () => {
   const half = safeLift (even, (n: number) => n / 2)
 
-  assertEquals (half (4), just (2))
-  assertEquals (half (3), nothing ())
+  assert.deepStrictEqual (half (4), just (2))
+  assert.deepStrictEqual (half (3), nothing ())
 })
 
 test ('safeAfter: applies a function, then checks its result before wrapping it in Just', () => {
   const find = safeAfter ((n: number) => n >= 0, (s: string) => s.indexOf ('a'))
 
-  assertEquals (find ('bab'), just (1))
-  assertEquals (find ('xyz'), nothing ())
+  assert.deepStrictEqual (find ('bab'), just (1))
+  assert.deepStrictEqual (find ('xyz'), nothing ())
 })
 
 test ('maybeToNullable: unwraps a Just, or returns null for Nothing', () => {
-  assertEquals (maybeToNullable (just (42)), 42)
-  assertEquals (maybeToNullable (nothing<number> ()), null)
-  assertEquals (maybeToNullable (just (null)), null)
+  assert.deepStrictEqual (maybeToNullable (just (42)), 42)
+  assert.deepStrictEqual (maybeToNullable (nothing<number> ()), null)
+  assert.deepStrictEqual (maybeToNullable (just (null)), null)
 })
 
 test ('justs: keeps and unwraps Just values, discarding Nothing values', () => {
-  assertEquals (justs ([just ('foo'), nothing<string> (), just ('baz')]), [
+  assert.deepStrictEqual (justs ([just ('foo'), nothing<string> (), just ('baz')]), [
     'foo',
     'baz',
   ])
-  assertEquals (justs ([] as Maybe<number>[]), [])
-  assertEquals (justs ([nothing<number> ()]), [])
+  assert.deepStrictEqual (justs ([] as Maybe<number>[]), [])
+  assert.deepStrictEqual (justs ([nothing<number> ()]), [])
 })
 
 test ('justs: works on any Filterable, not only on an array', () => {
-  assertEquals (
+  assert.deepStrictEqual (
     justs (
       { a: just (1), b: nothing<number> () } as Record<string, Maybe<number>>,
     ),
     { a: 1 },
   )
-  assertEquals (justs (new Set ([just (1), nothing<number> ()])), new Set ([1]))
+  assert.deepStrictEqual (justs (new Set ([just (1), nothing<number> ()])), new Set ([1]))
 })
 
 test ('maybeToEither: converts Just to Right, or Nothing to Left with the supplied error', () => {
-  assertEquals (maybeToEither ('e') (just (1)), right<string, number> (1))
-  assertEquals (maybeToEither ('e') (nothing<number> ()), left<string, number> ('e'))
+  assert.deepStrictEqual (maybeToEither ('e') (just (1)), right<string, number> (1))
+  assert.deepStrictEqual (maybeToEither ('e') (nothing<number> ()), left<string, number> ('e'))
 })
 
 test ('maybeToEither_: converts absence into a computed error', () => {
-  assertEquals (maybeToEither_ (() => 'e') (just (1)), right<string, number> (1))
-  assertEquals (
+  assert.deepStrictEqual (maybeToEither_ (() => 'e') (just (1)), right<string, number> (1))
+  assert.deepStrictEqual (
     maybeToEither_ (() => 'e') (nothing<number> ()),
     left<string, number> ('e'),
   )
@@ -158,49 +158,49 @@ test ('maybeToEither_: converts absence into a computed error', () => {
 
   maybeToEither_ (createMissingValueError) (just (1))
 
-  assertEquals (calls, 0)
+  assert.deepStrictEqual (calls, 0)
 })
 
 test ('Maybe: creates values and identifies their type', () => {
-  assertEquals (Maybe['@@type'], 'Maybe')
-  assertEquals (Maybe.of (1), just (1))
-  assertEquals (Maybe.zero<number> (), nothing<number> ())
+  assert.deepStrictEqual (Maybe['@@type'], 'Maybe')
+  assert.deepStrictEqual (Maybe.of (1), just (1))
+  assert.deepStrictEqual (Maybe.zero<number> (), nothing<number> ())
 
   const rep: unknown = just (1).constructor
 
-  assertEquals (rep, Maybe)
+  assert.deepStrictEqual (rep, Maybe)
 })
 
 test ('Maybe: the constructor uses the public type name', () => {
-  assertEquals (Object.getPrototypeOf (just (1)).constructor.name, 'Maybe')
-  assertEquals (Object.getPrototypeOf (nothing ()).constructor.name, 'Maybe')
-  assertEquals (just (1).constructor, Maybe)
-  assertEquals (nothing ().constructor, Maybe)
-  assertEquals (Maybe.is (just (1)), true)
-  assertEquals (Maybe.is (nothing ()), true)
+  assert.deepStrictEqual (Object.getPrototypeOf (just (1)).constructor.name, 'Maybe')
+  assert.deepStrictEqual (Object.getPrototypeOf (nothing ()).constructor.name, 'Maybe')
+  assert.deepStrictEqual (just (1).constructor, Maybe)
+  assert.deepStrictEqual (nothing ().constructor, Maybe)
+  assert.deepStrictEqual (Maybe.is (just (1)), true)
+  assert.deepStrictEqual (Maybe.is (nothing ()), true)
 })
 
 test ('Maybe: static functions work when passed separately', () => {
   const { is, of, zero } = Maybe
 
-  assertEquals (of (42), just (42))
-  assertEquals (zero<number> (), nothing<number> ())
-  assertEquals (is (of (42)), true)
-  assertEquals (is (zero ()), true)
-  assertEquals (is (42), false)
+  assert.deepStrictEqual (of (42), just (42))
+  assert.deepStrictEqual (zero<number> (), nothing<number> ())
+  assert.deepStrictEqual (is (of (42)), true)
+  assert.deepStrictEqual (is (zero ()), true)
+  assert.deepStrictEqual (is (42), false)
 })
 
 test ('map: transforms contained values', () => {
-  assertEquals (just (1).map (increment), just (2))
-  assertEquals (nothing<number> ().map (increment), nothing<number> ())
-  assertEquals (map (increment) (just (1)), just (2))
+  assert.deepStrictEqual (just (1).map (increment), just (2))
+  assert.deepStrictEqual (nothing<number> ().map (increment), nothing<number> ())
+  assert.deepStrictEqual (map (increment) (just (1)), just (2))
 })
 
 test ('ap: applies wrapped functions to wrapped values', () => {
-  assertEquals (just (1).ap (just (increment)), just (2))
-  assertEquals (nothing<number> ().ap (just (increment)), nothing<number> ())
-  assertEquals (just (1).ap (nothing<(n: number) => number> ()), nothing<number> ())
-  assertEquals (
+  assert.deepStrictEqual (just (1).ap (just (increment)), just (2))
+  assert.deepStrictEqual (nothing<number> ().ap (just (increment)), nothing<number> ())
+  assert.deepStrictEqual (just (1).ap (nothing<(n: number) => number> ()), nothing<number> ())
+  assert.deepStrictEqual (
     nothing<number> ().ap (nothing<(n: number) => number> ()),
     nothing<number> (),
   )
@@ -209,56 +209,56 @@ test ('ap: applies wrapped functions to wrapped values', () => {
 test ('chain: sequences computations that return the same wrapper', () => {
   const half = (n: number) => even (n) ? just (n / 2) : nothing<number> ()
 
-  assertEquals (just (4).chain (half), just (2))
-  assertEquals (just (3).chain (half), nothing<number> ())
-  assertEquals (nothing<number> ().chain (half), nothing<number> ())
+  assert.deepStrictEqual (just (4).chain (half), just (2))
+  assert.deepStrictEqual (just (3).chain (half), nothing<number> ())
+  assert.deepStrictEqual (nothing<number> ().chain (half), nothing<number> ())
 })
 
 test ('alt: combines alternatives in argument order', () => {
-  assertEquals (alt (just (2)) (just (1)), just (1))
-  assertEquals (alt (just (2)) (nothing<number> ()), just (2))
-  assertEquals (alt (nothing<number> ()) (just (1)), just (1))
-  assertEquals (alt (nothing<number> ()) (nothing<number> ()), nothing<number> ())
-  assertEquals (just (1).alt (just (2)), just (1))
+  assert.deepStrictEqual (alt (just (2)) (just (1)), just (1))
+  assert.deepStrictEqual (alt (just (2)) (nothing<number> ()), just (2))
+  assert.deepStrictEqual (alt (nothing<number> ()) (just (1)), just (1))
+  assert.deepStrictEqual (alt (nothing<number> ()) (nothing<number> ()), nothing<number> ())
+  assert.deepStrictEqual (just (1).alt (just (2)), just (1))
 })
 
 test ('filter: keeps values that pass the predicate, preserving the collection type', () => {
-  assertEquals (just (2).filter (even), just (2))
-  assertEquals (just (3).filter (even), nothing<number> ())
-  assertEquals (nothing<number> ().filter (even), nothing<number> ())
+  assert.deepStrictEqual (just (2).filter (even), just (2))
+  assert.deepStrictEqual (just (3).filter (even), nothing<number> ())
+  assert.deepStrictEqual (nothing<number> ().filter (even), nothing<number> ())
 })
 
 test ('reduce: combines values from left to right, starting with an initial accumulator', () => {
-  assertEquals (
+  assert.deepStrictEqual (
     just (3).reduce ((accumulator: number, a) => accumulator + a, 10),
     13,
   )
-  assertEquals (
+  assert.deepStrictEqual (
     nothing<number> ().reduce ((accumulator: number, a) => accumulator + a, 10),
     10,
   )
 })
 
 test ('reduce: Maybe folds like a list of zero or one', () => {
-  assertEquals (toArray (just (1)), [1])
-  assertEquals (toArray (nothing<number> ()), [])
-  assertEquals (size (just (1)), 1)
-  assertEquals (size (nothing<number> ()), 0)
+  assert.deepStrictEqual (toArray (just (1)), [1])
+  assert.deepStrictEqual (toArray (nothing<number> ()), [])
+  assert.deepStrictEqual (size (just (1)), 1)
+  assert.deepStrictEqual (size (nothing<number> ()), 0)
 })
 
 test ('traverse: transforms values into a chosen wrapper and collects them inside one result', () => {
-  assertEquals (
+  assert.deepStrictEqual (
     just (1).traverse (Identity, (n: number) => identity (n * 2)),
     identity (just (2)),
   )
-  assertEquals (
+  assert.deepStrictEqual (
     nothing<number> ().traverse (Identity, (n: number) => identity (n * 2)),
     identity (nothing<number> ()),
   )
 })
 
 test ('traverse and sequence: collect array values into Maybe', () => {
-  assertEquals (
+  assert.deepStrictEqual (
     traverse (Maybe) ((n: number) => just (n)) ([1, 2, 3]),
     just ([1, 2, 3]),
   )
@@ -269,83 +269,83 @@ test ('traverse and sequence: collect array values into Maybe', () => {
     return n < 3 ? just (n) : nothing<number> ()
   }
 
-  assertEquals (
+  assert.deepStrictEqual (
     traverse (Maybe) (recordAndCheckValue) ([1, 2, 3]),
     nothing<number[]> (),
   )
-  assertEquals (visited, [1, 2, 3])
-  assertEquals (
+  assert.deepStrictEqual (visited, [1, 2, 3])
+  assert.deepStrictEqual (
     sequence (Maybe) ([just (1), just (2)]),
     just ([1, 2]),
   )
-  assertEquals (
+  assert.deepStrictEqual (
     sequence (Maybe) ([just (1), nothing<number> ()]),
     nothing<number[]> (),
   )
-  assertEquals (
+  assert.deepStrictEqual (
     traverse (Maybe) ((n: number) => just (n)) ([]),
     just ([]),
   )
 })
 
 test ('equals: compares values by content, including nested arrays and records', () => {
-  assertEquals (just (1).equals (just (1)), true)
-  assertEquals (just (1).equals (just (2)), false)
-  assertEquals (just (1).equals (nothing<number> ()), false)
-  assertEquals (nothing<number> ().equals (just (1)), false)
-  assertEquals (nothing<number> ().equals (nothing<number> ()), true)
+  assert.deepStrictEqual (just (1).equals (just (1)), true)
+  assert.deepStrictEqual (just (1).equals (just (2)), false)
+  assert.deepStrictEqual (just (1).equals (nothing<number> ()), false)
+  assert.deepStrictEqual (nothing<number> ().equals (just (1)), false)
+  assert.deepStrictEqual (nothing<number> ().equals (nothing<number> ()), true)
 })
 
 test ('equals: the contents are compared structurally, not by reference', () => {
-  assertEquals (just ([1, [2]]).equals (just ([1, [2]])), true)
-  assertEquals (just (just (1)).equals (just (just (1))), true)
-  assertEquals (just (just (1)).equals (just (nothing<number> ())), false)
-  assertEquals (just ({ a: [1] }).equals (just ({ a: [1] })), true)
+  assert.deepStrictEqual (just ([1, [2]]).equals (just ([1, [2]])), true)
+  assert.deepStrictEqual (just (just (1)).equals (just (just (1))), true)
+  assert.deepStrictEqual (just (just (1)).equals (just (nothing<number> ())), false)
+  assert.deepStrictEqual (just ({ a: [1] }).equals (just ({ a: [1] })), true)
 })
 
 test ('lte: checks whether the value is at most the supplied bound', () => {
-  assertEquals (nothing<number> ().lte (just (1)), true)
-  assertEquals (just (1).lte (nothing<number> ()), false)
-  assertEquals (nothing<number> ().lte (nothing<number> ()), true)
-  assertEquals (just (1).lte (just (2)), true)
-  assertEquals (just (2).lte (just (1)), false)
-  assertEquals (just (1).lte (just (1)), true)
+  assert.deepStrictEqual (nothing<number> ().lte (just (1)), true)
+  assert.deepStrictEqual (just (1).lte (nothing<number> ()), false)
+  assert.deepStrictEqual (nothing<number> ().lte (nothing<number> ()), true)
+  assert.deepStrictEqual (just (1).lte (just (2)), true)
+  assert.deepStrictEqual (just (2).lte (just (1)), false)
+  assert.deepStrictEqual (just (1).lte (just (1)), true)
 })
 
 test ("show: formats a value as a readable string, including ply's wrapped values", () => {
-  assertEquals (just (1).show (), 'Just (1)')
-  assertEquals (nothing<number> ().show (), 'Nothing')
-  assertEquals (just ('foo').show (), 'Just ("foo")')
-  assertEquals (just (just (1)).show (), 'Just (Just (1))')
-  assertEquals (just ([1, 2]).show (), 'Just ([1, 2])')
-  assertEquals (just (-0).show (), 'Just (-0)')
+  assert.deepStrictEqual (just (1).show (), 'Just (1)')
+  assert.deepStrictEqual (nothing<number> ().show (), 'Nothing')
+  assert.deepStrictEqual (just ('foo').show (), 'Just ("foo")')
+  assert.deepStrictEqual (just (just (1)).show (), 'Just (Just (1))')
+  assert.deepStrictEqual (just ([1, 2]).show (), 'Just ([1, 2])')
+  assert.deepStrictEqual (just (-0).show (), 'Just (-0)')
 })
 
 test ('maybe_: handles presence and absence with separate callbacks', () => {
-  assertEquals (maybe_ (() => 0) ((a: number) => a * 2) (just (4)), 8)
-  assertEquals (maybe_ (() => 0) ((a: number) => a * 2) (nothing<number> ()), 0)
+  assert.deepStrictEqual (maybe_ (() => 0) ((a: number) => a * 2) (just (4)), 8)
+  assert.deepStrictEqual (maybe_ (() => 0) ((a: number) => a * 2) (nothing<number> ()), 0)
 })
 
 test ("maybeEncase: wraps a function's result in Just, or returns Nothing if it throws", () => {
   const parse = maybeEncase (JSON.parse)
 
-  assertEquals (parse ('[1,2]'), just ([1, 2]))
-  assertEquals (parse ('['), nothing ())
+  assert.deepStrictEqual (parse ('[1,2]'), just ([1, 2]))
+  assert.deepStrictEqual (parse ('['), nothing ())
 })
 
 test ('isNothing: checks whether a Maybe has no value', () => {
-  assertEquals (isNothing (nothing<number> ()), true)
-  assertEquals (isNothing (just (42)), false)
+  assert.deepStrictEqual (isNothing (nothing<number> ()), true)
+  assert.deepStrictEqual (isNothing (just (42)), false)
 })
 
 test ('lte: the order is total and antisymmetric', () => {
   const values = [nothing<number> (), just (1), just (2)]
   for (const a of values) {
     for (const b of values) {
-      assertEquals (a.lte (b) || b.lte (a), true, 'totality')
-      if (a.lte (b) && b.lte (a)) assertEquals (a.equals (b), true, 'antisymm.')
+      assert.deepStrictEqual (a.lte (b) || b.lte (a), true, 'totality')
+      if (a.lte (b) && b.lte (a)) assert.deepStrictEqual (a.equals (b), true, 'antisymm.')
       for (const c of values) {
-        if (a.lte (b) && b.lte (c)) assertEquals (a.lte (c), true, 'transitivity')
+        if (a.lte (b) && b.lte (c)) assert.deepStrictEqual (a.lte (c), true, 'transitivity')
       }
     }
   }
@@ -353,8 +353,8 @@ test ('lte: the order is total and antisymmetric', () => {
 
 test ('map: functor laws', () => {
   for (const m of samples ()) {
-    assertEquals (m.map (id), m, 'identity')
-    assertEquals (
+    assert.deepStrictEqual (m.map (id), m, 'identity')
+    assert.deepStrictEqual (
       m.map ((n) => increment (doubleNumber (n))),
       m.map (doubleNumber).map (increment),
       'composition',
@@ -373,7 +373,7 @@ test ('ap: composition law', () => {
   for (const u of fs) {
     for (const v of fs) {
       for (const w of samples ()) {
-        assertEquals (w.ap (v.ap (u.map (composeFunctions))), w.ap (v).ap (u))
+        assert.deepStrictEqual (w.ap (v.ap (u.map (composeFunctions))), w.ap (v).ap (u))
       }
     }
   }
@@ -382,12 +382,12 @@ test ('ap: composition law', () => {
 test ('ap: applicative laws', () => {
   const f = (n: number) => n + 3
   for (const v of samples ()) {
-    assertEquals (v.ap (Maybe.of (id)), v, 'identity')
+    assert.deepStrictEqual (v.ap (Maybe.of (id)), v, 'identity')
   }
 
-  assertEquals (Maybe.of (7).ap (Maybe.of (f)), Maybe.of (f (7)), 'homomorphism')
+  assert.deepStrictEqual (Maybe.of (7).ap (Maybe.of (f)), Maybe.of (f (7)), 'homomorphism')
   for (const u of [just (f), nothing<(n: number) => number> ()]) {
-    assertEquals (
+    assert.deepStrictEqual (
       Maybe.of (7).ap (u),
       u.ap (Maybe.of ((g: (n: number) => number) => g (7))),
       'interchange',
@@ -399,31 +399,31 @@ test ('chain: monad laws', () => {
   const f = (n: number) => n > 0 ? just (n * 2) : nothing<number> ()
   const g = (n: number) => n < 10 ? just (n + 1) : nothing<number> ()
   for (const m of samples ()) {
-    assertEquals (m.chain (f).chain (g), m.chain ((n) => f (n).chain (g)), 'assoc.')
-    assertEquals (m.chain ((a) => Maybe.of (a)), m, 'right identity')
+    assert.deepStrictEqual (m.chain (f).chain (g), m.chain ((n) => f (n).chain (g)), 'assoc.')
+    assert.deepStrictEqual (m.chain ((a) => Maybe.of (a)), m, 'right identity')
   }
   for (const a of [1, -1, 42]) {
-    assertEquals (Maybe.of (a).chain (f), f (a), 'left identity')
+    assert.deepStrictEqual (Maybe.of (a).chain (f), f (a), 'left identity')
   }
 })
 
 test ('alt: Alt and Plus laws', () => {
   for (const a of samples ()) {
-    assertEquals (a.alt (Maybe.zero ()), a, 'right neutral element')
-    assertEquals (Maybe.zero<number> ().alt (a), a, 'left neutral element')
+    assert.deepStrictEqual (a.alt (Maybe.zero ()), a, 'right neutral element')
+    assert.deepStrictEqual (Maybe.zero<number> ().alt (a), a, 'left neutral element')
     for (const b of samples ()) {
-      assertEquals (
+      assert.deepStrictEqual (
         a.alt (b).map (increment),
         a.map (increment).alt (b.map (increment)),
         'distributivity',
       )
       for (const c of samples ()) {
-        assertEquals (a.alt (b).alt (c), a.alt (b.alt (c)), 'associativity')
+        assert.deepStrictEqual (a.alt (b).alt (c), a.alt (b.alt (c)), 'associativity')
       }
     }
   }
 
-  assertEquals (
+  assert.deepStrictEqual (
     Maybe.zero<number> ().map (increment),
     nothing<number> (),
     'annihilation',
@@ -432,15 +432,15 @@ test ('alt: Alt and Plus laws', () => {
 
 test ('filter: Filterable laws', () => {
   for (const m of samples ()) {
-    assertEquals (m.filter (() => true), m, 'identity')
-    assertEquals (
+    assert.deepStrictEqual (m.filter (() => true), m, 'identity')
+    assert.deepStrictEqual (
       m.filter ((n) => isPositive (n) && even (n)),
       m.filter (isPositive).filter (even),
       'distributivity',
     )
   }
 
-  assertEquals (
+  assert.deepStrictEqual (
     Maybe.zero<number> ().filter (isPositive),
     nothing<number> (),
     'annihilation',
@@ -449,19 +449,19 @@ test ('filter: Filterable laws', () => {
 
 test ('traverse: identity law through Identity', () => {
   for (const m of samples ()) {
-    assertEquals (m.traverse (Identity, (a: number) => identity (a)), identity (m))
+    assert.deepStrictEqual (m.traverse (Identity, (a: number) => identity (a)), identity (m))
   }
 })
 
 test ('equals: Setoid laws', () => {
   const values = [just (1), just (2), nothing<number> (), just (1)]
   for (const a of values) {
-    assertEquals (a.equals (a), true, 'reflexivity')
+    assert.deepStrictEqual (a.equals (a), true, 'reflexivity')
     for (const b of values) {
-      assertEquals (a.equals (b), b.equals (a), 'symmetry')
+      assert.deepStrictEqual (a.equals (b), b.equals (a), 'symmetry')
       for (const c of values) {
         if (a.equals (b) && b.equals (c)) {
-          assertEquals (a.equals (c), true, 'transitivity')
+          assert.deepStrictEqual (a.equals (c), true, 'transitivity')
         }
       }
     }
@@ -478,7 +478,7 @@ test ('safeLift: skips the transformation when the predicate fails', () => {
 
   safeLift (even, recordValue) (3)
 
-  assertEquals (calls, 0)
+  assert.deepStrictEqual (calls, 0)
 })
 
 test ('match: the other branch is not evaluated', () => {
@@ -486,8 +486,8 @@ test ('match: the other branch is not evaluated', () => {
     throw new Error ('should not have been called')
   }
 
-  assertEquals (just (1).match (boom, (a) => String (a)), '1')
-  assertEquals (nothing<number> ().match (() => 'n', boom), 'n')
+  assert.deepStrictEqual (just (1).match (boom, (a) => String (a)), '1')
+  assert.deepStrictEqual (nothing<number> ().match (() => 'n', boom), 'n')
 })
 
 test ('fromMaybe_: skips the fallback for Just', () => {
@@ -497,33 +497,31 @@ test ('fromMaybe_: skips the fallback for Just', () => {
     return 9
   }
 
-  assertEquals (fromMaybe_ (fallback) (just (1)), 1)
-  assertEquals (fallbackCalls, 0)
+  assert.deepStrictEqual (fromMaybe_ (fallback) (just (1)), 1)
+  assert.deepStrictEqual (fallbackCalls, 0)
 })
 
 test ('fromNullable: null and undefined become Nothing', () => {
-  assertEquals (fromNullable (null), nothing ())
-  assertEquals (fromNullable (undefined), nothing ())
+  assert.deepStrictEqual (fromNullable (null), nothing ())
+  assert.deepStrictEqual (fromNullable (undefined), nothing ())
 })
 
 test ('maybeEncase: all the arguments get through', () => {
   const f = maybeEncase ((a: number, b: number, c: number) => a + b + c)
 
-  assertEquals (f (1, 2, 3), just (6))
+  assert.deepStrictEqual (f (1, 2, 3), just (6))
 })
 
 test ('Maybe: rejects empty and concat', () => {
-  assertEquals ('empty' in Maybe, false)
-  assertEquals ('concat' in just (1), false)
-  assertThrows (
+  assert.deepStrictEqual ('empty' in Maybe, false)
+  assert.deepStrictEqual ('concat' in just (1), false)
+  assert.throws (
     () => empty (Maybe as never),
-    TypeError,
-    'empty: Maybe has no Monoid',
+    (error: unknown) => error instanceof TypeError && error.message.includes ('empty: Maybe has no Monoid'),
   )
-  assertThrows (
+  assert.throws (
     () => concat (just ('a') as never) (just ('b') as never),
-    TypeError,
-    'concat: Maybe has no Semigroup',
+    (error: unknown) => error instanceof TypeError && error.message.includes ('concat: Maybe has no Semigroup'),
   )
 })
 
@@ -539,45 +537,43 @@ test ('traverse: a failed result makes the whole traversal fail', () => {
   const wary = (n: number) =>
     n > 0 ? right<string, number> (n) : left<string, number> ('err' + n)
 
-  assertEquals (
+  assert.deepStrictEqual (
     just (1).traverse (Identity, (n: number) => identity (n)),
     identity (just (1)),
   )
-  assertEquals (
+  assert.deepStrictEqual (
     just (1).traverse (
       Maybe,
       (n: number) => n > 0 ? just (n) : nothing<number> (),
     ),
     just (just (1)),
   )
-  assertEquals (
+  assert.deepStrictEqual (
     just (-1).traverse (
       Maybe,
       (n: number) => n > 0 ? just (n) : nothing<number> (),
     ),
     nothing<Maybe<number>> (),
   )
-  assertEquals (
+  assert.deepStrictEqual (
     just (-1).traverse (Either, wary),
     left<string, Maybe<number>> ('err-1'),
   )
 
-  assertEquals (
+  assert.deepStrictEqual (
     nothing<number> ().traverse (Either, wary),
     right<string, Maybe<number>> (nothing<number> ()),
   )
 })
 
 test ('Maybe: rejects extract and bimap', () => {
-  assertThrows (
+  assert.throws (
     () => extract (just (1) as never),
-    TypeError,
-    'extract: Maybe has no Comonad',
+    (error: unknown) => error instanceof TypeError && error.message.includes ('extract: Maybe has no Comonad'),
   )
-  assertThrows (
+  assert.throws (
     () => bimap ((e: string) => e) (increment) (just (1) as never),
-    TypeError,
-    'bimap: Maybe has no Bifunctor',
+    (error: unknown) => error instanceof TypeError && error.message.includes ('bimap: Maybe has no Bifunctor'),
   )
 })
 
@@ -595,7 +591,7 @@ test ('maybe_: absent branch receives no arguments', () => {
 
   maybe_ (recordArguments) (returnValue) (nothing<number> ())
 
-  assertEquals (calls, [[]])
+  assert.deepStrictEqual (calls, [[]])
 })
 
 test ('maybe_: present branch receives only the value', () => {
@@ -612,7 +608,7 @@ test ('maybe_: present branch receives only the value', () => {
 
   maybe_ (defaultValue) (recordArguments) (just (1))
 
-  assertEquals (calls, [[1]])
+  assert.deepStrictEqual (calls, [[1]])
 })
 
 test ('maybe: present branch receives only the value', () => {
@@ -625,7 +621,7 @@ test ('maybe: present branch receives only the value', () => {
 
   maybe (0) (recordArguments) (just (1))
 
-  assertEquals (calls, [[1]])
+  assert.deepStrictEqual (calls, [[1]])
 })
 
 test ('fromMaybe_: fallback receives no arguments', () => {
@@ -638,7 +634,7 @@ test ('fromMaybe_: fallback receives no arguments', () => {
 
   fromMaybe_ (recordArguments) (nothing<number> ())
 
-  assertEquals (calls, [[]])
+  assert.deepStrictEqual (calls, [[]])
 })
 
 test ('fromPredicate: predicate receives only the input', () => {
@@ -651,7 +647,7 @@ test ('fromPredicate: predicate receives only the input', () => {
 
   fromPredicate (recordArguments) (1)
 
-  assertEquals (calls, [[1]])
+  assert.deepStrictEqual (calls, [[1]])
 })
 
 test ('safeLift: predicate receives only the input', () => {
@@ -668,7 +664,7 @@ test ('safeLift: predicate receives only the input', () => {
 
   safeLift (recordArguments, returnValue) (1)
 
-  assertEquals (calls, [[1]])
+  assert.deepStrictEqual (calls, [[1]])
 })
 
 test ('safeLift: transformation receives only the input', () => {
@@ -681,7 +677,7 @@ test ('safeLift: transformation receives only the input', () => {
 
   safeLift (isPositive, recordArguments) (1)
 
-  assertEquals (calls, [[1]])
+  assert.deepStrictEqual (calls, [[1]])
 })
 
 test ('safeAfter: predicate receives only the result', () => {
@@ -698,7 +694,7 @@ test ('safeAfter: predicate receives only the result', () => {
 
   safeAfter (recordArguments, returnValue) (1)
 
-  assertEquals (calls, [[1]])
+  assert.deepStrictEqual (calls, [[1]])
 })
 
 test ('safeAfter: transformation receives only the input', () => {
@@ -711,7 +707,7 @@ test ('safeAfter: transformation receives only the input', () => {
 
   safeAfter (isPositive, recordArguments) (1)
 
-  assertEquals (calls, [[1]])
+  assert.deepStrictEqual (calls, [[1]])
 })
 
 test ('maybeToEither_: error factory receives no arguments', () => {
@@ -724,7 +720,7 @@ test ('maybeToEither_: error factory receives no arguments', () => {
 
   maybeToEither_ (recordArguments) (nothing<number> ())
 
-  assertEquals (calls, [[]])
+  assert.deepStrictEqual (calls, [[]])
 })
 
 test ('match: present branch receives only the value', () => {
@@ -741,7 +737,7 @@ test ('match: present branch receives only the value', () => {
 
   just (1).match (defaultValue, recordArguments)
 
-  assertEquals (calls, [[1]])
+  assert.deepStrictEqual (calls, [[1]])
 })
 
 test ('match: absent branch receives no arguments', () => {
@@ -758,7 +754,7 @@ test ('match: absent branch receives no arguments', () => {
 
   nothing<number> ().match (recordArguments, returnValue)
 
-  assertEquals (calls, [[]])
+  assert.deepStrictEqual (calls, [[]])
 })
 
 test ('map: callback receives only the value', () => {
@@ -771,7 +767,7 @@ test ('map: callback receives only the value', () => {
 
   just (1).map (recordArguments)
 
-  assertEquals (calls, [[1]])
+  assert.deepStrictEqual (calls, [[1]])
 })
 
 test ('filter: predicate receives only the value', () => {
@@ -784,7 +780,7 @@ test ('filter: predicate receives only the value', () => {
 
   just (1).filter (recordArguments)
 
-  assertEquals (calls, [[1]])
+  assert.deepStrictEqual (calls, [[1]])
 })
 
 test ('chain: callback receives only the value', () => {
@@ -797,7 +793,7 @@ test ('chain: callback receives only the value', () => {
 
   just (1).chain (recordArguments)
 
-  assertEquals (calls, [[1]])
+  assert.deepStrictEqual (calls, [[1]])
 })
 
 test ('reduce: callback receives only accumulator and value', () => {
@@ -810,7 +806,7 @@ test ('reduce: callback receives only accumulator and value', () => {
 
   just (1).reduce (recordArguments, 0)
 
-  assertEquals (calls, [[0, 1]])
+  assert.deepStrictEqual (calls, [[0, 1]])
 })
 
 test ('fromPredicate: a type guard narrows the wrapped value to string', () => {
@@ -820,13 +816,13 @@ test ('fromPredicate: a type guard narrows the wrapped value to string', () => {
   const result = fromPredicate (isString) (input)
   const text: Maybe<string> = result
 
-  assertEquals (text, just ('abc'))
-  assertEquals (fromPredicate (isString) (1 as unknown), nothing ())
+  assert.deepStrictEqual (text, just ('abc'))
+  assert.deepStrictEqual (fromPredicate (isString) (1 as unknown), nothing ())
 })
 
 test ('isJust: checks for Just and narrows the type so its value can be read', () => {
-  assertEquals (isJust (just (42)), true)
-  assertEquals (isJust (nothing<number> ()), false)
+  assert.deepStrictEqual (isJust (just (42)), true)
+  assert.deepStrictEqual (isJust (nothing<number> ()), false)
 })
 
 const increment = (n: number) => n + 1

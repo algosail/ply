@@ -2,12 +2,12 @@
  * Type checking, comparison, and formatting for bigint values through `Big`.
  */
 
-import type { Shape } from '../core/shape.ts'
-import type { NativeTypeRep } from '../core/named.ts'
 import type { CheckableDict } from '../classes/checkable.ts'
 import type { OrdDict } from '../classes/ord.ts'
 import type { SetoidDict } from '../classes/setoid.ts'
 import type { ShowDict } from '../classes/show.ts'
+import type { NativeTypeRep } from '../core/named.ts'
+import type { Shape } from '../core/shape.ts'
 
 /**
  * The shape for bigints.
@@ -34,7 +34,7 @@ export type BigDict =
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.Big.is(42n) // => true
  * P.Big.lte(1n, 2n) // => true
  * ```

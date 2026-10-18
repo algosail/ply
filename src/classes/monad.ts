@@ -2,7 +2,6 @@
  * Sequence wrapped computations with {@link go} and {@link fgo}.
  */
 
-import type { Kind, Shape } from '../core/shape.ts'
 import type {
   Assert,
   MatchableIn,
@@ -11,15 +10,16 @@ import type {
   SlotBOf,
   SubclassOf,
 } from '../core/kind.ts'
+import type { Kind, Shape } from '../core/shape.ts'
 import type { ArrayShape } from '../natives/array.ts'
 import type { FnShape } from '../natives/function.ts'
 import type { SetShape } from '../natives/set.ts'
-import type { ChainDict, ChainKeys, ChainShapes } from './chain.ts'
 import type {
   ApplicativeDict,
   ApplicativeShapes,
   OfSig,
 } from './applicative.ts'
+import type { ChainDict, ChainKeys, ChainShapes } from './chain.ts'
 import { nameOf } from '../core/instance.ts'
 import { of } from './applicative.ts'
 import { chain } from './chain.ts'
@@ -91,17 +91,17 @@ export type _MonadUnderChain = Assert<SubclassOf<MonadShapes, ChainShapes>>
  * ```ts
  * import * as P from '@algosail/ply'
  * import type { MaybeShape } from '@algosail/ply/shapes'
- * 
+ *
  * function half(value: number): P.Maybe<number> {
  *   return value % 2 === 0 ? P.just(value / 2) : P.nothing()
  * }
- * 
+ *
  * function* halves(times: number, value: number): P.Do<MaybeShape, number> {
  *   if (times === 0) return value
  *   const result: number = yield half(value)
  *   return yield* halves(times - 1, result)
  * }
- * 
+ *
  * P.fgo(P.Maybe)(halves)(3, 8) // => Just (1)
  * ```
  */
@@ -187,17 +187,17 @@ function engine(T: unknown, how: string): (start: Body) => unknown {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * function half(value: number): P.Maybe<number> {
  *   return value % 2 === 0 ? P.just(value / 2) : P.nothing()
  * }
- * 
+ *
  * function* total() {
  *   const first: number = yield half(8)
  *   const second: number = yield half(first)
  *   return first + second
  * }
- * 
+ *
  * P.go(P.Maybe)(total) // => Just (6)
  * ```
  */
@@ -214,17 +214,17 @@ export function go(T: unknown): (body: Body) => unknown {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * function half(value: number): P.Maybe<number> {
  *   return value % 2 === 0 ? P.just(value / 2) : P.nothing()
  * }
- * 
+ *
  * function* halfTwice(value: number) {
  *   const result: number = yield half(value)
  *   const quarter: number = yield half(result)
  *   return quarter
  * }
- * 
+ *
  * const quarter = P.fgo(P.Maybe)(halfTwice)
  * quarter(8) // => Just (2)
  * quarter(6) // => Nothing

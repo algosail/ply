@@ -1,14 +1,8 @@
+import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { assertEquals, assertThrows } from '../assert.ts'
 import type { Nullary } from '../../src/core/shape.ts'
 import { empty, mconcat, type MonoidDict, monoidNatives } from '../../src/classes/monoid.ts'
 import { concat } from '../../src/classes/semigroup.ts'
-import { Arr } from '../../src/natives/array.ts'
-import { Sets } from '../../src/natives/set.ts'
-import { Maps } from '../../src/natives/map.ts'
-import { StrMap } from '../../src/natives/strmap.ts'
-import { Str } from '../../src/natives/string.ts'
-import { Num } from '../../src/natives/number.ts'
 import { just, Maybe, nothing } from '../../src/data/maybe.ts'
 import {
   All,
@@ -23,41 +17,47 @@ import {
   RightUnion,
   Sum,
 } from '../../src/data/monoid.ts'
+import { Arr } from '../../src/natives/array.ts'
+import { Maps } from '../../src/natives/map.ts'
+import { Num } from '../../src/natives/number.ts'
+import { Sets } from '../../src/natives/set.ts'
+import { Str } from '../../src/natives/string.ts'
+import { StrMap } from '../../src/natives/strmap.ts'
 
 test ('empty: every call gives a fresh value', () => {
   const a = mt (Arr) as number[]
   const b = mt (Arr) as number[]
 
-  assertEquals (a === b, false)
+  assert.deepStrictEqual (a === b, false)
   a.push (1)
 
-  assertEquals (mt (Arr), [])
+  assert.deepStrictEqual (mt (Arr), [])
 })
 
 test ('mconcat: combines an array using a chosen monoid', () => {
-  assertEquals (mconcat (Sum) ([1, 2, 3]), 6)
-  assertEquals (mconcat (Product) ([2, 3, 4]), 24)
-  assertEquals (mconcat (Concat) (['a', 'b', 'c']), 'abc')
-  assertEquals (mconcat (Min) ([3, 1, 2]), 1)
-  assertEquals (mconcat (Max) ([3, 1, 2]), 3)
-  assertEquals (mconcat (All) ([true, false]), false)
-  assertEquals (mconcat (All) ([true, true]), true)
-  assertEquals (mconcat (Any) ([false, true]), true)
-  assertEquals (mconcat (Any) ([false, false]), false)
-  assertEquals (mconcat (First<number> ()) ([nothing (), just (1), just (2)]), just (1))
-  assertEquals (mconcat (Last<number> ()) ([just (1), just (2), nothing ()]), just (2))
-  assertEquals (mconcat (Endo<number> ()) ([(n) => n + 1, (n) => n * 10]) (2), 21)
+  assert.deepStrictEqual (mconcat (Sum) ([1, 2, 3]), 6)
+  assert.deepStrictEqual (mconcat (Product) ([2, 3, 4]), 24)
+  assert.deepStrictEqual (mconcat (Concat) (['a', 'b', 'c']), 'abc')
+  assert.deepStrictEqual (mconcat (Min) ([3, 1, 2]), 1)
+  assert.deepStrictEqual (mconcat (Max) ([3, 1, 2]), 3)
+  assert.deepStrictEqual (mconcat (All) ([true, false]), false)
+  assert.deepStrictEqual (mconcat (All) ([true, true]), true)
+  assert.deepStrictEqual (mconcat (Any) ([false, true]), true)
+  assert.deepStrictEqual (mconcat (Any) ([false, false]), false)
+  assert.deepStrictEqual (mconcat (First<number> ()) ([nothing (), just (1), just (2)]), just (1))
+  assert.deepStrictEqual (mconcat (Last<number> ()) ([just (1), just (2), nothing ()]), just (2))
+  assert.deepStrictEqual (mconcat (Endo<number> ()) ([(n) => n + 1, (n) => n * 10]) (2), 21)
 })
 
 test ('mconcat: a single element comes back as it is', () => {
-  assertEquals (mconcat (Sum) ([5]), 5)
-  assertEquals (mconcat (Concat) (['x']), 'x')
-  assertEquals (mconcat (RightUnion<number> ()) ([{ a: 1 }]), { a: 1 })
+  assert.deepStrictEqual (mconcat (Sum) ([5]), 5)
+  assert.deepStrictEqual (mconcat (Concat) (['x']), 'x')
+  assert.deepStrictEqual (mconcat (RightUnion<number> ()) ([{ a: 1 }]), { a: 1 })
 })
 
 test ('mconcat: the fold goes left to right', () => {
-  assertEquals (mconcat (RightUnion<number> ()) ([{ a: 1 }, { a: 2 }]), { a: 2 })
-  assertEquals (mconcat (RightUnion<number> ()) ([{ a: 2 }, { a: 1 }]), { a: 1 })
+  assert.deepStrictEqual (mconcat (RightUnion<number> ()) ([{ a: 1 }, { a: 2 }]), { a: 2 })
+  assert.deepStrictEqual (mconcat (RightUnion<number> ()) ([{ a: 2 }, { a: 1 }]), { a: 1 })
   const trace: string[] = []
   const Trace: MonoidDict<Nullary<string>> = {
     empty: () => 'ε',
@@ -67,34 +67,34 @@ test ('mconcat: the fold goes left to right', () => {
     },
   }
 
-  assertEquals (mconcat (Trace) (['a', 'b', 'c']), 'εabc')
-  assertEquals (trace, ['ε+a', 'εa+b', 'εab+c'])
+  assert.deepStrictEqual (mconcat (Trace) (['a', 'b', 'c']), 'εabc')
+  assert.deepStrictEqual (trace, ['ε+a', 'εa+b', 'εab+c'])
 })
 
 test ('empty: the neutral element law across supported types', () => {
   for (const [name, [T, values]] of Object.entries (samplesByType)) {
     for (const x of values) {
-      assertEquals (cat (mt (T), x), x, `left ${name}`)
-      assertEquals (cat (x, mt (T)), x, `right ${name}`)
+      assert.deepStrictEqual (cat (mt (T), x), x, `left ${name}`)
+      assert.deepStrictEqual (cat (x, mt (T)), x, `right ${name}`)
     }
   }
 })
 
 test ('empty: the neutral element is taken from the instance table too', () => {
-  assertEquals (mt ({ '@@type': 'Array' }), [])
-  assertEquals (mt ({ '@@type': 'String' }), '')
+  assert.deepStrictEqual (mt ({ '@@type': 'Array' }), [])
+  assert.deepStrictEqual (mt ({ '@@type': 'String' }), '')
 })
 
 test ('mconcat: an empty list folds into the neutral element', () => {
-  assertEquals (mconcat (Sum) ([]), 0)
-  assertEquals (mconcat (Product) ([]), 1)
-  assertEquals (mconcat (Concat) ([]), '')
-  assertEquals (mconcat (All) ([]), true)
-  assertEquals (mconcat (Any) ([]), false)
-  assertEquals (mconcat (Min) ([]), Infinity)
-  assertEquals (mconcat (Max) ([]), -Infinity)
-  assertEquals (mconcat (First<number> ()) ([]), nothing ())
-  assertEquals (mconcat (Endo<number> ()) ([]) (7), 7)
+  assert.deepStrictEqual (mconcat (Sum) ([]), 0)
+  assert.deepStrictEqual (mconcat (Product) ([]), 1)
+  assert.deepStrictEqual (mconcat (Concat) ([]), '')
+  assert.deepStrictEqual (mconcat (All) ([]), true)
+  assert.deepStrictEqual (mconcat (Any) ([]), false)
+  assert.deepStrictEqual (mconcat (Min) ([]), Infinity)
+  assert.deepStrictEqual (mconcat (Max) ([]), -Infinity)
+  assert.deepStrictEqual (mconcat (First<number> ()) ([]), nothing ())
+  assert.deepStrictEqual (mconcat (Endo<number> ()) ([]) (7), 7)
 })
 
 test ('mconcat: the monoid laws on the dictionaries covered', () => {
@@ -104,19 +104,19 @@ test ('mconcat: the monoid laws on the dictionaries covered', () => {
     values: readonly A[],
   ) => {
     for (const x of values) {
-      assertEquals (M.concat (M.empty (), x), x, `left ${name}`)
-      assertEquals (M.concat (x, M.empty ()), x, `right ${name}`)
-      assertEquals (mconcat (M) ([x]), x, `single element ${name}`)
+      assert.deepStrictEqual (M.concat (M.empty (), x), x, `left ${name}`)
+      assert.deepStrictEqual (M.concat (x, M.empty ()), x, `right ${name}`)
+      assert.deepStrictEqual (mconcat (M) ([x]), x, `single element ${name}`)
     }
     for (const a of values) {
       for (const b of values) {
         for (const c of values) {
-          assertEquals (
+          assert.deepStrictEqual (
             M.concat (M.concat (a, b), c),
             M.concat (a, M.concat (b, c)),
             `associativity ${name}`,
           )
-          assertEquals (
+          assert.deepStrictEqual (
             mconcat (M) ([a, b, c]),
             M.concat (M.concat (M.concat (M.empty (), a), b), c),
             `mconcat ${name}`,
@@ -138,25 +138,21 @@ test ('mconcat: the monoid laws on the dictionaries covered', () => {
 })
 
 test ('empty: a type without a neutral element throws a descriptive TypeError', () => {
-  assertThrows (
+  assert.throws (
     () => empty (Maybe as never),
-    TypeError,
-    'empty: Maybe has no Monoid',
+    (error: unknown) => error instanceof TypeError && error.message.includes ('empty: Maybe has no Monoid'),
   )
-  assertThrows (
+  assert.throws (
     () => empty (Num as never),
-    TypeError,
-    'empty: Number has no Monoid',
+    (error: unknown) => error instanceof TypeError && error.message.includes ('empty: Number has no Monoid'),
   )
-  assertThrows (
+  assert.throws (
     () => empty (null as never),
-    TypeError,
-    'empty: Null has no Monoid',
+    (error: unknown) => error instanceof TypeError && error.message.includes ('empty: Null has no Monoid'),
   )
-  assertThrows (
+  assert.throws (
     () => empty ({} as never),
-    TypeError,
-    'empty: StrMap has no Monoid',
+    (error: unknown) => error instanceof TypeError && error.message.includes ('empty: StrMap has no Monoid'),
   )
 })
 
@@ -178,23 +174,22 @@ test ('mconcat: concat receives only the accumulated result and the next value',
   }
   mconcat (monoid) ([1, 2, 3])
 
-  assertEquals (calls, [[0, 1], [0, 2], [0, 3]])
+  assert.deepStrictEqual (calls, [[0, 1], [0, 2], [0, 3]])
 })
 
 test ('empty: returns the empty value for the chosen type, such as [] for Arr', () => {
-  assertEquals (mt (Arr), [])
-  assertEquals (mt (StrMap), {})
-  assertEquals (mt (Str), '')
+  assert.deepStrictEqual (mt (Arr), [])
+  assert.deepStrictEqual (mt (StrMap), {})
+  assert.deepStrictEqual (mt (Str), '')
   // @ts-expect-error the Set type representative no longer has empty
   const _setCase = () => empty (Sets)
   // @ts-expect-error the Map type representative no longer has empty
   const _mapCase = () => empty (Maps)
   void _setCase, _mapCase
   for (const [name, T] of dropped) {
-    assertThrows (
+    assert.throws (
       () => mt (T),
-      TypeError,
-      `${name} has no Monoid`,
+      (error: unknown) => error instanceof TypeError && error.message.includes (`${name} has no Monoid`),
       name,
     )
   }
@@ -212,30 +207,42 @@ test ('empty: rejects Set and Map representatives', () => {
   void _emptySet, _emptyMap, _catSet, _catMap
 
   for (const [name, T, e, values] of dropped) {
-    assertThrows (() => mt (T), TypeError, `${name} has no Monoid`, name)
+    assert.throws (
+      () => mt (T),
+      (error: unknown) => error instanceof TypeError && error.message.includes (`${name} has no Monoid`),
+      name,
+    )
     const message = `concat: ${name} has no Semigroup`
     for (const x of values) {
-      assertThrows (() => cat (e, x), TypeError, message, `left ${name}`)
-      assertThrows (() => cat (x, e), TypeError, message, `right ${name}`)
+      assert.throws (
+        () => cat (e, x),
+        (error: unknown) => error instanceof TypeError && error.message.includes (message),
+        `left ${name}`,
+      )
+      assert.throws (
+        () => cat (x, e),
+        (error: unknown) => error instanceof TypeError && error.message.includes (message),
+        `right ${name}`,
+      )
     }
   }
 })
 
 test ('monoidNatives: lists the supported native implementations', () => {
-  assertEquals (Object.keys (monoidNatives), [
+  assert.deepStrictEqual (Object.keys (monoidNatives), [
     'Array',
     'StrMap',
     'String',
   ])
-  assertEquals (monoidNatives.String.empty (), '')
-  assertEquals (monoidNatives.Array.empty (), [])
+  assert.deepStrictEqual (monoidNatives.String.empty (), '')
+  assert.deepStrictEqual (monoidNatives.Array.empty (), [])
   // @ts-expect-error monoidNatives has no Set cell
   const _setCase = () => monoidNatives.Set
   // @ts-expect-error monoidNatives has no Map cell
   const _mapCase = () => monoidNatives.Map
   void _setCase, _mapCase
   for (const droppedName of ['Set', 'Map']) {
-    assertEquals (droppedName in monoidNatives, false, droppedName)
+    assert.deepStrictEqual (droppedName in monoidNatives, false, droppedName)
   }
 })
 
@@ -244,9 +251,9 @@ const cat = (a: unknown, b: unknown): unknown => concat (a as never) (b as never
 const mt = (T: unknown): unknown => empty (T as never)
 
 const samplesByType: Record<string, readonly [unknown, readonly unknown[]]> = {
-  'Array': [Arr, [[], [1], [1, 2]]],
-  'StrMap': [StrMap, [{}, { a: 1 }, { a: 1, b: 2 }]],
-  'String': [Str, ['', 'a', 'abc']],
+  Array: [Arr, [[], [1], [1, 2]]],
+  StrMap: [StrMap, [{}, { a: 1 }, { a: 1, b: 2 }]],
+  String: [Str, ['', 'a', 'abc']],
 }
 
 const dropped: [string, unknown, unknown, readonly unknown[]][] = [

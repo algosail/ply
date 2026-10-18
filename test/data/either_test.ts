@@ -1,6 +1,15 @@
+import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { assertEquals, assertThrows } from '../assert.ts'
+import { alt } from '../../src/classes/alt.ts'
+import { ap, apFirst, apSecond } from '../../src/classes/apply.ts'
 import { chain } from '../../src/classes/chain.ts'
+import { filter } from '../../src/classes/filterable.ts'
+import { size, toArray } from '../../src/classes/foldable.ts'
+import { map } from '../../src/classes/functor.ts'
+import { empty } from '../../src/classes/monoid.ts'
+import { zero } from '../../src/classes/plus.ts'
+import { concat } from '../../src/classes/semigroup.ts'
+import { traverse } from '../../src/classes/traversable.ts'
 import {
   Either,
   either,
@@ -20,66 +29,57 @@ import {
   rights,
   tagBy,
 } from '../../src/data/either.ts'
-import { just, Maybe, nothing } from '../../src/data/maybe.ts'
 import { Identity, identity } from '../../src/data/identity.ts'
-import { alt } from '../../src/classes/alt.ts'
-import { ap, apFirst, apSecond } from '../../src/classes/apply.ts'
-import { filter } from '../../src/classes/filterable.ts'
-import { size, toArray } from '../../src/classes/foldable.ts'
-import { map } from '../../src/classes/functor.ts'
-import { empty } from '../../src/classes/monoid.ts'
-import { zero } from '../../src/classes/plus.ts'
-import { concat } from '../../src/classes/semigroup.ts'
-import { traverse } from '../../src/classes/traversable.ts'
+import { just, Maybe, nothing } from '../../src/data/maybe.ts'
 
 test ('Either: uses its public name and supports detached static functions', () => {
   const { is, of, left: fail } = Either
   const failure = fail<string, number> ('error')
 
-  assertEquals (Object.getPrototypeOf (failure).constructor.name, 'Either')
-  assertEquals (Object.getPrototypeOf (of (42)).constructor.name, 'Either')
-  assertEquals (failure, left<string, number> ('error'))
-  assertEquals (of (42), right (42))
-  assertEquals (is (failure), true)
-  assertEquals (is (of (42)), true)
-  assertEquals (is (42), false)
+  assert.deepStrictEqual (Object.getPrototypeOf (failure).constructor.name, 'Either')
+  assert.deepStrictEqual (Object.getPrototypeOf (of (42)).constructor.name, 'Either')
+  assert.deepStrictEqual (failure, left<string, number> ('error'))
+  assert.deepStrictEqual (of (42), right (42))
+  assert.deepStrictEqual (is (failure), true)
+  assert.deepStrictEqual (is (of (42)), true)
+  assert.deepStrictEqual (is (42), false)
 })
 
 test ('Either: both branches contain only their tag and payload', () => {
   const failure = left<string, number> ('missing')
   const success = right<string, number> (42)
 
-  assertEquals (Object.keys (failure), ['tag', 'value'])
-  assertEquals (Object.keys (success), ['tag', 'value'])
-  assertEquals (failure.map === success.map, true)
-  assertEquals (failure.constructor, Either)
-  assertEquals (success.constructor, Either)
-  assertEquals (JSON.stringify (failure), '{"tag":"left","value":"missing"}')
-  assertEquals (JSON.stringify (success), '{"tag":"right","value":42}')
+  assert.deepStrictEqual (Object.keys (failure), ['tag', 'value'])
+  assert.deepStrictEqual (Object.keys (success), ['tag', 'value'])
+  assert.deepStrictEqual (failure.map === success.map, true)
+  assert.deepStrictEqual (failure.constructor, Either)
+  assert.deepStrictEqual (success.constructor, Either)
+  assert.deepStrictEqual (JSON.stringify (failure), '{"tag":"left","value":"missing"}')
+  assert.deepStrictEqual (JSON.stringify (success), '{"tag":"right","value":42}')
 })
 
 test ('left: creates an Either containing an error or alternative value', () => {
   const e = left<string, number> ('err')
 
-  assertEquals (e.tag, 'left')
-  assertEquals ((e as { value: string }).value, 'err')
-  assertEquals (e.constructor['@@type'], 'Either')
+  assert.deepStrictEqual (e.tag, 'left')
+  assert.deepStrictEqual ((e as { value: string }).value, 'err')
+  assert.deepStrictEqual (e.constructor['@@type'], 'Either')
 })
 
 test ('right: creates an Either containing a successful value', () => {
   const e = right<string, number> (1)
 
-  assertEquals (e.tag, 'right')
-  assertEquals ((e as { value: number }).value, 1)
-  assertEquals (e.constructor['@@type'], 'Either')
+  assert.deepStrictEqual (e.tag, 'right')
+  assert.deepStrictEqual ((e as { value: number }).value, 1)
+  assert.deepStrictEqual (e.constructor['@@type'], 'Either')
 })
 
 test ('match: calls the handler for the active branch', () => {
-  assertEquals (
+  assert.deepStrictEqual (
     right<string, number> (2).match ((e) => 'L' + e, (a) => 'R' + a),
     'R2',
   )
-  assertEquals (
+  assert.deepStrictEqual (
     left<string, number> ('x').match ((e) => 'L' + e, (a) => 'R' + a),
     'Lx',
   )
@@ -93,9 +93,9 @@ test ('lefts: keeps and unwraps Left values, discarding Right values', () => {
     left<string, number> ('bar'),
   ]
 
-  assertEquals (lefts (mixed), ['foo', 'bar'])
-  assertEquals (lefts ([] as E[]), [])
-  assertEquals (lefts ([right<string, number> (1)]), [])
+  assert.deepStrictEqual (lefts (mixed), ['foo', 'bar'])
+  assert.deepStrictEqual (lefts ([] as E[]), [])
+  assert.deepStrictEqual (lefts ([right<string, number> (1)]), [])
 })
 
 test ('rights: keeps and unwraps Right values, discarding Left values', () => {
@@ -106,127 +106,127 @@ test ('rights: keeps and unwraps Right values, discarding Left values', () => {
     left<string, number> ('bar'),
   ]
 
-  assertEquals (rights (mixed), [20, 10])
-  assertEquals (rights ([] as E[]), [])
-  assertEquals (rights ([left<string, number> ('a')]), [])
+  assert.deepStrictEqual (rights (mixed), [20, 10])
+  assert.deepStrictEqual (rights ([] as E[]), [])
+  assert.deepStrictEqual (rights ([left<string, number> ('a')]), [])
 })
 
 test ('lefts and rights: they work on any Filterable', () => {
   const sm = { a: left<number, number> (1), b: right<number, number> (2) }
 
-  assertEquals (lefts (sm), { a: 1 })
-  assertEquals (rights (sm), { b: 2 })
+  assert.deepStrictEqual (lefts (sm), { a: 1 })
+  assert.deepStrictEqual (rights (sm), { b: 2 })
 })
 
 test ('fromLeft: unwraps a Left, or returns the supplied default for Right', () => {
-  assertEquals (fromLeft ('abc') (left<string, number> ('xyz')), 'xyz')
-  assertEquals (fromLeft ('abc') (right<string, number> (123)), 'abc')
+  assert.deepStrictEqual (fromLeft ('abc') (left<string, number> ('xyz')), 'xyz')
+  assert.deepStrictEqual (fromLeft ('abc') (right<string, number> (123)), 'abc')
 })
 
 test ('fromRight: unwraps a Right, or returns the supplied default for Left', () => {
-  assertEquals (fromRight (0) (right<string, number> (1)), 1)
-  assertEquals (fromRight (0) (left<string, number> ('a')), 0)
+  assert.deepStrictEqual (fromRight (0) (right<string, number> (1)), 1)
+  assert.deepStrictEqual (fromRight (0) (left<string, number> ('a')), 0)
 })
 
 test ('fromEither: unwraps either branch when both branches contain the same value type', () => {
-  assertEquals (fromEither (left<number, number> (42)), 42)
-  assertEquals (fromEither (right<number, number> (42)), 42)
+  assert.deepStrictEqual (fromEither (left<number, number> (42)), 42)
+  assert.deepStrictEqual (fromEither (right<number, number> (42)), 42)
 })
 
 test ('tagBy: wraps a value in Right if it passes the predicate, or in Left otherwise', () => {
-  assertEquals (tagBy (odd) (1), right<number, number> (1))
-  assertEquals (tagBy (odd) (0), left<number, number> (0))
+  assert.deepStrictEqual (tagBy (odd) (1), right<number, number> (1))
+  assert.deepStrictEqual (tagBy (odd) (0), left<number, number> (0))
 })
 
 test ('eitherFromPredicate: returns Right on success and builds a Left on failure', () => {
   const f = eitherFromPredicate (odd, (n: number) => `${n} is even`)
 
-  assertEquals (f (1), right<string, number> (1))
-  assertEquals (f (2), left<string, number> ('2 is even'))
+  assert.deepStrictEqual (f (1), right<string, number> (1))
+  assert.deepStrictEqual (f (2), left<string, number> ('2 is even'))
 })
 
 test ('eitherSwap: switches Left to Right or Right to Left, preserving the value', () => {
-  assertEquals (
+  assert.deepStrictEqual (
     eitherSwap (left<string, number> ('e')),
     right<number, string> ('e'),
   )
-  assertEquals (eitherSwap (right<string, number> (1)), left<number, string> (1))
+  assert.deepStrictEqual (eitherSwap (right<string, number> (1)), left<number, string> (1))
 
-  assertEquals (
+  assert.deepStrictEqual (
     eitherSwap (eitherSwap (left<string, number> ('e'))),
     left<string, number> ('e'),
   )
 })
 
 test ('eitherToMaybe: converts Right to Just, or Left to Nothing, discarding the error', () => {
-  assertEquals (eitherToMaybe (right<string, number> (1)), just (1))
-  assertEquals (eitherToMaybe (left<string, number> ('a')), nothing<number> ())
+  assert.deepStrictEqual (eitherToMaybe (right<string, number> (1)), just (1))
+  assert.deepStrictEqual (eitherToMaybe (left<string, number> ('a')), nothing<number> ())
 })
 
 test ('Either: creates values and identifies their type', () => {
-  assertEquals (Either['@@type'], 'Either')
-  assertEquals (Either.of<string, number> (1), right<string, number> (1))
+  assert.deepStrictEqual (Either['@@type'], 'Either')
+  assert.deepStrictEqual (Either.of<string, number> (1), right<string, number> (1))
   const rep: unknown = right (1).constructor
 
-  assertEquals (rep, Either)
+  assert.deepStrictEqual (rep, Either)
 })
 
 test ('map: transforms contained values', () => {
-  assertEquals (
+  assert.deepStrictEqual (
     right<string, number> (1).map (increment),
     right<string, number> (2),
   )
-  assertEquals (
+  assert.deepStrictEqual (
     left<string, number> ('err').map (increment),
     left<string, number> ('err'),
   )
-  assertEquals (
+  assert.deepStrictEqual (
     map (increment) (right<string, number> (1)),
     right<string, number> (2),
   )
 })
 
 test ('ap: preserves the error from the wrapped function', () => {
-  assertEquals (
+  assert.deepStrictEqual (
     ap (left<string, (n: number) => number> ('F')) (left<string, number> ('S')),
     left<string, number> ('F'),
   )
-  assertEquals (
+  assert.deepStrictEqual (
     ap (right<string, (n: number) => number> (increment)) (
       left<string, number> ('S'),
     ),
     left<string, number> ('S'),
   )
-  assertEquals (
+  assert.deepStrictEqual (
     ap (left<string, (n: number) => number> ('F')) (right<string, number> (1)),
     left<string, number> ('F'),
   )
-  assertEquals (
+  assert.deepStrictEqual (
     ap (right<string, (n: number) => number> (increment)) (
       right<string, number> (1),
     ),
     right<string, number> (2),
   )
-  assertEquals (
+  assert.deepStrictEqual (
     left<string, number> ('S').ap (left<string, (n: number) => number> ('F')),
     left<string, number> ('F'),
   )
 })
 
 test ('apFirst and apSecond: the same convention as ap', () => {
-  assertEquals (
+  assert.deepStrictEqual (
     apFirst (left<string, number> ('F')) (left<string, number> ('S')),
     left<string, number> ('F'),
   )
-  assertEquals (
+  assert.deepStrictEqual (
     apSecond (left<string, number> ('F')) (left<string, number> ('S')),
     left<string, number> ('F'),
   )
-  assertEquals (
+  assert.deepStrictEqual (
     apFirst (right<string, number> (1)) (right<string, number> (2)),
     right<string, number> (1),
   )
-  assertEquals (
+  assert.deepStrictEqual (
     apSecond (right<string, number> (1)) (right<string, number> (2)),
     right<string, number> (2),
   )
@@ -238,19 +238,19 @@ test (
     const wary = (n: number) =>
       n < 0 ? left<string, number> ('err' + n) : right<string, number> (n)
 
-    assertEquals (
+    assert.deepStrictEqual (
       traverse (Either) (wary) ([-1, 2, -3]),
       left<string, number[]> ('err-1'),
     )
-    assertEquals (
+    assert.deepStrictEqual (
       traverse (Either) (wary) ([1, -2, -3]),
       left<string, number[]> ('err-2'),
     )
-    assertEquals (
+    assert.deepStrictEqual (
       traverse (Either) (wary) ([1, 2, -3]),
       left<string, number[]> ('err-3'),
     )
-    assertEquals (
+    assert.deepStrictEqual (
       traverse (Either) (wary) ([1, 2, 3]),
       right<string, number[]> ([1, 2, 3]),
     )
@@ -263,31 +263,31 @@ test ('chain: sequences computations that return the same wrapper', () => {
       ? right<string, number> (n / 2)
       : left<string, number> (`${n} is odd`)
 
-  assertEquals (right<string, number> (4).chain (half), right<string, number> (2))
-  assertEquals (
+  assert.deepStrictEqual (right<string, number> (4).chain (half), right<string, number> (2))
+  assert.deepStrictEqual (
     right<string, number> (3).chain (half),
     left<string, number> ('3 is odd'),
   )
-  assertEquals (
+  assert.deepStrictEqual (
     left<string, number> ('err').chain (half),
     left<string, number> ('err'),
   )
 })
 
 test ('alt: combines alternatives in argument order', () => {
-  assertEquals (
+  assert.deepStrictEqual (
     alt (right<string, number> (2)) (right<string, number> (1)),
     right<string, number> (1),
   )
-  assertEquals (
+  assert.deepStrictEqual (
     alt (right<string, number> (2)) (left<string, number> ('err')),
     right<string, number> (2),
   )
-  assertEquals (
+  assert.deepStrictEqual (
     alt (left<string, number> ('err')) (right<string, number> (1)),
     right<string, number> (1),
   )
-  assertEquals (
+  assert.deepStrictEqual (
     alt (left<string, number> ('b')) (left<string, number> ('a')),
     left<string, number> ('b'),
   )
@@ -296,44 +296,44 @@ test ('alt: combines alternatives in argument order', () => {
 test ('bimap: transforms both sides of a Pair, or the active branch of an Either', () => {
   const f = (s: string) => s.length
 
-  assertEquals (
+  assert.deepStrictEqual (
     right<string, number> (1).bimap (f, increment),
     right<number, number> (2),
   )
-  assertEquals (
+  assert.deepStrictEqual (
     left<string, number> ('er').bimap (f, increment),
     left<number, number> (2),
   )
 })
 
 test ('concat: combines values in argument order', () => {
-  assertEquals (
+  assert.deepStrictEqual (
     concat (left<string, string> ('e')) (left<string, string> ('f')),
     left<string, string> ('ef'),
   )
-  assertEquals (
+  assert.deepStrictEqual (
     concat (right<string, string> ('a')) (left<string, string> ('e')),
     right<string, string> ('a'),
   )
-  assertEquals (
+  assert.deepStrictEqual (
     concat (left<string, string> ('e')) (right<string, string> ('a')),
     right<string, string> ('a'),
   )
-  assertEquals (
+  assert.deepStrictEqual (
     concat (right<string, string> ('a')) (right<string, string> ('b')),
     right<string, string> ('ab'),
   )
 })
 
 test ('reduce: combines values from left to right, starting with an initial accumulator', () => {
-  assertEquals (
+  assert.deepStrictEqual (
     right<string, number> (3).reduce (
       (accumulator: number, a) => accumulator + a,
       10,
     ),
     13,
   )
-  assertEquals (
+  assert.deepStrictEqual (
     left<string, number> ('err').reduce (
       (accumulator: number, a) => accumulator + a,
       10,
@@ -343,18 +343,18 @@ test ('reduce: combines values from left to right, starting with an initial accu
 })
 
 test ('reduce: Either folds like a list of zero or one', () => {
-  assertEquals (toArray (right<string, number> (1)), [1])
-  assertEquals (toArray (left<string, number> ('err')), [])
-  assertEquals (size (right<string, number> (1)), 1)
-  assertEquals (size (left<string, number> ('err')), 0)
+  assert.deepStrictEqual (toArray (right<string, number> (1)), [1])
+  assert.deepStrictEqual (toArray (left<string, number> ('err')), [])
+  assert.deepStrictEqual (size (right<string, number> (1)), 1)
+  assert.deepStrictEqual (size (left<string, number> ('err')), 0)
 })
 
 test ('traverse: transforms values into a chosen wrapper and collects them inside one result', () => {
-  assertEquals (
+  assert.deepStrictEqual (
     right<string, number> (1).traverse (Identity, (n: number) => identity (n * 2)),
     identity (right<string, number> (2)),
   )
-  assertEquals (
+  assert.deepStrictEqual (
     left<string, number> ('err').traverse (
       Identity,
       (n: number) => identity (n * 2),
@@ -364,45 +364,45 @@ test ('traverse: transforms values into a chosen wrapper and collects them insid
 })
 
 test ('equals: compares values by content, including nested arrays and records', () => {
-  assertEquals (right<string, number> (1).equals (right<string, number> (1)), true)
-  assertEquals (right<string, number> (1).equals (right<string, number> (2)), false)
-  assertEquals (
+  assert.deepStrictEqual (right<string, number> (1).equals (right<string, number> (1)), true)
+  assert.deepStrictEqual (right<string, number> (1).equals (right<string, number> (2)), false)
+  assert.deepStrictEqual (
     left<string, number> ('a').equals (left<string, number> ('a')),
     true,
   )
-  assertEquals (
+  assert.deepStrictEqual (
     left<string, number> ('a').equals (left<string, number> ('b')),
     false,
   )
-  assertEquals (left<number, number> (1).equals (right<number, number> (1)), false)
-  assertEquals (right<number, number> (1).equals (left<number, number> (1)), false)
+  assert.deepStrictEqual (left<number, number> (1).equals (right<number, number> (1)), false)
+  assert.deepStrictEqual (right<number, number> (1).equals (left<number, number> (1)), false)
 })
 
 test ('equals: the contents are compared structurally, not by reference', () => {
-  assertEquals (
+  assert.deepStrictEqual (
     right<string, number[]> ([1, 2]).equals (right<string, number[]> ([1, 2])),
     true,
   )
-  assertEquals (
+  assert.deepStrictEqual (
     left<string[], number> (['a']).equals (left<string[], number> (['a'])),
     true,
   )
 })
 
 test ('lte: checks whether the value is at most the supplied bound', () => {
-  assertEquals (left<string, number> ('z').lte (right<string, number> (0)), true)
-  assertEquals (right<string, number> (0).lte (left<string, number> ('a')), false)
-  assertEquals (left<string, number> ('a').lte (left<string, number> ('b')), true)
-  assertEquals (left<string, number> ('b').lte (left<string, number> ('a')), false)
-  assertEquals (right<string, number> (1).lte (right<string, number> (2)), true)
-  assertEquals (right<string, number> (2).lte (right<string, number> (1)), false)
+  assert.deepStrictEqual (left<string, number> ('z').lte (right<string, number> (0)), true)
+  assert.deepStrictEqual (right<string, number> (0).lte (left<string, number> ('a')), false)
+  assert.deepStrictEqual (left<string, number> ('a').lte (left<string, number> ('b')), true)
+  assert.deepStrictEqual (left<string, number> ('b').lte (left<string, number> ('a')), false)
+  assert.deepStrictEqual (right<string, number> (1).lte (right<string, number> (2)), true)
+  assert.deepStrictEqual (right<string, number> (2).lte (right<string, number> (1)), false)
 })
 
 test ("show: formats a value as a readable string, including ply's wrapped values", () => {
-  assertEquals (left<string, number> ('x').show (), 'Left ("x")')
-  assertEquals (right<string, number> (1).show (), 'Right (1)')
-  assertEquals (right<string, number[]> ([1, 2]).show (), 'Right ([1, 2])')
-  assertEquals (
+  assert.deepStrictEqual (left<string, number> ('x').show (), 'Left ("x")')
+  assert.deepStrictEqual (right<string, number> (1).show (), 'Right (1)')
+  assert.deepStrictEqual (right<string, number[]> ([1, 2]).show (), 'Right ([1, 2])')
+  assert.deepStrictEqual (
     right<string, Maybe<number>> (just (1)).show (),
     'Right (Just (1))',
   )
@@ -415,14 +415,14 @@ test ('chain on a Left does not call the function at all', () => {
     return right<string, number> (n * 2)
   }
 
-  assertEquals (
+  assert.deepStrictEqual (
     chain (f) (left<string, number> ('no')),
     left ('no'),
   )
-  assertEquals (calls, 0)
+  assert.deepStrictEqual (calls, 0)
 
-  assertEquals (chain (f) (right<string, number> (21)), right (42))
-  assertEquals (calls, 1)
+  assert.deepStrictEqual (chain (f) (right<string, number> (21)), right (42))
+  assert.deepStrictEqual (calls, 1)
 })
 
 test ('ap on a Left does not call the function at all', () => {
@@ -433,7 +433,7 @@ test ('ap on a Left does not call the function at all', () => {
   }
   ap (right<string, (n: number) => number> (f)) (left<string, number> ('no'))
 
-  assertEquals (calls, 0)
+  assert.deepStrictEqual (calls, 0)
 })
 
 test ('lte: the order is total and antisymmetric', () => {
@@ -445,10 +445,10 @@ test ('lte: the order is total and antisymmetric', () => {
   ]
   for (const a of values) {
     for (const b of values) {
-      assertEquals (a.lte (b) || b.lte (a), true, 'totality')
-      if (a.lte (b) && b.lte (a)) assertEquals (a.equals (b), true, 'antisymm.')
+      assert.deepStrictEqual (a.lte (b) || b.lte (a), true, 'totality')
+      if (a.lte (b) && b.lte (a)) assert.deepStrictEqual (a.equals (b), true, 'antisymm.')
       for (const c of values) {
-        if (a.lte (b) && b.lte (c)) assertEquals (a.lte (c), true, 'transitivity')
+        if (a.lte (b) && b.lte (c)) assert.deepStrictEqual (a.lte (c), true, 'transitivity')
       }
     }
   }
@@ -456,8 +456,8 @@ test ('lte: the order is total and antisymmetric', () => {
 
 test ('map: functor laws', () => {
   for (const e of samples ()) {
-    assertEquals (e.map (id), e, 'identity')
-    assertEquals (
+    assert.deepStrictEqual (e.map (id), e, 'identity')
+    assert.deepStrictEqual (
       e.map ((n) => increment (doubleNumber (n))),
       e.map (doubleNumber).map (increment),
       'composition',
@@ -476,7 +476,7 @@ test ('ap: composition law', () => {
   for (const u of fs) {
     for (const v of fs) {
       for (const w of samples ()) {
-        assertEquals (w.ap (v.ap (u.map (composeFunctions))), w.ap (v).ap (u))
+        assert.deepStrictEqual (w.ap (v.ap (u.map (composeFunctions))), w.ap (v).ap (u))
       }
     }
   }
@@ -485,10 +485,10 @@ test ('ap: composition law', () => {
 test ('ap: applicative laws', () => {
   const f = (n: number) => n + 3
   for (const v of samples ()) {
-    assertEquals (v.ap (Either.of<string, typeof id> (id)), v, 'identity')
+    assert.deepStrictEqual (v.ap (Either.of<string, typeof id> (id)), v, 'identity')
   }
 
-  assertEquals (
+  assert.deepStrictEqual (
     Either.of<string, number> (7).ap (Either.of<string, typeof f> (f)),
     Either.of<string, number> (f (7)),
     'homomorphism',
@@ -499,7 +499,7 @@ test ('ap: applicative laws', () => {
       left<string, (n: number) => number> ('f'),
     ]
   ) {
-    assertEquals (
+    assert.deepStrictEqual (
       Either.of<string, number> (7).ap (u),
       u.ap (
         Either.of<string, (g: (n: number) => number) => number> ((g) => g (7)),
@@ -515,28 +515,28 @@ test ('chain: monad laws', () => {
   const g = (n: number) =>
     n < 10 ? right<string, number> (n + 1) : left<string, number> ('g')
   for (const m of samples ()) {
-    assertEquals (m.chain (f).chain (g), m.chain ((n) => f (n).chain (g)), 'assoc.')
-    assertEquals (
+    assert.deepStrictEqual (m.chain (f).chain (g), m.chain ((n) => f (n).chain (g)), 'assoc.')
+    assert.deepStrictEqual (
       m.chain ((a) => Either.of<string, number> (a)),
       m,
       'right identity',
     )
   }
   for (const a of [1, -1, 42]) {
-    assertEquals (Either.of<string, number> (a).chain (f), f (a), 'left identity')
+    assert.deepStrictEqual (Either.of<string, number> (a).chain (f), f (a), 'left identity')
   }
 })
 
 test ('alt: Alt laws', () => {
   for (const a of samples ()) {
     for (const b of samples ()) {
-      assertEquals (
+      assert.deepStrictEqual (
         a.alt (b).map (increment),
         a.map (increment).alt (b.map (increment)),
         'distributivity',
       )
       for (const c of samples ()) {
-        assertEquals (a.alt (b).alt (c), a.alt (b.alt (c)), 'associativity')
+        assert.deepStrictEqual (a.alt (b).alt (c), a.alt (b.alt (c)), 'associativity')
       }
     }
   }
@@ -550,8 +550,8 @@ test ('bimap: bifunctor laws', () => {
   const f = (s: string) => s + '!'
   const g = (s: string) => s.toUpperCase ()
   for (const e of samples ()) {
-    assertEquals (e.bimap (id, id), e, 'identity')
-    assertEquals (
+    assert.deepStrictEqual (e.bimap (id, id), e, 'identity')
+    assert.deepStrictEqual (
       e.bimap (
         (s: string) => g (f (s)),
         doubleThenIncrement,
@@ -559,7 +559,7 @@ test ('bimap: bifunctor laws', () => {
       e.bimap (f, doubleNumber).bimap (g, increment),
       'composition',
     )
-    assertEquals (e.bimap (id, increment), e.map (increment), 'agreement with map')
+    assert.deepStrictEqual (e.bimap (id, increment), e.map (increment), 'agreement with map')
   }
 })
 
@@ -573,7 +573,7 @@ test ('concat: is associative', () => {
   for (const a of values) {
     for (const b of values) {
       for (const c of values) {
-        assertEquals (concat (concat (a) (b)) (c), concat (a) (concat (b) (c)))
+        assert.deepStrictEqual (concat (concat (a) (b)) (c), concat (a) (concat (b) (c)))
       }
     }
   }
@@ -581,19 +581,19 @@ test ('concat: is associative', () => {
 
 test ('traverse: identity law through Identity', () => {
   for (const e of samples ()) {
-    assertEquals (e.traverse (Identity, (a: number) => identity (a)), identity (e))
+    assert.deepStrictEqual (e.traverse (Identity, (a: number) => identity (a)), identity (e))
   }
 })
 
 test ('equals: Setoid laws', () => {
   const values = [...samples (), right<string, number> (1)]
   for (const a of values) {
-    assertEquals (a.equals (a), true, 'reflexivity')
+    assert.deepStrictEqual (a.equals (a), true, 'reflexivity')
     for (const b of values) {
-      assertEquals (a.equals (b), b.equals (a), 'symmetry')
+      assert.deepStrictEqual (a.equals (b), b.equals (a), 'symmetry')
       for (const c of values) {
         if (a.equals (b) && b.equals (c)) {
-          assertEquals (a.equals (c), true, 'transitivity')
+          assert.deepStrictEqual (a.equals (c), true, 'transitivity')
         }
       }
     }
@@ -605,45 +605,45 @@ test ('match: the other branch is not evaluated', () => {
     throw new Error ('should not have been called')
   }
 
-  assertEquals (right<string, number> (1).match (boom, String), '1')
-  assertEquals (left<string, number> ('x').match (String, boom), 'x')
+  assert.deepStrictEqual (right<string, number> (1).match (boom, String), '1')
+  assert.deepStrictEqual (left<string, number> ('x').match (String, boom), 'x')
 })
 
 test ('either: handles Left and Right with separate callbacks', () => {
   const f = either ((e: string) => 'L' + e) ((a: number) => 'R' + a)
 
-  assertEquals (f (left<string, number> ('x')), 'Lx')
-  assertEquals (f (right<string, number> (1)), 'R1')
+  assert.deepStrictEqual (f (left<string, number> ('x')), 'Lx')
+  assert.deepStrictEqual (f (right<string, number> (1)), 'R1')
 })
 
 test ("encase: wraps a function's result in Right, or a thrown value in Left", () => {
   const parsed = encase (JSON.parse) ('["foo","bar"]')
 
-  assertEquals (parsed, right<unknown, unknown> (['foo', 'bar']))
+  assert.deepStrictEqual (parsed, right<unknown, unknown> (['foo', 'bar']))
 
   const failed = encase (JSON.parse) ('[')
 
-  assertEquals (failed.match ((e) => e instanceof SyntaxError, () => false), true)
+  assert.deepStrictEqual (failed.match ((e) => e instanceof SyntaxError, () => false), true)
 })
 
 test ('encase: all the arguments get through', () => {
   const f = encase ((a: number, b: number, c: number) => a + b + c)
 
-  assertEquals (f (1, 2, 3), right<unknown, number> (6))
+  assert.deepStrictEqual (f (1, 2, 3), right<unknown, number> (6))
 })
 
 test ('eitherFromNullable: wraps present values or computes an error for null and undefined', () => {
   const f = eitherFromNullable (() => 'empty')
 
-  assertEquals (f (1), right<string, number> (1))
-  assertEquals (f (null as number | null), left<string, number> ('empty'))
-  assertEquals (
+  assert.deepStrictEqual (f (1), right<string, number> (1))
+  assert.deepStrictEqual (f (null as number | null), left<string, number> ('empty'))
+  assert.deepStrictEqual (
     f (undefined as number | undefined),
     left<string, number> ('empty'),
   )
 
-  assertEquals (f (0), right<string, number> (0))
-  assertEquals (f (''), right<string, string> (''))
+  assert.deepStrictEqual (f (0), right<string, number> (0))
+  assert.deepStrictEqual (f (''), right<string, string> (''))
 })
 
 test ('eitherFromNullable: the handler is lazy', () => {
@@ -656,21 +656,19 @@ test ('eitherFromNullable: the handler is lazy', () => {
 
   eitherFromNullable (createMissingValueError) (1)
 
-  assertEquals (calls, 0)
+  assert.deepStrictEqual (calls, 0)
 })
 
 test ('Either: neither Plus nor Monoid', () => {
-  assertEquals ('zero' in Either, false)
-  assertEquals ('empty' in Either, false)
-  assertThrows (
+  assert.deepStrictEqual ('zero' in Either, false)
+  assert.deepStrictEqual ('empty' in Either, false)
+  assert.throws (
     () => zero (Either as never),
-    TypeError,
-    'zero: Either has no Plus',
+    (error: unknown) => error instanceof TypeError && error.message.includes ('zero: Either has no Plus'),
   )
-  assertThrows (
+  assert.throws (
     () => empty (Either as never),
-    TypeError,
-    'empty: Either has no Monoid',
+    (error: unknown) => error instanceof TypeError && error.message.includes ('empty: Either has no Monoid'),
   )
 })
 
@@ -683,35 +681,33 @@ test ('map: on Left the function is not called', () => {
 })
 
 test ('concat: the contents must themselves be a semigroup', () => {
-  assertThrows (
+  assert.throws (
     () => concat (right<string, number> (1)) (right<string, number> (2)),
-    TypeError,
-    'concat: Number has no Semigroup',
+    (error: unknown) => error instanceof TypeError && error.message.includes ('concat: Number has no Semigroup'),
   )
 })
 
 test ('traverse: a failed result makes the whole traversal fail', () => {
   const wary = (n: number) => n > 0 ? just (n) : nothing<number> ()
 
-  assertEquals (
+  assert.deepStrictEqual (
     right<string, number> (1).traverse (Maybe, wary),
     just (right<string, number> (1)),
   )
-  assertEquals (
+  assert.deepStrictEqual (
     right<string, number> (-1).traverse (Maybe, wary),
     nothing<Either<string, number>> (),
   )
-  assertEquals (
+  assert.deepStrictEqual (
     left<string, number> ('err').traverse (Maybe, wary),
     just (left<string, number> ('err')),
   )
 })
 
 test ('filter: Either has no Filterable and rejects', () => {
-  assertThrows (
+  assert.throws (
     () => filter (odd as never) (right<string, number> (1) as never),
-    TypeError,
-    'filter: Either has no Filterable',
+    (error: unknown) => error instanceof TypeError && error.message.includes ('filter: Either has no Filterable'),
   )
 })
 
@@ -729,7 +725,7 @@ test ('either: Left handler receives only the error', () => {
 
   either (recordArguments) (returnValue) (left<string, number> ('e'))
 
-  assertEquals (calls, [['e']])
+  assert.deepStrictEqual (calls, [['e']])
 })
 
 test ('either: Right handler receives only the value', () => {
@@ -746,7 +742,7 @@ test ('either: Right handler receives only the value', () => {
 
   either (errorLength) (recordArguments) (right<string, number> (1))
 
-  assertEquals (calls, [[1]])
+  assert.deepStrictEqual (calls, [[1]])
 })
 
 test ('tagBy: predicate receives only the input', () => {
@@ -759,7 +755,7 @@ test ('tagBy: predicate receives only the input', () => {
 
   tagBy (recordArguments) (1)
 
-  assertEquals (calls, [[1]])
+  assert.deepStrictEqual (calls, [[1]])
 })
 
 test ('eitherFromNullable: error factory receives no arguments', () => {
@@ -772,7 +768,7 @@ test ('eitherFromNullable: error factory receives no arguments', () => {
 
   eitherFromNullable (recordArguments) (null)
 
-  assertEquals (calls, [[]])
+  assert.deepStrictEqual (calls, [[]])
 })
 
 test ('eitherFromPredicate: predicate receives only the input', () => {
@@ -789,7 +785,7 @@ test ('eitherFromPredicate: predicate receives only the input', () => {
 
   eitherFromPredicate (recordArguments, returnValue) (1)
 
-  assertEquals (calls, [[1]])
+  assert.deepStrictEqual (calls, [[1]])
 })
 
 test ('eitherFromPredicate: error factory receives only the rejected input', () => {
@@ -806,7 +802,7 @@ test ('eitherFromPredicate: error factory receives only the rejected input', () 
 
   eitherFromPredicate (rejectValue, recordArguments) (1)
 
-  assertEquals (calls, [[1]])
+  assert.deepStrictEqual (calls, [[1]])
 })
 
 test ('match: Left handler receives only the error', () => {
@@ -823,7 +819,7 @@ test ('match: Left handler receives only the error', () => {
 
   left<string, number> ('e').match (recordArguments, returnValue)
 
-  assertEquals (calls, [['e']])
+  assert.deepStrictEqual (calls, [['e']])
 })
 
 test ('match: Right handler receives only the value', () => {
@@ -840,7 +836,7 @@ test ('match: Right handler receives only the value', () => {
 
   right<string, number> (1).match (errorLength, recordArguments)
 
-  assertEquals (calls, [[1]])
+  assert.deepStrictEqual (calls, [[1]])
 })
 
 test ('map: callback receives only the value', () => {
@@ -853,7 +849,7 @@ test ('map: callback receives only the value', () => {
 
   right<string, number> (1).map (recordArguments)
 
-  assertEquals (calls, [[1]])
+  assert.deepStrictEqual (calls, [[1]])
 })
 
 test ('chain: callback receives only the value', () => {
@@ -866,7 +862,7 @@ test ('chain: callback receives only the value', () => {
 
   right<string, number> (1).chain (recordArguments)
 
-  assertEquals (calls, [[1]])
+  assert.deepStrictEqual (calls, [[1]])
 })
 
 test ('reduce: callback receives only accumulator and value', () => {
@@ -879,7 +875,7 @@ test ('reduce: callback receives only accumulator and value', () => {
 
   right<string, number> (1).reduce (recordArguments, 0)
 
-  assertEquals (calls, [[0, 1]])
+  assert.deepStrictEqual (calls, [[0, 1]])
 })
 
 test ('bimap: Left callback receives only the error', () => {
@@ -892,7 +888,7 @@ test ('bimap: Left callback receives only the error', () => {
 
   left<string, number> ('e').bimap (recordArguments, recordArguments)
 
-  assertEquals (calls, [['e']])
+  assert.deepStrictEqual (calls, [['e']])
 })
 
 test ('bimap: Right callback receives only the value', () => {
@@ -905,17 +901,17 @@ test ('bimap: Right callback receives only the value', () => {
 
   right<string, number> (1).bimap (recordArguments, recordArguments)
 
-  assertEquals (calls, [[1]])
+  assert.deepStrictEqual (calls, [[1]])
 })
 
 test ('isLeft: checks for Left and narrows the type to its error value', () => {
-  assertEquals (isLeft (left<string, number> ('x')), true)
-  assertEquals (isLeft (right<string, number> (42)), false)
+  assert.deepStrictEqual (isLeft (left<string, number> ('x')), true)
+  assert.deepStrictEqual (isLeft (right<string, number> (42)), false)
 })
 
 test ('isRight: checks for Right and narrows the type to its success value', () => {
-  assertEquals (isRight (right<string, number> (42)), true)
-  assertEquals (isRight (left<string, number> ('x')), false)
+  assert.deepStrictEqual (isRight (right<string, number> (42)), true)
+  assert.deepStrictEqual (isRight (left<string, number> ('x')), false)
 })
 
 const increment = (n: number) => n + 1

@@ -1,28 +1,28 @@
+import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { assertEquals, assertThrows } from '../assert.ts'
 import type { Step } from '../../src/classes/chainrec.ts'
-import { chainRec, chainRecNatives, done, loop } from '../../src/classes/chainrec.ts'
-import { chain } from '../../src/classes/chain.ts'
 import { of } from '../../src/classes/applicative.ts'
-import { Maybe } from '../../src/data/maybe.ts'
+import { chain } from '../../src/classes/chain.ts'
+import { chainRec, chainRecNatives, done, loop } from '../../src/classes/chainrec.ts'
 import { Identity } from '../../src/data/identity.ts'
+import { Maybe } from '../../src/data/maybe.ts'
 import { Pair } from '../../src/data/pair.ts'
 import { Arr } from '../../src/natives/array.ts'
-import { Sets } from '../../src/natives/set.ts'
 import { Fn } from '../../src/natives/function.ts'
+import { Sets } from '../../src/natives/set.ts'
 
 test ('loop: requests another chainRec step with the supplied value as its next input', () => {
-  assertEquals (loop (1), { tag: 'loop', value: 1 })
-  assertEquals (loop<string, number> ('more'), { tag: 'loop', value: 'more' })
+  assert.deepStrictEqual (loop (1), { tag: 'loop', value: 1 })
+  assert.deepStrictEqual (loop<string, number> ('more'), { tag: 'loop', value: 'more' })
 })
 
 test ('done: finishes a chainRec branch with the supplied result', () => {
-  assertEquals (done ('x'), { tag: 'done', value: 'x' })
-  assertEquals (done<number, number> (0), { tag: 'done', value: 0 })
+  assert.deepStrictEqual (done ('x'), { tag: 'done', value: 'x' })
+  assert.deepStrictEqual (done<number, number> (0), { tag: 'done', value: 0 })
 })
 
 test ('chainRec: the traversal goes depth-first, left to right', () => {
-  assertEquals (chainRec (Arr, tree, 0), [
+  assert.deepStrictEqual (chainRec (Arr, tree, 0), [
     'd0',
     'd1',
     'd2',
@@ -31,14 +31,14 @@ test ('chainRec: the traversal goes depth-first, left to right', () => {
     'leaf11',
     'leaf10',
   ])
-  assertEquals (chainRec (Arr, tree, 0), viaRecursion (0))
+  assert.deepStrictEqual (chainRec (Arr, tree, 0), viaRecursion (0))
 })
 
 test ('chainRec: matches recursive chain across branching patterns', () => {
   for (let i = 0; i < shapes.length; i++) {
     const f = shapes[i]
 
-    assertEquals (
+    assert.deepStrictEqual (
       chainRec (Arr, (n: number) => [...f (n)], 0),
       viaChain (Arr, (n: number) => [...f (n)], 0),
       `Array, tree #${i}`,
@@ -50,7 +50,7 @@ test ('chainRec: repeats a step function without growing the call stack', () => 
   const upTo3 = (n: number): Step<number, number>[] =>
     n < 3 ? [loop (n + 1)] : [done (n)]
 
-  assertEquals (chainRec (Arr, upTo3, 0), [3])
+  assert.deepStrictEqual (chainRec (Arr, upTo3, 0), [3])
 })
 
 test ('chainRec: completes 200,000 steps without overflowing the stack', () => {
@@ -58,7 +58,7 @@ test ('chainRec: completes 200,000 steps without overflowing the stack', () => {
   const linear = (i: number): Step<number, number>[] =>
     i < n ? [loop (i + 1)] : [done (i)]
 
-  assertEquals (chainRec (Arr, linear, 0), [n])
+  assert.deepStrictEqual (chainRec (Arr, linear, 0), [n])
 })
 
 test ('recursive chain: overflows the stack on the same 200,000 steps', () => {
@@ -66,36 +66,31 @@ test ('recursive chain: overflows the stack on the same 200,000 steps', () => {
   const linear = (i: number): Step<number, number>[] =>
     i < n ? [loop (i + 1)] : [done (i)]
 
-  assertThrows (() => viaChain (Arr, linear, 0), RangeError)
+  assert.throws (() => viaChain (Arr, linear, 0), RangeError)
 })
 
 test ('chainRec: rejects values without ChainRec', () => {
   const f = (n: number) => [done<number, number> (n)]
 
-  assertThrows (
+  assert.throws (
     () => chainRec (Maybe as never, f as never, 0 as never),
-    TypeError,
-    'chainRec: Maybe has no ChainRec',
+    (error: unknown) => error instanceof TypeError && error.message.includes ('chainRec: Maybe has no ChainRec'),
   )
-  assertThrows (
+  assert.throws (
     () => chainRec (Pair as never, f as never, 0 as never),
-    TypeError,
-    'chainRec: Pair has no ChainRec',
+    (error: unknown) => error instanceof TypeError && error.message.includes ('chainRec: Pair has no ChainRec'),
   )
-  assertThrows (
+  assert.throws (
     () => chainRec (Identity as never, f as never, 0 as never),
-    TypeError,
-    'chainRec: Identity has no ChainRec',
+    (error: unknown) => error instanceof TypeError && error.message.includes ('chainRec: Identity has no ChainRec'),
   )
-  assertThrows (
+  assert.throws (
     () => chainRec (Sets as never, f as never, 0 as never),
-    TypeError,
-    'chainRec: Set has no ChainRec',
+    (error: unknown) => error instanceof TypeError && error.message.includes ('chainRec: Set has no ChainRec'),
   )
-  assertThrows (
+  assert.throws (
     () => chainRec (Fn as never, f as never, 0 as never),
-    TypeError,
-    'chainRec: Fn has no ChainRec',
+    (error: unknown) => error instanceof TypeError && error.message.includes ('chainRec: Fn has no ChainRec'),
   )
 })
 
@@ -109,13 +104,13 @@ test ('chainRec: Array passes only the current value', () => {
 
   chainRec (Arr, recordArguments, 0)
 
-  assertEquals (calls, [[0]])
+  assert.deepStrictEqual (calls, [[0]])
 })
 
 test ('chainRecNatives: lists the supported native implementations', () => {
-  assertEquals (new Set (Object.keys (chainRecNatives)), new Set (['Array']))
-  assertEquals (chainRecNatives.Array['@@type'], 'Array')
-  assertEquals (chainRecNatives.Array.chainRec (tree, 0), viaRecursion (0))
+  assert.deepStrictEqual (new Set (Object.keys (chainRecNatives)), new Set (['Array']))
+  assert.deepStrictEqual (chainRecNatives.Array['@@type'], 'Array')
+  assert.deepStrictEqual (chainRecNatives.Array.chainRec (tree, 0), viaRecursion (0))
 })
 
 const tree = (n: number): Step<number, string>[] =>

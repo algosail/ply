@@ -2,7 +2,6 @@
  * Operations and types for composing values with an identity.
  */
 
-import type { Kind, Shape } from '../core/shape.ts'
 import type {
   Assert,
   MatchableIn,
@@ -13,6 +12,7 @@ import type {
   Superclass,
 } from '../core/kind.ts'
 import type { Instances } from '../core/named.ts'
+import type { Kind, Shape } from '../core/shape.ts'
 import type { FnShape } from '../natives/function.ts'
 import type {
   SemigroupoidDict,
@@ -96,7 +96,7 @@ export const categoryNatives: Instances<
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.id(P.Fn)(1) // => 1
  * P.compose(P.id(P.Fn))((s: string) => s.length)('abc') // => 3
  * ```

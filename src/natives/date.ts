@@ -2,12 +2,12 @@
  * Compare and format dates through the `Dates` representative.
  */
 
-import type { Shape } from '../core/shape.ts'
-import type { NativeTypeRep } from '../core/named.ts'
 import type { CheckableDict } from '../classes/checkable.ts'
 import type { OrdDict } from '../classes/ord.ts'
 import type { SetoidDict } from '../classes/setoid.ts'
 import type { ShowDict } from '../classes/show.ts'
+import type { NativeTypeRep } from '../core/named.ts'
+import type { Shape } from '../core/shape.ts'
 import { show } from '../classes/show.ts'
 import { Num } from './number.ts'
 
@@ -36,7 +36,7 @@ export type DatesDict =
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.Dates.equals(new Date('2026-01-01'), new Date('2026-01-01')) // => true
  * ```
  */

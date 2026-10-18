@@ -2,7 +2,6 @@
  * Operations and types for choosing between input rules.
  */
 
-import type { Kind, Shape } from '../core/shape.ts'
 import type {
   Assert,
   KindOf,
@@ -14,6 +13,7 @@ import type {
   Superclass,
 } from '../core/kind.ts'
 import type { Instances } from '../core/named.ts'
+import type { Kind, Shape } from '../core/shape.ts'
 import type { Either } from '../data/either.ts'
 import type {
   DivisibleKeys,
@@ -110,7 +110,7 @@ export const decidableNatives: Instances<
  * ```ts
  * import type { Either } from '@algosail/ply'
  * import * as P from '@algosail/ply'
- * 
+ *
  * const long = P.predicate((s: string) => s.length > 3)
  * const big = P.predicate((n: number) => n > 10)
  * const rule = P.choose((x: number | string): Either<number, string> =>
@@ -144,10 +144,10 @@ export function choose<B, C, X>(
  * ```ts
  * import type { Either } from '@algosail/ply'
  * import * as P from '@algosail/ply'
- * 
+ *
  * // Closing a fold over a union after the last real case.
  * const long = P.predicate((s: string) => s.length > 3)
- * 
+ *
  * P.choose((s: string): Either<string, never> => P.left(s))(long)(
  *   P.lose(P.Predicate)((x: never) => x),
  * )('hello') // => true

@@ -3,7 +3,7 @@
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.map(P.mult(2))([1, 2, 3]) // => [2, 4, 6]
  * P.fromMaybe('Guest')(P.fromNullable<string>(null)) // => 'Guest'
  * ```

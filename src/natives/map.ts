@@ -2,12 +2,12 @@
  * Read and copy JavaScript maps.
  */
 
-import type { Matchable, Shape } from '../core/shape.ts'
-import type { NativeTypeRep } from '../core/named.ts'
 import type { CheckableDict } from '../classes/checkable.ts'
 import type { FilterableDict } from '../classes/filterable.ts'
 import type { FunctorDict } from '../classes/functor.ts'
 import type { ShowDict } from '../classes/show.ts'
+import type { NativeTypeRep } from '../core/named.ts'
+import type { Matchable, Shape } from '../core/shape.ts'
 import type { Maybe } from '../data/maybe.ts'
 import type { Pair } from '../data/pair.ts'
 import { show } from '../classes/show.ts'
@@ -51,7 +51,7 @@ export type MapsDict =
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.Maps.map(new Map([['a', 1]]), (n: number) => n + 1)
  * // => Map ([['a', 2]])
  * ```
@@ -78,7 +78,7 @@ export const Maps: MapsDict = {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.mapFromPairs([P.pair('a', 1), P.pair('b', 2)])
  * // => Map ([["a", 1], ["b", 2]])
  * ```
@@ -92,7 +92,7 @@ export function mapFromPairs<K, V>(ps: Iterable<Pair<K, V>>): Map<K, V> {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.mapLookup('a')(new Map([['a', 1]])) // => Just (1)
  * P.mapLookup('z')(new Map([['a', 1]])) // => Nothing
  * ```
@@ -107,7 +107,7 @@ export function mapLookup<K>(k: K): <V>(m: ReadonlyMap<K, V>) => Maybe<V> {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.mapKeys(new Map([['a', 1], ['b', 2]])) // => ['a', 'b']
  * ```
  */
@@ -120,7 +120,7 @@ export function mapKeys<K, V>(m: ReadonlyMap<K, V>): K[] {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.mapValues(new Map([['a', 1], ['b', 2]])) // => [1, 2]
  * ```
  */
@@ -133,7 +133,7 @@ export function mapValues<K, V>(m: ReadonlyMap<K, V>): V[] {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.mapPairs(new Map([['a', 1], ['b', 2]]))
  * // => [Pair ("a") (1), Pair ("b") (2)]
  * ```
@@ -147,7 +147,7 @@ export function mapPairs<K, V>(m: ReadonlyMap<K, V>): Pair<K, V>[] {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.mapDifference(new Map([['a', 1], ['b', 2]]), new Map([['a', 0]]))
  * // => Map ([["b", 2]])
  * ```

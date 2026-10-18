@@ -2,7 +2,6 @@
  * Operations and types for combining values with an empty starting value.
  */
 
-import type { Kind, Nullary, Shape } from '../core/shape.ts'
 import type {
   Assert,
   MatchableIn,
@@ -13,9 +12,10 @@ import type {
   Superclass,
 } from '../core/kind.ts'
 import type { Instances } from '../core/named.ts'
+import type { Kind, Nullary, Shape } from '../core/shape.ts'
 import type { ArrayShape } from '../natives/array.ts'
-import type { StrMapShape } from '../natives/strmap.ts'
 import type { StrShape } from '../natives/string.ts'
+import type { StrMapShape } from '../natives/strmap.ts'
 import type {
   SemigroupDict,
   SemigroupKeys,
@@ -23,8 +23,8 @@ import type {
 } from './semigroup.ts'
 import { lazily, nameOf, typeRepIn } from '../core/instance.ts'
 import { Arr } from '../natives/array.ts'
-import { StrMap } from '../natives/strmap.ts'
 import { Str } from '../natives/string.ts'
+import { StrMap } from '../natives/strmap.ts'
 
 /**
  * The static `empty` operation required from a custom type representative.
@@ -117,7 +117,7 @@ export const monoidNatives: Instances<
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.empty(P.Arr) // => []
  * P.empty(P.Str) // => ''
  * P.empty(P.StrMap) // => {}
@@ -141,7 +141,7 @@ export function empty(T: unknown): unknown {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * 
+ *
  * P.mconcat(P.Sum)([1, 2, 3]) // => 6
  * P.mconcat(P.Sum)([]) // => 0
  * P.mconcat(P.Concat)(['a', 'b', 'c']) // => 'abc'

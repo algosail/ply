@@ -1,20 +1,20 @@
+import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { assertEquals } from '../assert.ts'
-import { Equivalence, equivalence, equivalenceByEquals } from '../../src/data/equivalence.ts'
 import { contramap } from '../../src/classes/contravariant.ts'
-import { concat } from '../../src/classes/semigroup.ts'
 import { empty } from '../../src/classes/monoid.ts'
+import { concat } from '../../src/classes/semigroup.ts'
+import { Equivalence, equivalence, equivalenceByEquals } from '../../src/data/equivalence.ts'
 
 test ('Equivalence: uses its public name and supports detached static functions', () => {
   const { is, empty, conquer } = Equivalence
   const rule = new Equivalence<number> (Object.is)
 
-  assertEquals (Object.getPrototypeOf (rule).constructor.name, 'Equivalence')
-  assertEquals (rule (42, 42), true)
-  assertEquals (is (rule), true)
-  assertEquals (is (Object.is), false)
-  assertEquals (empty () (1, 'anything'), true)
-  assertEquals (conquer () (1, 'anything'), true)
+  assert.deepStrictEqual (Object.getPrototypeOf (rule).constructor.name, 'Equivalence')
+  assert.deepStrictEqual (rule (42, 42), true)
+  assert.deepStrictEqual (is (rule), true)
+  assert.deepStrictEqual (is (Object.is), false)
+  assert.deepStrictEqual (empty () (1, 'anything'), true)
+  assert.deepStrictEqual (conquer () (1, 'anything'), true)
 })
 
 test ('Equivalence: preserves call, apply, and bind', () => {
@@ -24,19 +24,19 @@ test ('Equivalence: preserves call, apply, and bind', () => {
   const rule = equivalence (sameSize)
   const bound = rule.bind (null, 'ab')
 
-  assertEquals (rule instanceof Function, true)
-  assertEquals (rule.call (null, 'ab', 'cd'), true)
-  assertEquals (rule.apply (null, ['ab', 'c']), false)
-  assertEquals (bound ('cd'), true)
-  assertEquals (Object.keys (rule), [])
-  assertEquals (rule.contramap === equivalence (sameSize).contramap, true)
+  assert.deepStrictEqual (rule instanceof Function, true)
+  assert.deepStrictEqual (rule.call (null, 'ab', 'cd'), true)
+  assert.deepStrictEqual (rule.apply (null, ['ab', 'c']), false)
+  assert.deepStrictEqual (bound ('cd'), true)
+  assert.deepStrictEqual (Object.keys (rule), [])
+  assert.deepStrictEqual (rule.contramap === equivalence (sameSize).contramap, true)
 })
 
 test ('equivalence: creates a callable comparison with the Equivalence representative', () => {
-  assertEquals (sameLength ('ab', 'cd'), true)
-  assertEquals (sameLength ('ab', 'xyz'), false)
-  assertEquals (sameLength.constructor, Equivalence)
-  assertEquals (sameLength.constructor['@@type'], 'Equivalence')
+  assert.deepStrictEqual (sameLength ('ab', 'cd'), true)
+  assert.deepStrictEqual (sameLength ('ab', 'xyz'), false)
+  assert.deepStrictEqual (sameLength.constructor, Equivalence)
+  assert.deepStrictEqual (sameLength.constructor['@@type'], 'Equivalence')
 })
 
 test ('concat is conjunction: both have to agree', () => {
@@ -48,21 +48,21 @@ test ('concat is conjunction: both have to agree', () => {
     ['', ''],
   ]
   for (const [a, b] of pairs) {
-    assertEquals (both (a, b), sameLength (a, b) && sameFirst (a, b))
+    assert.deepStrictEqual (both (a, b), sameLength (a, b) && sameFirst (a, b))
   }
-  assertEquals (both ('ann', 'amy'), true)
-  assertEquals (both ('ann', 'bob'), false)
+  assert.deepStrictEqual (both ('ann', 'amy'), true)
+  assert.deepStrictEqual (both ('ann', 'bob'), false)
 })
 
 test ('equivalenceByEquals compares structurally, through ply equals', () => {
   const byValue = equivalenceByEquals<readonly number[]> ()
-  assertEquals (byValue ([1, 2], [1, 2]), true)
-  assertEquals (byValue ([1, 2], [2, 1]), false)
+  assert.deepStrictEqual (byValue ([1, 2], [1, 2]), true)
+  assert.deepStrictEqual (byValue ([1, 2], [2, 1]), false)
   const byTags = contramap ((u: { readonly tags: readonly string[] }) => u.tags) (
     equivalenceByEquals<readonly string[]> (),
   )
-  assertEquals (byTags ({ tags: ['a'] }, { tags: ['a'] }), true)
-  assertEquals (byTags ({ tags: ['a'] }, { tags: ['b'] }), false)
+  assert.deepStrictEqual (byTags ({ tags: ['a'] }, { tags: ['a'] }), true)
+  assert.deepStrictEqual (byTags ({ tags: ['a'] }, { tags: ['b'] }), false)
 })
 
 test ('the monoid laws: associativity and the neutral element', () => {
@@ -74,36 +74,36 @@ test ('the monoid laws: associativity and the neutral element', () => {
     ['abc', 'abc'],
   ]
   for (const [a, b] of pairs) {
-    assertEquals (
+    assert.deepStrictEqual (
       concat (concat (sameLength) (sameFirst)) (sameLast) (a, b),
       concat (sameLength) (concat (sameFirst) (sameLast)) (a, b),
     )
-    assertEquals (concat (sameLength) (neutral) (a, b), sameLength (a, b))
-    assertEquals (
+    assert.deepStrictEqual (concat (sameLength) (neutral) (a, b), sameLength (a, b))
+    assert.deepStrictEqual (
       concat (neutral as Equivalence<string>) (sameLength) (a, b),
       sameLength (a, b),
     )
   }
-  assertEquals (neutral (1, 'x'), true)
+  assert.deepStrictEqual (neutral (1, 'x'), true)
 })
 
 test ('contramap puts both arguments through the accessor', () => {
   const byName = contramap ((u: User) => u.name) (sameLength)
-  assertEquals (byName (ann, bob), true)
-  assertEquals (byName (ann, { name: 'annie', age: 9 }), false)
+  assert.deepStrictEqual (byName (ann, bob), true)
+  assert.deepStrictEqual (byName (ann, { name: 'annie', age: 9 }), false)
 
   const byAge = contramap ((u: User) => u.age) (
     equivalence<number> ((a, b) => a === b),
   )
-  assertEquals (byAge (ann, amy), true)
-  assertEquals (byAge (ann, bob), false)
+  assert.deepStrictEqual (byAge (ann, amy), true)
+  assert.deepStrictEqual (byAge (ann, bob), false)
 })
 
 test ('contramap types: requires an Equivalence for a two-argument comparison', () => {
   const plain = (a: string, b: string) => a.length === b.length
   // @ts-expect-error a two-argument function is not a one-argument one
   const _bad = () => contramap ((n: number) => String (n)) (plain)
-  assertEquals (typeof _bad, 'function')
+  assert.deepStrictEqual (typeof _bad, 'function')
 })
 
 test ('Equivalence types: a rule that reads only name accepts a full User', () => {
@@ -111,7 +111,7 @@ test ('Equivalence types: a rule that reads only name accepts a full User', () =
     (u: { readonly name: string }) => u.name,
   ) (sameLength)
   const onUsers: Equivalence<User> = byName
-  assertEquals (onUsers (ann, bob), true)
+  assert.deepStrictEqual (onUsers (ann, bob), true)
 
   const onUser = equivalence<User> ((a, b) => a.age === b.age)
   // @ts-expect-error a comparison that reads age does not fit where { name } is all there is
