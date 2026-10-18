@@ -1,6 +1,6 @@
 {
   "name": "@algosail/ply",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -15,7 +15,7 @@
   },
   "type": "module",
   "engines": {
-    "node": ">=22.7"
+    "node": ">=24"
   },
   "exports": {
     ".": {
