@@ -1,65 +1,38 @@
-/**
- * Operations and types for adapting inputs with `contramap`.
- */
-
 import type { KindOf, MatchableIn, SlotAOf, SlotBOf } from '../core/kind.ts'
-import type { Instances } from '../core/named.ts'
 import type { Kind, Shape } from '../core/shape.ts'
 import type { FnShape } from '../natives/function.ts'
 import { dispatch, lazily } from '../core/instance.ts'
 import { Fn } from '../natives/function.ts'
 
-/**
- * Implement these methods on a custom value to support adapting inputs with `contramap`.
- */
+/** Implement these methods on a custom value to support adapting inputs with `contramap`. */
 export interface ContravariantMethods<S, A, B = never> {
-  /**
-   * Transforms inputs before passing them to this value.
-   */
+  /** Transforms inputs before passing them to this value. */
   contramap<X>(f: (x: X) => B): KindOf<S, A, X>
 }
 
-/**
- * Operations for adapting inputs with `contramap` on values described by `S`.
- */
+/** Operations for adapting inputs with `contramap` on values described by `S`. */
 export interface ContravariantDict<S extends Shape> {
-  /**
-   * Transforms inputs before passing them to this value.
-   */
+  /** Transforms inputs before passing them to this value. */
   contramap<A, B, X>(fa: Kind<S, A, B>, f: (x: X) => B): Kind<S, A, X>
 }
 
-/**
- * Names of the operations in `ContravariantDict`.
- */
+/** Names of the operations in `ContravariantDict`. */
 export type ContravariantKeys = keyof ContravariantDict<Shape> & string
 
-/**
- * Native generic types accepted by the `Contravariant` constraint.
- */
+/** Native generic types accepted by the `Contravariant` constraint. */
 export interface ContravariantShapes {
-  /**
-   * The shape used for `Fn` values.
-   */
   readonly Fn: FnShape
 }
 
-/**
- * A constraint for values that support adapting inputs with `contramap`.
- */
+/** A constraint for values that support adapting inputs with `contramap`. */
 export type Contravariant<S, A = SlotAOf<S>, B = SlotBOf<S>> =
   | ContravariantMethods<S, A, B>
   | MatchableIn<ContravariantShapes, A, B>
 
 type ContravariantDicts = <S extends Shape>(s: S) => ContravariantDict<S>
 
-/**
- * Native implementations of this module's operations, keyed by type name.
- */
-export const contravariantNatives: Instances<
-  ContravariantDicts,
-  ContravariantShapes
-> = lazily<ContravariantDicts, ContravariantShapes> ({
+/** Native implementations of this module's operations, keyed by type name. */
+export const contravariantNatives = lazily<ContravariantDicts, ContravariantShapes> ({
   Fn: () => Fn,
 })
 
@@ -69,30 +42,14 @@ export const contravariantNatives: Instances<
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * const long = P.predicate((s: string) => s.length > 3)
- * P.contramap((u: { name: string }) => u.name)(long)({ name: 'hello' })
+ * const long = P.predicate ((s: string) => s.length > 3)
+ * P.contramap ((u: { name: string }) => u.name) (long) ({ name: 'hello' })
  * // => true
- * P.contramap((s: string) => s.length)((n: number) => n > 3)('abcde')
+ * P.contramap ((s: string) => s.length) ((n: number) => n > 3) ('abcde')
  * // => true
  * ```
  */
-export function contramap<B, I>(
-  f: (b: B) => I,
-): <F extends Contravariant<F, unknown, I> | ((i: I) => unknown)>(
-  fa: F,
-) => KindOf<F, SlotAOf<F>, B> {
-  return <F extends Contravariant<F, unknown, I> | ((i: I) => unknown)>(
-    fa: F,
-  ) =>
-    dispatch (
-      'contramap',
-      'Contravariant',
-      contravariantNatives,
-      fa,
-      f,
-    ) as KindOf<
-      F,
-      SlotAOf<F>,
-      B
-    >
+export function contramap<B, I>(f: (b: B) => I) {
+  return <F extends Contravariant<F, unknown, I> | ((i: I) => unknown)>(fa: F) =>
+    dispatch ('contramap', 'Contravariant', contravariantNatives, fa, f) as KindOf<F, SlotAOf<F>, B>
 }

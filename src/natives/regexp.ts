@@ -10,19 +10,12 @@ import type { Shape } from '../core/shape.ts'
 import type { Maybe } from '../data/maybe.ts'
 import { just, nothing } from '../data/maybe.ts'
 
-/**
- * The shape for regular expressions.
- */
+/** The shape for regular expressions. */
 export interface ReShape extends Shape<'RegExp'> {
-  /**
-   * The value type produced when this shape's type arguments are supplied.
-   */
   readonly out: RegExp
 }
 
-/**
- * The type of the `Re` representative.
- */
+/** The type of the `Re` representative. */
 export type ReTypeRep =
   & NativeTypeRep<ReShape>
   & CheckableDict<ReShape>
@@ -35,7 +28,7 @@ export type ReTypeRep =
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.Re.equals(/hello/i, /hello/i) // => true
+ * P.Re.equals (/hello/i, /hello/i) // => true
  * ```
  */
 export const Re: ReTypeRep = {
@@ -58,12 +51,12 @@ export const Re: ReTypeRep = {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.test(/^a/)('abc') // => true
- * P.test(/^a/)('bc') // => false
+ * P.test (/^a/) ('abc') // => true
+ * P.test (/^a/) ('bc') // => false
  * ```
  */
-export function test(pattern: RegExp): (s: string) => boolean {
-  return (s) => {
+export function test(pattern: RegExp) {
+  return (s: string): boolean => {
     const lastIndex = pattern.lastIndex
     const result = pattern.test (s)
     pattern.lastIndex = lastIndex
@@ -71,17 +64,11 @@ export function test(pattern: RegExp): (s: string) => boolean {
   }
 }
 
-/**
- * A regular expression match with its numbered capture groups.
- */
+/** A regular expression match with its numbered capture groups. */
 export type Matched = {
-  /**
-   * The full text matched by the regular expression.
-   */
+  /** The full text matched by the regular expression. */
   readonly match: string
-  /**
-   * Numbered capture groups in order, with `Nothing` for unmatched groups.
-   */
+  /** Numbered capture groups in order, with `Nothing` for unmatched groups. */
   readonly groups: readonly Maybe<string>[]
 }
 
@@ -91,15 +78,15 @@ export type Matched = {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.match(/(\d)(\w)?/)('1a')
+ * P.match (/(\d)(\w)?/) ('1a')
  * // => Just ({ match: '1a', groups: [Just ('1'), Just ('a')] })
- * P.match(/x(a)?/)('x') // => Just ({ match: 'x', groups: [Nothing] })
- * P.match(/z/)('x') // => Nothing
+ * P.match (/x(a)?/) ('x') // => Just ({ match: 'x', groups: [Nothing] })
+ * P.match (/z/) ('x') // => Nothing
  * ```
  */
-export function match(pattern: RegExp): (s: string) => Maybe<Matched> {
+export function match(pattern: RegExp) {
   const flags = pattern.flags.replace ('g', '')
-  return (s) => {
+  return (s: string): Maybe<Matched> => {
     const once = new RegExp (pattern.source, flags)
     const found = s.match (once)
     return found === null ? nothing () : just (matched (found))
@@ -112,13 +99,13 @@ export function match(pattern: RegExp): (s: string) => Maybe<Matched> {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.matchAll(/(\d)/)('1 2')
+ * P.matchAll (/(\d)/) ('1 2')
  * // => [{ match: '1', groups: [Just ('1')] },
  * //     { match: '2', groups: [Just ('2')] }]
  * ```
  */
-export function matchAll(pattern: RegExp): (s: string) => Matched[] {
-  return (s) => {
+export function matchAll(pattern: RegExp) {
+  return (s: string): Matched[] => {
     const globalPattern = new RegExp (
       pattern.source,
       pattern.flags.includes ('g') ? pattern.flags : pattern.flags + 'g',
@@ -127,7 +114,9 @@ export function matchAll(pattern: RegExp): (s: string) => Matched[] {
     for (;;) {
       const found = globalPattern.exec (s)
       if (found === null) return matches
+
       matches.push (matched (found))
+
       if (found[0] === '') {
         globalPattern.lastIndex = nextIndex (
           s,
@@ -145,12 +134,14 @@ export function matchAll(pattern: RegExp): (s: string) => Matched[] {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.firstCaptures(/(\d)-/)('1- 2-') // => [Just ('1'), Just ('2')]
+ * P.firstCaptures (/(\d)-/) ('1- 2-') // => [Just ('1'), Just ('2')]
  * ```
  */
 export function firstCaptures(pattern: RegExp): (s: string) => Maybe<string>[] {
-  return (s) =>
-    matchAll (pattern) (s).map ((m: Matched) => m.groups[0] ?? nothing ())
+  return (s: string): Maybe<string>[] => {
+    const all = matchAll (pattern) (s)
+    return all.map ((m: Matched) => m.groups[0] ?? nothing ())
+  }
 }
 
 /**
@@ -159,8 +150,8 @@ export function firstCaptures(pattern: RegExp): (s: string) => Maybe<string>[] {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.escape('a-b') // => '\\x61\\x2db'
- * new RegExp(`[${P.escape('a-b')}]`, 'u') // catches the hyphen, not the range
+ * P.escape ('a-b') // => '\\x61\\x2db'
+ * new RegExp (`[${P.escape ('a-b')}]`, 'u') // catches the hyphen, not the range
  * ```
  */
 export function escape(s: string): string {
@@ -173,26 +164,24 @@ export function escape(s: string): string {
  * @throws {SyntaxError} If the pattern string is invalid.
  * @example
  * ```ts
- * import { assertThrows } from '@std/assert'
  * import * as P from '@algosail/ply'
+ * import { assertThrows } from '@std/assert'
  *
- * P.regex('gi')('ab+c') // => /ab+c/gi
- * assertThrows(
- *   () => P.regex('q'),
+ * P.regex ('gi') ('ab+c') // => /ab+c/gi
+ * assertThrows (
+ *   () => P.regex ('q'),
  *   TypeError,
  *   'regex: "q" is not valid RegExp flags',
  * )
  * ```
  */
-export function regex(flags: string): (source: string) => RegExp {
+export function regex(flags: string) {
   try {
     new RegExp ('', flags)
   } catch {
-    throw new TypeError (
-      `regex: ${JSON.stringify (flags)} is not valid RegExp flags`,
-    )
+    throw new TypeError (`regex: ${JSON.stringify (flags)} is not valid RegExp flags`)
   }
-  return (source) => new RegExp (source, flags)
+  return (source: string): RegExp => new RegExp (source, flags)
 }
 
 /**
@@ -201,17 +190,15 @@ export function regex(flags: string): (source: string) => RegExp {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * const upperGroup = P.replace(([g]) =>
- *   g.match(() => '', (s: string) => s.toUpperCase())
+ * const upperGroup = P.replace (([g]) =>
+ *   g.match (() => '', (s: string) => s.toUpperCase ()),
  * )
  *
- * upperGroup(/-(\w)/g)('a-b-c') // => 'aBC'
+ * upperGroup (/-(\w)/g) ('a-b-c') // => 'aBC'
  * ```
  */
-export function replace(
-  substitute: (groups: readonly Maybe<string>[]) => string,
-): (pattern: RegExp) => (text: string) => string {
-  return (pattern) => (text) =>
+export function replace(substitute: (groups: readonly Maybe<string>[]) => string) {
+  return (pattern: RegExp) => (text: string): string =>
     text.replace (pattern, (...args: unknown[]): string => {
       const groups: Maybe<string>[] = []
       for (let idx = 1;; idx += 1) {
@@ -228,22 +215,22 @@ export function replace(
  * @throws {TypeError} If the pattern does not have the global flag.
  * @example
  * ```ts
- * import { assertThrows } from '@std/assert'
  * import * as P from '@algosail/ply'
+ * import { assertThrows } from '@std/assert'
  *
- * P.splitOnRegex(/,/g)('a,b,c') // => ['a', 'b', 'c']
- * assertThrows(
- *   () => P.splitOnRegex(/,/),
+ * P.splitOnRegex (/,/g) ('a,b,c') // => ['a', 'b', 'c']
+ * assertThrows (
+ *   () => P.splitOnRegex (/,/),
  *   TypeError,
  *   'splitOnRegex: pattern must have the global flag',
  * )
  * ```
  */
-export function splitOnRegex(pattern: RegExp): (s: string) => string[] {
+export function splitOnRegex(pattern: RegExp) {
   if (!pattern.global) {
     throw new TypeError ('splitOnRegex: pattern must have the global flag')
   }
-  return (s) => {
+  return (s: string): string[] => {
     const globalPattern = new RegExp (pattern.source, pattern.flags)
     const parts: string[] = []
     let idx = 0

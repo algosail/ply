@@ -1,7 +1,3 @@
-/**
- * Operations and types for composing values with an identity.
- */
-
 import type {
   Assert,
   MatchableIn,
@@ -11,7 +7,6 @@ import type {
   SubclassOf,
   Superclass,
 } from '../core/kind.ts'
-import type { Instances } from '../core/named.ts'
 import type { Kind, Shape } from '../core/shape.ts'
 import type { FnShape } from '../natives/function.ts'
 import type {
@@ -22,72 +17,39 @@ import type {
 import { lazily, nameOf, typeRepIn } from '../core/instance.ts'
 import { Fn } from '../natives/function.ts'
 
-/**
- * The static `id` operation required from a custom type representative.
- */
+/** The static `id` operation required from a custom type representative. */
 export interface IdSig<S extends Shape, B, M extends string> {
-  /**
-   * Returns the identity for composition.
-   */
+  /** Returns the identity for composition. */
   id<A>(): Superclass<S, M, Kind<S, A, A>>
 }
 
-/**
- * Operations for composing values with an identity on values described by `S`.
- */
+/** Operations for composing values with an identity on values described by `S`. */
 export interface CategoryDict<S extends Shape>
   extends SemigroupoidDict<S>, IdSig<S, unknown, never> {}
 
-/**
- * A type representative accepted by `id`.
- */
-export type CategoryTypeRep<S extends Shape, B = never> = RepIn<
-  S,
-  B,
-  CategoryShapes,
-  IdSig<S, B, SemigroupoidKeys>
->
+/** A type representative accepted by `id`. */
+export type CategoryTypeRep<S extends Shape, B = never> =
+  RepIn<S, B, CategoryShapes, IdSig<S, B, SemigroupoidKeys>>
 
-/**
- * Names of the operations in `CategoryDict`.
- */
+/** Names of the operations in `CategoryDict`. */
 export type CategoryKeys = keyof CategoryDict<Shape> & string
 
-/**
- * Native generic types accepted by the `Category` constraint.
- */
+/** Native generic types accepted by the `Category` constraint. */
 export interface CategoryShapes {
-  /**
-   * The shape used for `Fn` values.
-   */
   readonly Fn: FnShape
 }
 
-/**
- * Checks that the declared native types also satisfy the parent capabilities.
- */
-export type _CategoryUnderSemigroupoid = Assert<
-  SubclassOf<CategoryShapes, SemigroupoidShapes>
->
+/** Checks that the declared native types also satisfy the parent capabilities. */
+export type _CategoryUnderSemigroupoid =
+  Assert<SubclassOf<CategoryShapes, SemigroupoidShapes>>
 
-/**
- * A constraint for values that support composing values with an identity.
- */
-export type Category<S, A = SlotAOf<S>, B = SlotBOf<S>> = MatchableIn<
-  CategoryShapes,
-  A,
-  B
->
+/** A constraint for values that support composing values with an identity. */
+export type Category<S, A = SlotAOf<S>, B = SlotBOf<S>> = MatchableIn<CategoryShapes, A, B>
 
 type CategoryDicts = <S extends Shape>(s: S) => CategoryDict<S>
 
-/**
- * Native implementations of this module's operations, keyed by type name.
- */
-export const categoryNatives: Instances<
-  CategoryDicts,
-  CategoryShapes
-> = lazily<CategoryDicts, CategoryShapes> ({
+/** Native implementations of this module's operations, keyed by type name. */
+export const categoryNatives = lazily<CategoryDicts, CategoryShapes> ({
   Fn: () => Fn,
 })
 
@@ -97,17 +59,15 @@ export const categoryNatives: Instances<
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.id(P.Fn)(1) // => 1
- * P.compose(P.id(P.Fn))((s: string) => s.length)('abc') // => 3
+ * P.id (P.Fn) (1) // => 1
+ * P.compose (P.id (P.Fn)) ((s: string) => s.length) ('abc') // => 3
  * ```
  */
 export function id<L extends Shape, A>(T: CategoryTypeRep<L>): Kind<L, A, A>
 export function id(T: unknown): unknown {
   const f = typeRepIn (categoryNatives, T, 'id')
   if (f === undefined) {
-    throw new TypeError (
-      `id: ${nameOf (T)} has no Category`,
-    )
+    throw new TypeError (`id: ${nameOf (T)} has no Category`)
   }
   return f ()
 }

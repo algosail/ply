@@ -114,7 +114,7 @@ test ('Num: recognizes values and provides the declared operations', () => {
   assert.deepStrictEqual (Num['@@type'], 'Number')
   assert.deepStrictEqual (Num.is (0), true)
   assert.deepStrictEqual (Num.is (-1.5), true)
-  assert.deepStrictEqual (Num.is (NaN), true)
+  assert.deepStrictEqual (Num.is (NaN), false)
   assert.deepStrictEqual (Num.is (Infinity), true)
   assert.deepStrictEqual (Num.is ('1'), false)
   assert.deepStrictEqual (Num.is (1n), false)

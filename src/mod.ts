@@ -1,11 +1,18 @@
 /**
  * Functions for transforming collections, composing operations, and handling optional values and errors.
+ *
+ * ## TypeClasses
+ *
+ * ### Alt
+ *
+ * {@link module:classes/alt.alt `alt`} `:: Alt f => f a -> f a -> f a`
+
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.map(P.mult(2))([1, 2, 3]) // => [2, 4, 6]
- * P.fromMaybe('Guest')(P.fromNullable<string>(null)) // => 'Guest'
+ * P.map (P.mult (2)) ([1, 2, 3]) // => [2, 4, 6]
+ * P.fromMaybe ('Guest') (P.fromNullable<string> (null)) // => 'Guest'
  * ```
  */
 

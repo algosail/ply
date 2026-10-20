@@ -33,19 +33,19 @@ test ('setFromIterable: dedupes by JS identity, not structurally', () => {
 })
 
 test ('setDifference: returns values from the first set that have no equal value in the second', () => {
-  assert.deepStrictEqual (items (setDifference (new Set ([1, 2]), new Set ([1]))), [2])
-  assert.deepStrictEqual (items (setDifference (new Set ([1, 2]), new Set ([3]))), [1, 2])
-  assert.deepStrictEqual (items (setDifference (new Set ([1]), new Set ([1]))), [])
-  assert.deepStrictEqual (items (setDifference (new Set<number> (), new Set ([1]))), [])
+  assert.deepStrictEqual (items (setDifference (new Set ([1, 2])) (new Set ([1]))), [2])
+  assert.deepStrictEqual (items (setDifference (new Set ([1, 2])) (new Set ([3]))), [1, 2])
+  assert.deepStrictEqual (items (setDifference (new Set ([1])) (new Set ([1]))), [])
+  assert.deepStrictEqual (items (setDifference (new Set<number> ()) (new Set ([1]))), [])
 })
 
 test ('setDifference: membership is structural', () => {
   assert.deepStrictEqual (
-    items (setDifference (new Set ([[1], [2]]), new Set ([[1]]))),
+    items (setDifference (new Set ([[1], [2]])) (new Set ([[1]]))),
     [[2]],
   )
   assert.deepStrictEqual (
-    items (setDifference (new Set ([just (1), just (2)]), new Set ([just (1)]))),
+    items (setDifference (new Set ([just (1), just (2)])) (new Set ([just (1)]))),
     [just (2)],
   )
 })
@@ -196,7 +196,7 @@ test ('Set.map: fresh object results can change the number of distinct values', 
 
   assert.deepStrictEqual (fresh.size, 2, 'different objects did not collapse')
   assert.deepStrictEqual (shared.size, 1, 'one and the same object collapsed')
-  assert.deepStrictEqual (fresh.size === shared.size, false)
+  assert.deepStrictEqual ((fresh.size as number) === shared.size, false)
 
   assert.deepStrictEqual (
     (chain ((): Set<number[]> => new Set ([[0]])) (s) as Set<unknown>)
@@ -319,7 +319,7 @@ test ('Set: exposes no alt or zero operations', () => {
 test ('setDifference: does not touch the operands', () => {
   const a = new Set ([1, 2])
   const b = new Set ([1])
-  setDifference (a, b)
+  setDifference (a) (b)
 
   assert.deepStrictEqual (items (a), [1, 2])
   assert.deepStrictEqual (items (b), [1])

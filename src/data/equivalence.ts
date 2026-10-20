@@ -1,7 +1,3 @@
-/**
- * Build equality rules and adapt them to compare objects by their properties.
- */
-
 import type { CheckableTypeRep } from '../classes/checkable.ts'
 import type { DecidableMethods } from '../classes/decidable.ts'
 import type { DecidableTypeRep } from '../classes/decidable.ts'
@@ -14,30 +10,18 @@ import type { Either } from './either.ts'
 import { equals } from '../classes/setoid.ts'
 import { either } from './either.ts'
 
-/**
- * A callable equality rule for two values, adaptable with `contramap`.
- */
+/** A callable equality rule for two values, adaptable with `contramap`. */
 export interface Equivalence<A> extends EquivalenceMethods<A> {
   (a: A, b: A): boolean
 }
 
-/**
- * The shape for Equivalence.
- */
+/** The shape for Equivalence.  */
 export interface EquivalenceShape extends Shape<'Equivalence'> {
-  /**
-   * How the secondary type is combined: input, output, or an exact shared type.
-   */
   readonly slotBVariance: 'in'
-  /**
-   * The value type produced when this shape's type arguments are supplied.
-   */
   readonly out: Equivalence<this['slotB']>
 }
 
-/**
- * The type of the `Equivalence` representative.
- */
+/** The type of the `Equivalence` representative. */
 export type EquivalenceTypeRep = Satisfies<
   EquivalenceStatics & Shaped<EquivalenceShape>,
   & MonoidTypeRep<EquivalenceShape, unknown>
@@ -46,137 +30,60 @@ export type EquivalenceTypeRep = Satisfies<
   & CheckableTypeRep<EquivalenceShape>
 >
 
-/**
- * Static operations provided by the `Equivalence` representative.
- */
+/** Static operations provided by the `Equivalence` representative. */
 export interface EquivalenceStatics {
-  /**
-   * Checks whether an unknown value belongs to this type.
-   */
   is(value: unknown): value is Equivalence<unknown>
-  /**
-   * Creates a rule that always returns `true`.
-   */
   empty(): Equivalence<unknown>
-  /**
-   * Creates a rule that always passes.
-   */
   conquer(): Equivalence<unknown>
-  /**
-   * Creates a rule for an unreachable input using a function that cannot return.
-   */
   lose<X>(absurd: (x: X) => never): Equivalence<X>
 }
 
-/**
- * Methods available on `Equivalence` values.
- */
+/** Methods available on `Equivalence` values. */
 export interface EquivalenceMethods<A>
   extends
     DecidableMethods<Equivalence<A>, boolean, A>,
     SemigroupMethods<Equivalence<A>, boolean, A> {
-  /**
-   * Declares the type name for inference. No runtime member is required.
-   */
   readonly '@@type': 'Equivalence'
-  /**
-   * The shape used to type generic operations on this value.
-   */
   readonly _shape: EquivalenceShape
-  /**
-   * Declares the contained value type for inference; no runtime member is required.
-   */
-  readonly _A?: (_: never) => boolean
-  /**
-   * Declares the secondary type for inference; no runtime member is required.
-   */
-  _B?(_: A): void
-  /**
-   * The representative used to construct values of this type.
-   */
   readonly constructor: EquivalenceTypeRep
+  readonly _A?: (_: never) => boolean
+  _B?(_: A): void
 }
 
-/**
- * Creates a callable equality rule for two values.
- * @example
- * ```ts
- * import * as P from '@algosail/ply'
- *
- * const sameCents = P.equivalence<number>(
- *   (a, b) => Math.round(a * 100) === Math.round(b * 100),
- * )
- * sameCents(1.004, 1.0041) // => true
- * sameCents(1.004, 1.009) // => false
- * ```
- */
-export function equivalence<A>(
-  run: (a: A, b: A) => boolean,
-): Equivalence<A> {
-  return new Equivalence (run)
-}
-
-/**
- * The equality-rule representative.
- */
+/** The equality-rule representative. */
 export class Equivalence<A> implements EquivalenceMethods<A> {
-  /**
-   * The name used by generic ply operations.
-   */
-  static readonly '@@type' = 'Equivalence' as const
-  /**
-   * The shape used for type inference; no runtime value is required.
-   */
   declare static readonly _shape: EquivalenceShape
+  static readonly '@@type' = 'Equivalence' as const
 
   static {
     Object.setPrototypeOf (this.prototype, Function.prototype)
   }
 
-  /**
-   * Checks whether a value was created by this class.
-   */
   static is(value: unknown): value is Equivalence<unknown> {
     return value instanceof Equivalence
   }
 
-  /**
-   * Creates a rule that always returns true.
-   */
   static empty(): Equivalence<unknown> {
     return equivalence<unknown> (() => true)
   }
-  /**
-   * Creates a rule that always returns true.
-   */
+
   static conquer(): Equivalence<unknown> {
     return equivalence<unknown> (() => true)
   }
-  /**
-   * Creates a rule for an unreachable input using a function that cannot return.
-   */
+
   static lose<X>(absurd: (x: X) => never): Equivalence<X> {
     return equivalence<X> ((x) => absurd (x))
   }
 
-  /**
-   * Creates a callable equality rule from a comparison function.
-   */
   constructor(run: (a: A, b: A) => boolean) {
     const self = (a: A, b: A) => run (a, b)
     return Object.setPrototypeOf (self, new.target.prototype)
   }
 
-  /**
-   * Transforms both inputs before comparing them.
-   */
   contramap<X>(f: (x: X) => A): Equivalence<X> {
     return equivalence<X> ((x, y) => this (f (x), f (y)))
   }
 
-  /**
-   * Splits both inputs and requires both comparisons to pass.
-   */
   divide<C, X>(
     split: (x: X) => readonly [A, C],
     that: Equivalence<C>,
@@ -188,9 +95,6 @@ export class Equivalence<A> implements EquivalenceMethods<A> {
     })
   }
 
-  /**
-   * Compares inputs using the rule for their matching Left or Right branch.
-   */
   choose<C, X>(
     split: (x: X) => Either<A, C>,
     that: Equivalence<C>,
@@ -204,12 +108,28 @@ export class Equivalence<A> implements EquivalenceMethods<A> {
     })
   }
 
-  /**
-   * Requires both equality rules to pass, stopping at the first failure.
-   */
   concat(that: Equivalence<A>): Equivalence<A> {
     return this.divide ((a: A) => [a, a] as const, that)
   }
+}
+
+/**
+ * Creates a callable equality rule for two values.
+ * @example
+ * ```ts
+ * import * as P from '@algosail/ply'
+ *
+ * const sameCents = P.equivalence<number> (
+ *   (a, b) => Math.round (a * 100) === Math.round (b * 100),
+ * )
+ * sameCents (1.004, 1.0041) // => true
+ * sameCents (1.004, 1.009) // => false
+ * ```
+ */
+export function equivalence<A>(
+  run: (a: A, b: A) => boolean,
+): Equivalence<A> {
+  return new Equivalence (run)
 }
 
 /**
@@ -217,8 +137,8 @@ export class Equivalence<A> implements EquivalenceMethods<A> {
  * @example
  * ```ts
  * import * as P from '@algosail/ply'
- * const sameTags = P.equivalenceByEquals<readonly string[]>()
- * sameTags(['rush'], ['rush']) // => true
+ * const sameTags = P.equivalenceByEquals<readonly string[]> ()
+ * sameTags (['rush'], ['rush']) // => true
  * ```
  */
 export function equivalenceByEquals<A>(): Equivalence<A> {

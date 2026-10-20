@@ -1,7 +1,3 @@
-/**
- * Sequence wrapped computations with {@link go} and {@link fgo}.
- */
-
 import type {
   Assert,
   MatchableIn,
@@ -24,85 +20,54 @@ import { nameOf } from '../core/instance.ts'
 import { of } from './applicative.ts'
 import { chain } from './chain.ts'
 
-/**
- * Operations for wrapping and chaining values on values described by `S`.
- */
+/** Operations for wrapping and chaining values on values described by `S`. */
 export interface MonadDict<S extends Shape>
   extends ApplicativeDict<S>, ChainDict<S> {
 }
 
-/**
- * A type representative accepted by `of`.
- */
-export type MonadTypeRep<S extends Shape, B = never> = RepIn<
-  S,
-  B,
-  MonadShapes,
-  OfSig<S, B, ChainKeys>
->
+/** A type representative accepted by `of`. */
+export type MonadTypeRep<S extends Shape, B = never> =
+  RepIn<S, B, MonadShapes, OfSig<S, B, ChainKeys>>
 
-/**
- * Names of the operations in `MonadDict`.
- */
+/** Names of the operations in `MonadDict`. */
 export type MonadKeys = keyof MonadDict<Shape> & string
 
-/**
- * Native generic types accepted by the `Monad` constraint.
- */
+/** Native generic types accepted by the `Monad` constraint. */
 export interface MonadShapes {
-  /**
-   * The shape used for `Array` values.
-   */
   readonly Array: ArrayShape
-  /**
-   * The shape used for `Fn` values.
-   */
   readonly Fn: FnShape
-  /**
-   * The shape used for `Set` values.
-   */
   readonly Set: SetShape
 }
 
-/**
- * A constraint for values that support wrapping and chaining values.
- */
-export type Monad<S, A = SlotAOf<S>, B = SlotBOf<S>> = MatchableIn<
-  MonadShapes,
-  A,
-  B
->
+/** A constraint for values that support wrapping and chaining values. */
+export type Monad<S, A = SlotAOf<S>, B = SlotBOf<S>> =
+  MatchableIn<MonadShapes, A, B>
 
-/**
- * Checks that the declared native types also satisfy the parent capabilities.
- */
-export type _MonadUnderApplicative = Assert<
-  SubclassOf<MonadShapes, ApplicativeShapes>
->
+/** Checks that the declared native types also satisfy the parent capabilities. */
+export type _MonadUnderApplicative =
+  Assert<SubclassOf<MonadShapes, ApplicativeShapes>>
 
-/**
- * Checks that the declared native types also satisfy the parent capabilities.
- */
+/** Checks that the declared native types also satisfy the parent capabilities. */
 export type _MonadUnderChain = Assert<SubclassOf<MonadShapes, ChainShapes>>
 
 /**
  * A generator body for {@link go} or {@link fgo}, yielding values of shape `S` and returning an unwrapped result of type `A`.
  * @example
  * ```ts
- * import * as P from '@algosail/ply'
  * import type { MaybeShape } from '@algosail/ply/shapes'
+ * import * as P from '@algosail/ply'
  *
  * function half(value: number): P.Maybe<number> {
- *   return value % 2 === 0 ? P.just(value / 2) : P.nothing()
+ *   return value % 2 === 0 ? P.just (value / 2) : P.nothing ()
  * }
  *
  * function* halves(times: number, value: number): P.Do<MaybeShape, number> {
  *   if (times === 0) return value
- *   const result: number = yield half(value)
- *   return yield* halves(times - 1, result)
+ *   const result: number = yield half (value)
+ *   return yield* halves (times - 1, result)
  * }
  *
- * P.fgo(P.Maybe)(halves)(3, 8) // => Just (1)
+ * P.fgo (P.Maybe) (halves) (3, 8) // => Just (1)
  * ```
  */
 export type Do<S extends Shape, A> = Generator<Kind<S, any, any>, A, any>
@@ -112,11 +77,7 @@ type Lift = (a: unknown) => unknown
 type Bind_ = (f: (a: unknown) => unknown) => (m: unknown) => unknown
 type Guard = (v: unknown) => void
 
-function guarding(
-  how: string,
-  is: unknown,
-  named: string | undefined,
-): Guard {
+function guarding(how: string, is: unknown, named: string | undefined): Guard {
   const fits = typeof is === 'function'
     ? is as (v: unknown) => boolean
     : named === undefined
@@ -189,21 +150,20 @@ function engine(T: unknown, how: string): (start: Body) => unknown {
  * import * as P from '@algosail/ply'
  *
  * function half(value: number): P.Maybe<number> {
- *   return value % 2 === 0 ? P.just(value / 2) : P.nothing()
+ *   return value % 2 === 0 ? P.just (value / 2) : P.nothing ()
  * }
  *
  * function* total() {
- *   const first: number = yield half(8)
- *   const second: number = yield half(first)
+ *   const first: number = yield half (8)
+ *   const second: number = yield half (first)
  *   return first + second
  * }
  *
- * P.go(P.Maybe)(total) // => Just (6)
+ * P.go (P.Maybe) (total) // => Just (6)
  * ```
  */
-export function go<S extends Shape, B>(
-  T: MonadTypeRep<S, B>,
-): <A>(body: () => Do<S, A>) => Kind<S, A, B>
+export function go<S extends Shape, B>(T: MonadTypeRep<S, B>):
+  <A>(body: () => Do<S, A>) => Kind<S, A, B>
 export function go(T: unknown): (body: Body) => unknown {
   const run = engine (T, 'go')
   return (body) => run (body)
@@ -216,28 +176,25 @@ export function go(T: unknown): (body: Body) => unknown {
  * import * as P from '@algosail/ply'
  *
  * function half(value: number): P.Maybe<number> {
- *   return value % 2 === 0 ? P.just(value / 2) : P.nothing()
+ *   return value % 2 === 0 ? P.just (value / 2) : P.nothing ()
  * }
  *
  * function* halfTwice(value: number) {
- *   const result: number = yield half(value)
- *   const quarter: number = yield half(result)
+ *   const result: number = yield half (value)
+ *   const quarter: number = yield half (result)
  *   return quarter
  * }
  *
- * const quarter = P.fgo(P.Maybe)(halfTwice)
- * quarter(8) // => Just (2)
- * quarter(6) // => Nothing
+ * const quarter = P.fgo (P.Maybe) (halfTwice)
+ * quarter (8) // => Just (2)
+ * quarter (6) // => Nothing
  * ```
  */
-export function fgo<S extends Shape, B>(
-  T: MonadTypeRep<S, B>,
-): <A, Args extends readonly unknown[]>(
-  body: (...args: Args) => Do<S, A>,
-) => (...args: Args) => Kind<S, A, B>
-export function fgo(
-  T: unknown,
-): (body: (...args: unknown[]) => Generator) => (...a: unknown[]) => unknown {
+export function fgo<S extends Shape, B>(T: MonadTypeRep<S, B>):
+  <A, Args extends readonly unknown[]>(body: (...args: Args) => Do<S, A>) =>
+    (...args: Args) => Kind<S, A, B>
+export function fgo(T: unknown) {
   const run = engine (T, 'fgo')
-  return (body) => (...args) => run (() => body (...args))
+  return (body: (...args: unknown[]) => Generator) =>
+    (...args: unknown[]): unknown => run (() => body (...args))
 }

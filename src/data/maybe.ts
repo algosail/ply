@@ -1,15 +1,3 @@
-/**
- * Handle values that may be absent with `Just` and `Nothing`.
- * @example
- * ```ts
- * import * as P from '@algosail/ply'
- *
- * const name = P.map(P.trim)(P.fromNullable(' Ada '))
- * P.fromMaybe('Guest')(name) // => 'Ada'
- * P.fromMaybe('Guest')(P.nothing<string>()) // => 'Guest'
- * ```
- */
-
 import type { AltMethods } from '../classes/alt.ts'
 import type { ApplicativeTypeRep } from '../classes/applicative.ts'
 import type { Apply, ApplyMethods } from '../classes/apply.ts'
@@ -34,48 +22,26 @@ import { equals } from '../classes/setoid.ts'
 import { show } from '../classes/show.ts'
 import { left, right } from './either.ts'
 
-/**
- * An optional value: `Just<A>` when present, or `Nothing<A>` when absent.
- */
+/** An optional value: `Just<A>` when present, or `Nothing<A>` when absent. */
 export type Maybe<A> = Just<A> | Nothing<A>
 
-/**
- * A present `Maybe` value.
- */
+/** A present `Maybe` value. */
 export interface Just<A> extends MaybeMethods<A> {
-  /**
-   * Identifies this branch for narrowing with a tag check.
-   */
   readonly tag: 'just'
-  /**
-   * The contained value.
-   */
   readonly value: A
 }
 
-/**
- * An absent `Maybe` value.
- */
+/** An absent `Maybe` value. */
 export interface Nothing<A> extends MaybeMethods<A> {
-  /**
-   * Identifies this branch for narrowing with a tag check.
-   */
   readonly tag: 'nothing'
 }
 
-/**
- * The shape for Maybe.
- */
+/** The shape for Maybe. */
 export interface MaybeShape extends Shape<'Maybe'> {
-  /**
-   * The value type produced when this shape's type arguments are supplied.
-   */
   readonly out: Maybe<this['slotA']>
 }
 
-/**
- * The type of the `Maybe` representative.
- */
+/** The type of the `Maybe` representative. */
 export type MaybeTypeRep = Satisfies<
   MaybeStatics & Shaped<MaybeShape>,
   & ApplicativeTypeRep<MaybeShape>
@@ -83,27 +49,14 @@ export type MaybeTypeRep = Satisfies<
   & CheckableTypeRep<MaybeShape>
 >
 
-/**
- * Static operations provided by the `Maybe` representative.
- */
+/** Static operations provided by the `Maybe` representative. */
 export interface MaybeStatics {
-  /**
-   * Checks whether an unknown value belongs to this type.
-   */
   is(value: unknown): value is Maybe<unknown>
-  /**
-   * Creates a `Just` value.
-   */
   of<A>(a: A): Maybe<A>
-  /**
-   * Returns an empty alternative of this type.
-   */
   zero<A>(): Maybe<A>
 }
 
-/**
- * Methods available on `Maybe` values.
- */
+/** Methods available on `Maybe` values. */
 export interface MaybeMethods<A>
   extends
     SetoidMethods<Maybe<A>, A>,
@@ -116,42 +69,23 @@ export interface MaybeMethods<A>
     FilterableMethods<Maybe<A>, A>,
     FoldableMethods<Maybe<A>, A>,
     TraversableMethods<Maybe<A>, A> {
-  /**
-   * Declares the type name for inference. No runtime member is required.
-   */
   readonly '@@type': 'Maybe'
-  /**
-   * The shape used to type generic operations on this value.
-   */
   readonly _shape: MaybeShape
-  /**
-   * Declares the contained value type for inference; no runtime member is required.
-   */
-  readonly _A?: (_: never) => A
-  /**
-   * The representative used to construct values of this type.
-   */
   readonly constructor: MaybeTypeRep
-  /**
-   * Calls the handler for the active branch and returns its result.
-   */
+  readonly _A?: (_: never) => A
   match<B>(onNothing: () => B, onJust: (a: A) => B): B
 }
 
-/**
- * The optional-value representative.
- * @example
- * ```ts
- * import * as P from '@algosail/ply'
- *
- * P.of(P.Maybe)(1) // => Just (1)
- * P.zero(P.Maybe) // => Nothing
- * ```
- */
 export const Maybe: MaybeTypeRep = class <A, Tag extends 'just' | 'nothing'>
   implements MaybeMethods<A> {
-  static readonly '@@type' = 'Maybe' as const
   declare static readonly _shape: MaybeShape
+  declare readonly '@@type': 'Maybe'
+  declare readonly _shape: MaybeShape
+  declare readonly ['constructor']: MaybeTypeRep
+  declare readonly _A?: (_: never) => A
+  declare readonly value: A
+
+  static readonly '@@type' = 'Maybe' as const
 
   private static readonly absent: Nothing<never> = Object.freeze (
     new this<never, 'nothing'> ('nothing'),
@@ -161,13 +95,8 @@ export const Maybe: MaybeTypeRep = class <A, Tag extends 'just' | 'nothing'>
   static of = <A>(value: A): Maybe<A> => new this<A, 'just'> ('just', value)
   static zero = <A>(): Maybe<A> => this.absent
 
-  declare readonly '@@type': 'Maybe'
-  declare readonly _shape: MaybeShape
-  declare readonly _A?: (_: never) => A
-  declare readonly ['constructor']: MaybeTypeRep
-
   readonly tag: Tag
-  declare readonly value: A
+
   constructor(tag: Tag, value?: A) {
     this.tag = tag
     if (tag === 'just') this.value = value as A
@@ -248,8 +177,8 @@ export const Maybe: MaybeTypeRep = class <A, Tag extends 'just' | 'nothing'>
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.just(1) // => Just (1)
- * P.map((n: number) => n + 1)(P.just(1)) // => Just (2)
+ * P.just (1) // => Just (1)
+ * P.map ((n: number) => n + 1) (P.just (1)) // => Just (2)
  * ```
  */
 export function just<A>(a: A): Maybe<A> {
@@ -262,8 +191,8 @@ export function just<A>(a: A): Maybe<A> {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.nothing<number>() // => Nothing
- * P.map((n: number) => n + 1)(P.nothing<number>()) // => Nothing
+ * P.nothing<number> () // => Nothing
+ * P.map ((n: number) => n + 1) (P.nothing<number> ()) // => Nothing
  * ```
  */
 export function nothing<A>(): Maybe<A> {
@@ -276,15 +205,13 @@ export function nothing<A>(): Maybe<A> {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.maybe_(() => 'none')((n: number) => `#${n}`)(P.just(7)) // => '#7'
- * P.maybe_(() => 'none')((n: number) => `#${n}`)(P.nothing<number>()) // => 'none'
+ * P.maybe_ (() => 'none') ((n: number) => `#${n}`) (P.just (7)) // => '#7'
+ * P.maybe_ (() => 'none') ((n: number) => `#${n}`) (P.nothing<number> ()) // => 'none'
  * ```
  * @see {@link maybe}
  */
-export function maybe_<B>(
-  onNothing: () => B,
-): <A>(onJust: (a: A) => B) => (m: Maybe<A>) => B {
-  return (onJust) => (m) => m.match (onNothing, onJust)
+export function maybe_<B>(onNothing: () => B) {
+  return <A>(onJust: (a: A) => B) => (m: Maybe<A>): B => m.match (onNothing, onJust)
 }
 
 /**
@@ -293,12 +220,12 @@ export function maybe_<B>(
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.maybe(0)((s: string) => s.length)(P.just('abc')) // => 3
- * P.maybe(0)((s: string) => s.length)(P.nothing<string>()) // => 0
+ * P.maybe (0) ((s: string) => s.length) (P.just ('abc')) // => 3
+ * P.maybe (0) ((s: string) => s.length) (P.nothing<string> ()) // => 0
  * ```
  */
-export function maybe<B>(d: B): <A>(onJust: (a: A) => B) => (m: Maybe<A>) => B {
-  return (onJust) => (m) => m.match (() => d, onJust)
+export function maybe<B>(d: B) {
+  return <A>(onJust: (a: A) => B) => (m: Maybe<A>): B => m.match (() => d, onJust)
 }
 
 /**
@@ -307,13 +234,12 @@ export function maybe<B>(d: B): <A>(onJust: (a: A) => B) => (m: Maybe<A>) => B {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.fromMaybe(0)(P.just(1)) // => 1
- * P.fromMaybe(0)(P.nothing<number>()) // => 0
+ * P.fromMaybe (0) (P.just (1)) // => 1
+ * P.fromMaybe (0) (P.nothing<number> ()) // => 0
  * ```
- * @see {@link fromMaybe_}
  */
-export function fromMaybe<A>(d: A): (m: Maybe<A>) => A {
-  return (m) => m.match (() => d, (a) => a)
+export function fromMaybe<A>(d: A) {
+  return (m: Maybe<A>): A => m.match (() => d, (a) => a)
 }
 
 /**
@@ -322,15 +248,14 @@ export function fromMaybe<A>(d: A): (m: Maybe<A>) => A {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * const displayName = P.fromMaybe_(() => 'Guest')
+ * const displayName = P.fromMaybe_ (() => 'Guest')
  *
- * displayName(P.just('Ada')) // => 'Ada'
- * displayName(P.nothing<string>()) // => 'Guest'
+ * displayName (P.just ('Ada')) // => 'Ada'
+ * displayName (P.nothing<string> ()) // => 'Guest'
  * ```
- * @see {@link fromMaybe}
  */
-export function fromMaybe_<A>(d: () => A): (m: Maybe<A>) => A {
-  return (m) => m.match (d, (a) => a)
+export function fromMaybe_<A>(d: () => A) {
+  return (m: Maybe<A>): A => m.match (d, (a) => a)
 }
 
 /**
@@ -339,13 +264,13 @@ export function fromMaybe_<A>(d: () => A): (m: Maybe<A>) => A {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.defaultTo('none')('a') // => 'a'
- * P.defaultTo('none')(null) // => 'none'
- * P.defaultTo(1)(0) // => 0
+ * P.defaultTo ('none') ('a') // => 'a'
+ * P.defaultTo ('none') (null) // => 'none'
+ * P.defaultTo (1) (0) // => 0
  * ```
  */
-export function defaultTo<A>(d: A): (a: A | null | undefined) => A {
-  return (a) => a === null || a === undefined ? d : a
+export function defaultTo<A>(d: A) {
+  return (a: A | null | undefined): A => a === null || a === undefined ? d : a
 }
 
 /**
@@ -354,9 +279,9 @@ export function defaultTo<A>(d: A): (a: A | null | undefined) => A {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.fromNullable(1) // => Just (1)
- * P.fromNullable(0) // => Just (0)
- * P.fromNullable(null) // => Nothing
+ * P.fromNullable (1) // => Just (1)
+ * P.fromNullable (0) // => Just (0)
+ * P.fromNullable (null) // => Nothing
  * ```
  */
 export function fromNullable<A>(a: A | null | undefined): Maybe<A> {
@@ -369,16 +294,11 @@ export function fromNullable<A>(a: A | null | undefined): Maybe<A> {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.fromPredicate((n: number) => n > 0)(1) // => Just (1)
- * P.fromPredicate((n: number) => n > 0)(-1) // => Nothing
+ * P.fromPredicate ((n: number) => n > 0) (1) // => Just (1)
+ * P.fromPredicate ((n: number) => n > 0) (-1) // => Nothing
  * ```
  */
-export function fromPredicate<A, B extends A>(
-  p: (a: A) => a is B,
-): (a: A) => Maybe<B>
-/**
- * Wraps a value in `Just` if it passes the predicate, or returns `Nothing`.
- */
+export function fromPredicate<A, B extends A>(p: (a: A) => a is B): (a: A) => Maybe<B>
 export function fromPredicate<A>(p: (a: A) => boolean): (a: A) => Maybe<A>
 export function fromPredicate<A>(p: (a: A) => boolean) {
   return (a: A): Maybe<A> => p (a) ? just (a) : nothing<A> ()
@@ -390,16 +310,13 @@ export function fromPredicate<A>(p: (a: A) => boolean) {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * const recip = P.safeLift((n: number) => n !== 0, (n: number) => 10 / n)
- * recip(2) // => Just (5)
- * recip(0) // => Nothing
+ * const recip = P.safeLift ((n: number) => n !== 0, (n: number) => 10 / n)
+ * recip (2) // => Just (5)
+ * recip (0) // => Nothing
  * ```
  */
-export function safeLift<A, B>(
-  p: (a: A) => boolean,
-  f: (a: A) => B,
-): (a: A) => Maybe<B> {
-  return (a) => p (a) ? just (f (a)) : nothing<B> ()
+export function safeLift<A, B>(p: (a: A) => boolean, f: (a: A) => B) {
+  return (a: A): Maybe<B> => p (a) ? just (f (a)) : nothing<B> ()
 }
 
 /**
@@ -408,16 +325,13 @@ export function safeLift<A, B>(
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * const num = P.safeAfter((n: number) => !Number.isNaN(n), Number)
- * num('12') // => Just (12)
- * num('x') // => Nothing
+ * const num = P.safeAfter ((n: number) => !Number.isNaN (n), Number)
+ * num ('12') // => Just (12)
+ * num ('x') // => Nothing
  * ```
  */
-export function safeAfter<A, B>(
-  p: (b: B) => boolean,
-  f: (a: A) => B,
-): (a: A) => Maybe<B> {
-  return (a) => {
+export function safeAfter<A, B>(p: (b: B) => boolean, f: (a: A) => B) {
+  return (a: A): Maybe<B> => {
     const b = f (a)
     return p (b) ? just (b) : nothing<B> ()
   }
@@ -429,15 +343,13 @@ export function safeAfter<A, B>(
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * const parse = P.maybeEncase(JSON.parse)
- * parse('[1]') // => Just ([1])
- * parse('{') // => Nothing
+ * const parse = P.maybeEncase (JSON.parse)
+ * parse ('[1]') // => Just ([1])
+ * parse ('{') // => Nothing
  * ```
  */
-export function maybeEncase<Args extends unknown[], A>(
-  f: (...args: Args) => A,
-): (...args: Args) => Maybe<A> {
-  return (...args) => {
+export function maybeEncase<Args extends unknown[], A>(f: (...args: Args) => A) {
+  return (...args: Args): Maybe<A> => {
     try {
       return just (f (...args))
     } catch {
@@ -452,8 +364,8 @@ export function maybeEncase<Args extends unknown[], A>(
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.maybeToNullable(P.just(1)) // => 1
- * P.maybeToNullable(P.nothing<number>()) // => null
+ * P.maybeToNullable (P.just (1)) // => 1
+ * P.maybeToNullable (P.nothing<number> ()) // => null
  * ```
  */
 export function maybeToNullable<A>(m: Maybe<A>): A | null {
@@ -466,8 +378,8 @@ export function maybeToNullable<A>(m: Maybe<A>): A | null {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.isJust(P.just(1)) // => true
- * P.isJust(P.nothing<number>()) // => false
+ * P.isJust (P.just (1)) // => true
+ * P.isJust (P.nothing<number> ()) // => false
  * ```
  */
 export function isJust<A>(m: Maybe<A>): m is Just<A> {
@@ -480,8 +392,8 @@ export function isJust<A>(m: Maybe<A>): m is Just<A> {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.isNothing(P.nothing<number>()) // => true
- * P.isNothing(P.just(1)) // => false
+ * P.isNothing (P.nothing<number> ()) // => true
+ * P.isNothing (P.just (1)) // => false
  * ```
  */
 export function isNothing<A>(m: Maybe<A>): m is Nothing<A> {
@@ -494,14 +406,11 @@ export function isNothing<A>(m: Maybe<A>): m is Nothing<A> {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.justs([P.just(1), P.nothing<number>(), P.just(3)]) // => [1, 3]
- * P.justs([P.nothing<number>(), P.nothing<number>()]) // => []
+ * P.justs ([P.just (1), P.nothing<number> (), P.just (3)]) // => [1, 3]
+ * P.justs ([P.nothing<number> (), P.nothing<number> ()]) // => []
  * ```
  */
 export function justs<A>(fm: readonly Maybe<A>[]): A[]
-/**
- * Keeps and unwraps `Just` values, discarding `Nothing` values.
- */
 export function justs<F extends Filterable<F>>(fm: F): KindOf<F, unknown>
 export function justs(fm: any): any {
   return map ((m: Maybe<unknown>) => (m as { value: unknown }).value) (
@@ -515,12 +424,12 @@ export function justs(fm: any): any {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.maybeToEither('missing')(P.just(1)) // => Right (1)
- * P.maybeToEither('missing')(P.nothing<number>()) // => Left ("missing")
+ * P.maybeToEither ('missing') (P.just (1)) // => Right (1)
+ * P.maybeToEither ('missing') (P.nothing<number> ()) // => Left ("missing")
  * ```
  */
-export function maybeToEither<E>(e: E): <A>(m: Maybe<A>) => Either<E, A> {
-  return (m) => m.match (() => left (e), (a) => right (a))
+export function maybeToEither<E>(e: E) {
+  return <A>(m: Maybe<A>): Either<E, A> => m.match (() => left (e), (a) => right (a))
 }
 
 /**
@@ -529,13 +438,11 @@ export function maybeToEither<E>(e: E): <A>(m: Maybe<A>) => Either<E, A> {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.maybeToEither_(() => 'missing')(P.just(1)) // => Right (1)
- * P.maybeToEither_(() => 'missing')(P.nothing<number>()) // => Left ("missing")
+ * P.maybeToEither_ (() => 'missing') (P.just (1)) // => Right (1)
+ * P.maybeToEither_ (() => 'missing') (P.nothing<number> ()) // => Left ("missing")
  * ```
- * @see {@link maybeToEither}
  */
-export function maybeToEither_<E>(
-  onNothing: () => E,
-): <A>(m: Maybe<A>) => Either<E, A> {
-  return (m) => m.match (() => left (onNothing ()), (a) => right (a))
+export function maybeToEither_<E>(onNothing: () => E) {
+  return <A>(m: Maybe<A>): Either<E, A> =>
+    m.match (() => left (onNothing ()), (a) => right (a))
 }

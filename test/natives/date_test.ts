@@ -93,8 +93,8 @@ test ('Dates.lte: Ord laws', () => {
 })
 
 test ('Dates.show: an invalid date prints as NaN', () => {
-  assert.deepStrictEqual (Dates.show (new Date (NaN)), 'Date (NaN)')
-  assert.deepStrictEqual (Dates.show (new Date ('not a date')), 'Date (NaN)')
+  assert.deepStrictEqual (Dates.show (new Date (NaN)), 'Date ("NaN")')
+  assert.deepStrictEqual (Dates.show (new Date ('not a date')), 'Date ("NaN")')
 })
 
 test ('Dates: an invalid date behaves exactly like NaN', () => {

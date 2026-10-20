@@ -1,9 +1,4 @@
-/**
- * Operations and types for comparing values for equality.
- */
-
 import type { MatchableIn, SlotAOf, SlotBOf } from '../core/kind.ts'
-import type { Instances } from '../core/named.ts'
 import type { Kind, Shape } from '../core/shape.ts'
 import type { ArrayShape } from '../natives/array.ts'
 import type { BigShape } from '../natives/bigint.ts'
@@ -23,85 +18,43 @@ import { Re } from '../natives/regexp.ts'
 import { Str } from '../natives/string.ts'
 import { StrMap } from '../natives/strmap.ts'
 
-/**
- * Implement these methods on a custom value to support comparing values for equality.
- */
+/** Implement these methods on a custom value to support comparing values for equality. */
 export interface SetoidMethods<S, A, B = never> {
-  /**
-   * Checks whether this value equals `that`.
-   */
+  /** Checks whether this value equals `that`. */
   equals(that: S): boolean
 }
 
-/**
- * Operations for comparing values for equality on values described by `S`.
- */
+/** Operations for comparing values for equality on values described by `S`. */
 export interface SetoidDict<S extends Shape> {
-  /**
-   * Checks whether the two values are equal.
-   */
+  /** Checks whether the two values are equal. */
   equals<A, B>(a: Kind<S, A, B>, b: Kind<S, A, B>): boolean
 }
 
-/**
- * Names of the operations in `SetoidDict`.
- */
+/** Names of the operations in `SetoidDict`. */
 export type SetoidKeys = keyof SetoidDict<Shape> & string
 
-/**
- * Native generic types accepted by the `Setoid` constraint.
- */
+/** Native generic types accepted by the `Setoid` constraint. */
 export interface SetoidShapes {
-  /**
-   * The shape used for `Array` values.
-   */
   readonly Array: ArrayShape
-  /**
-   * The shape used for `StrMap` values.
-   */
   readonly StrMap: StrMapShape
 }
 
-/**
- * Additional scalar types supported by comparing values for equality.
- */
+/** Additional scalar types supported by comparing values for equality. */
 export interface SetoidPrimitives {
-  /**
-   * The shape used for `String` values.
-   */
   readonly String: StrShape
-  /**
-   * The shape used for `Number` values.
-   */
   readonly Number: NumShape
-  /**
-   * The shape used for `Boolean` values.
-   */
   readonly Boolean: BoolShape
-  /**
-   * The shape used for `BigInt` values.
-   */
   readonly BigInt: BigShape
-  /**
-   * The shape used for `Date` values.
-   */
   readonly Date: DateShape
-  /**
-   * The shape used for `RegExp` values.
-   */
   readonly RegExp: ReShape
 }
 
-/**
- * A constraint for values that support comparing values for equality.
- */
+/** A constraint for values that support comparing values for equality. */
 export type Setoid<S, A = SlotAOf<S>, B = SlotBOf<S>> =
   | SetoidMethods<S, A, B>
   | MatchableIn<SetoidShapes, A, B>
 
-/**
- * Built-in scalar and array types accepted by the generic `equals` overload.
- */
+/** Built-in scalar and array types accepted by the generic `equals` overload. */
 export type BuiltinEq =
   | number
   | string
@@ -116,13 +69,8 @@ export type BuiltinEq =
 type SetoidNatives = SetoidShapes & SetoidPrimitives
 type SetoidDicts = <S extends Shape>(s: S) => SetoidDict<S>
 
-/**
- * Native implementations of this module's operations, keyed by type name.
- */
-export const setoidNatives: Instances<
-  SetoidDicts,
-  SetoidNatives
-> = lazily<SetoidDicts, SetoidNatives> ({
+/** Native implementations of this module's operations, keyed by type name. */
+export const setoidNatives = lazily<SetoidDicts, SetoidNatives> ({
   Array: () => Arr,
   StrMap: () => StrMap,
   String: () => Str,
@@ -139,39 +87,19 @@ export const setoidNatives: Instances<
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.equals(2)(2) // => true
- * P.equals([1, [2]])([1, [2]]) // => true
- * P.equals({ a: 1 })({ a: 1 }) // => true
- * P.equals(P.just(1))(P.just(1)) // => true
- * P.equals(P.nothing())(P.just(1)) // => false
+ * P.equals (2) (2) // => true
+ * P.equals ([1, [2]]) ([1, [2]]) // => true
+ * P.equals ({ a: 1 }) ({ a: 1 }) // => true
+ * P.equals (P.just (1)) (P.just (1)) // => true
+ * P.equals (P.nothing ()) (P.just (1)) // => false
  * ```
  */
 export function equals<S extends BuiltinEq>(b: S): (a: S) => boolean
-/**
- * Compares values by content, including nested arrays and records.
- */
 export function equals<A>(b: readonly A[]): (a: readonly A[]) => boolean
-/**
- * Compares values by content, including nested arrays and records.
- */
 export function equals<A>(b: Set<A>): (a: Set<A>) => boolean
-/**
- * Compares values by content, including nested arrays and records.
- */
 export function equals<K, V>(b: Map<K, V>): (a: Map<K, V>) => boolean
-/**
- * Compares values by content, including nested arrays and records.
- */
-export function equals<A>(
-  b: Record<string, A>,
-): (a: Record<string, A>) => boolean
-/**
- * Compares values by content, including nested arrays and records.
- */
+export function equals<A>(b: Record<string, A>): (a: Record<string, A>) => boolean
 export function equals<S extends Setoid<S>>(b: S): (a: S) => boolean
-/**
- * Compares values by content, including nested arrays and records.
- */
 export function equals<A>(a: A, b: A): boolean
 export function equals(a: any, b?: any): any {
   return arguments.length >= 2

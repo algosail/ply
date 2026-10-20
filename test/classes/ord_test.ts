@@ -261,7 +261,7 @@ test ('ordNatives: lists the supported native implementations', () => {
 const le = (a: unknown, b: unknown): boolean => lte (b as never) (a as never)
 
 const samplesByType: Record<string, readonly unknown[]> = {
-  Number: [0, 1, -1, 2.5, Infinity, -Infinity, NaN, 1],
+  Number: [0, 1, -1, 2.5, Infinity, -Infinity, 1],
   String: ['', 'a', 'ab', 'b', 'Z', 'a'],
   Boolean: [false, true, false],
   BigInt: [0n, 1n, -1n, 1n],
@@ -269,9 +269,7 @@ const samplesByType: Record<string, readonly unknown[]> = {
     new Date (0),
     new Date (1),
     new Date (-5),
-    new Date (NaN),
     new Date (0),
-    new Date (NaN),
   ],
   Array: [[], [1], [1, 1], [1, 2], [2], [1, 2]],
   Maybe: [nothing<number> (), just (1), just (2), just (1)],

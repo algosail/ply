@@ -1,7 +1,3 @@
-/**
- * Wrap a single value for use with `map`, `chain`, and `traverse`.
- */
-
 import type { ApplicativeTypeRep } from '../classes/applicative.ts'
 import type { Apply, ApplyMethods } from '../classes/apply.ts'
 import type { ChainMethods } from '../classes/chain.ts'
@@ -21,42 +17,25 @@ import { lte } from '../classes/ord.ts'
 import { equals } from '../classes/setoid.ts'
 import { show } from '../classes/show.ts'
 
-/**
- * The shape for Identity.
- */
+/** The shape for Identity. */
 export interface IdentityShape extends Shape<'Identity'> {
-  /**
-   * The value type produced when this shape's type arguments are supplied.
-   */
   readonly out: Identity<this['slotA']>
 }
 
-/**
- * The type of the `Identity` representative.
- */
+/** The type of the `Identity` representative. */
 export type IdentityTypeRep = Satisfies<
   IdentityStatics & Shaped<IdentityShape>,
   & ApplicativeTypeRep<IdentityShape>
   & CheckableTypeRep<IdentityShape>
 >
 
-/**
- * Static operations provided by the `Identity` representative.
- */
+/** Static operations provided by the `Identity` representative. */
 export interface IdentityStatics {
-  /**
-   * Checks whether an unknown value belongs to this type.
-   */
   is(value: unknown): value is Identity<unknown>
-  /**
-   * Creates an `Identity` value.
-   */
   of<A>(a: A): Identity<A>
 }
 
-/**
- * Methods available on `Identity` values.
- */
+/** Methods available on `Identity` values. */
 export interface IdentityMethods<A>
   extends
     SetoidMethods<Identity<A>, A>,
@@ -69,126 +48,60 @@ export interface IdentityMethods<A>
     TraversableMethods<Identity<A>, A>,
     ExtendMethods<Identity<A>, A>,
     ComonadMethods<Identity<A>, A> {
-  /**
-   * Declares the type name for inference. No runtime member is required.
-   */
   readonly '@@type': 'Identity'
-  /**
-   * The shape used to type generic operations on this value.
-   */
   readonly _shape: IdentityShape
-  /**
-   * Declares the contained value type for inference; no runtime member is required.
-   */
-  readonly _A?: (_: never) => A
-  /**
-   * The representative used to construct values of this type.
-   */
   readonly constructor: IdentityTypeRep
+  readonly _A?: (_: never) => A
 }
 
-/**
- * A single wrapped value.
- */
+/** A single wrapped value. */
 export class Identity<A> implements IdentityMethods<A> {
-  /**
-   * The name used by generic ply operations.
-   */
-  static readonly '@@type' = 'Identity' as const
-  /**
-   * The shape used for type inference; no runtime value is required.
-   */
   declare static readonly _shape: IdentityShape
+  declare readonly '@@type': 'Identity'
+  declare readonly _shape: IdentityShape
+  declare readonly ['constructor']: IdentityTypeRep
+  declare readonly _A?: (_: never) => A
 
-  /**
-   * Checks whether a value was created by this class.
-   */
+  static readonly '@@type' = 'Identity' as const
+
   static is(value: unknown): value is Identity<unknown> {
     return value instanceof Identity
   }
-  /**
-   * Wraps a value in this type.
-   */
+
   static of<A>(value: A): Identity<A> {
     return identity (value)
   }
 
-  /**
-   * Declares the type name for inference. No runtime member is required.
-   */
-  declare readonly '@@type': 'Identity'
-  /**
-   * The shape used for type inference; no runtime value is required.
-   */
-  declare readonly _shape: IdentityShape
-  /**
-   * The contained type used for inference; no runtime member is required.
-   */
-  declare readonly _A?: (_: never) => A
-  /**
-   * The representative used by generic ply operations.
-   */
-  declare readonly ['constructor']: IdentityTypeRep
-
-  /**
-   * The contained value.
-   */
   readonly value: A
-  /**
-   * Wraps a value for use with map, chain, and traverse.
-   */
+
   constructor(value: A) {
     this.value = value
   }
 
-  /**
-   * Transforms the contained value.
-   */
   map<B>(f: (a: A) => B): Identity<B> {
     return identity (f (this.value))
   }
 
-  /**
-   * Applies a wrapped function to the contained value.
-   */
   ap<B>(ff: Identity<(a: A) => B>): Identity<B> {
     return identity (ff.value (this.value))
   }
 
-  /**
-   * Continues with the wrapped computation returned by the function.
-   */
   chain<B>(f: (a: A) => Identity<B>): Identity<B> {
     return f (this.value)
   }
 
-  /**
-   * Transforms the whole wrapper and wraps the result.
-   */
   extend<B>(f: (w: Identity<A>) => B): Identity<B> {
     return identity (f (this))
   }
 
-  /**
-   * Returns the contained value.
-   */
   extract(): A {
     return this.value
   }
 
-  /**
-   * Calls the function with the initial accumulator and the contained value.
-   */
-  reduce<Acc>(
-    f: (acc: Acc, a: A) => Acc,
-    init: Acc,
-  ): Acc {
+  reduce<Acc>(f: (acc: Acc, a: A) => Acc, init: Acc): Acc {
     return f (init, this.value)
   }
 
-  /**
-   * Transforms the value with a wrapped computation and collects the result.
-   */
   traverse<G extends Apply<G>>(
     _T: ApplicativeTypeRep<ShapeOf<G>>,
     f: (a: A) => G,
@@ -199,23 +112,14 @@ export class Identity<A> implements IdentityMethods<A> {
     >
   }
 
-  /**
-   * Compares the contained values for equality.
-   */
   equals(that: Identity<A>): boolean {
     return equals (that.value as never) (this.value as never)
   }
 
-  /**
-   * Checks whether this value is less than or equal to the other.
-   */
   lte(that: Identity<A>): boolean {
     return lte (that.value as never) (this.value as never)
   }
 
-  /**
-   * Returns a readable string representation.
-   */
   show(): string {
     return `Identity (${show (this.value)})`
   }
@@ -227,9 +131,9 @@ export class Identity<A> implements IdentityMethods<A> {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.identity(1) // => Identity (1)
- * P.map((n: number) => n + 1)(P.identity(1)) // => Identity (2)
- * P.extract(P.identity(1)) // => 1
+ * P.identity (1) // => Identity (1)
+ * P.map ((n: number) => n + 1) (P.identity (1)) // => Identity (2)
+ * P.extract (P.identity (1)) // => 1
  * ```
  */
 export function identity<A>(value: A): Identity<A> {

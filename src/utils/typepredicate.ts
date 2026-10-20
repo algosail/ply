@@ -11,6 +11,7 @@ import { Bool } from '../natives/boolean.ts'
 import { Dates } from '../natives/date.ts'
 import { Fn } from '../natives/function.ts'
 import { Maps } from '../natives/map.ts'
+import { Num } from '../natives/number.ts'
 import { Re } from '../natives/regexp.ts'
 import { Sets } from '../natives/set.ts'
 import { Str } from '../natives/string.ts'
@@ -22,11 +23,11 @@ import { StrMap } from '../natives/strmap.ts'
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.isArray([1]) // => true
- * P.isArray('1') // => false
+ * P.isArray ([1]) // => true
+ * P.isArray ('1') // => false
  * ```
  */
-export const isArray: (x: unknown) => x is readonly unknown[] = is (Arr)
+export const isArray = is (Arr)
 
 /**
  * Whether a value is a boolean.
@@ -34,11 +35,11 @@ export const isArray: (x: unknown) => x is readonly unknown[] = is (Arr)
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.isBoolean(false) // => true
- * P.isBoolean(0) // => false
+ * P.isBoolean (false) // => true
+ * P.isBoolean (0) // => false
  * ```
  */
-export const isBoolean: (x: unknown) => x is boolean = is (Bool)
+export const isBoolean = is (Bool)
 
 /**
  * Whether a value is a bigint.
@@ -46,11 +47,11 @@ export const isBoolean: (x: unknown) => x is boolean = is (Bool)
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.isBigInt(0n) // => true
- * P.isBigInt('1') // => false
+ * P.isBigInt (0n) // => true
+ * P.isBigInt ('1') // => false
  * ```
  */
-export const isBigInt: (x: unknown) => x is bigint = is (Big)
+export const isBigInt = is (Big)
 
 /**
  * Checks whether a value is a Date, including an invalid Date.
@@ -58,11 +59,11 @@ export const isBigInt: (x: unknown) => x is bigint = is (Big)
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.isDate(new Date(0)) // => true
- * P.isDate(0) // => false
+ * P.isDate (new Date (0)) // => true
+ * P.isDate (0) // => false
  * ```
  */
-export const isDate: (x: unknown) => x is Date = is (Dates)
+export const isDate = is (Dates)
 
 /**
  * Whether a value is callable.
@@ -70,12 +71,11 @@ export const isDate: (x: unknown) => x is Date = is (Dates)
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.isFunction(P.I) // => true
- * P.isFunction('I') // => false
+ * P.isFunction (P.I) // => true
+ * P.isFunction ('I') // => false
  * ```
  */
-export const isFunction: (x: unknown) => x is (...args: never[]) => unknown =
-  is (Fn)
+export const isFunction = is (Fn)
 
 /**
  * Whether a value is a map.
@@ -83,11 +83,11 @@ export const isFunction: (x: unknown) => x is (...args: never[]) => unknown =
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.isMap(new Map()) // => true
- * P.isMap('Map') // => false
+ * P.isMap (new Map ()) // => true
+ * P.isMap ('Map') // => false
  * ```
  */
-export const isMap: (x: unknown) => x is Map<unknown, unknown> = is (Maps)
+export const isMap = is (Maps)
 
 /**
  * Checks whether a value is a number other than `NaN`.
@@ -95,13 +95,11 @@ export const isMap: (x: unknown) => x is Map<unknown, unknown> = is (Maps)
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.isNumber(1) // => true
- * P.isNumber(Number.NaN) // => false
+ * P.isNumber (1) // => true
+ * P.isNumber (Number.NaN) // => false
  * ```
  */
-export function isNumber(x: unknown): x is number {
-  return typeof x === 'number' && !Number.isNaN (x)
-}
+export const isNumber = is (Num)
 
 /**
  * Whether a value is a regular expression.
@@ -109,11 +107,11 @@ export function isNumber(x: unknown): x is number {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.isRegexp(/abc/) // => true
- * P.isRegexp('abc') // => false
+ * P.isRegexp (/abc/) // => true
+ * P.isRegexp ('abc') // => false
  * ```
  */
-export const isRegexp: (x: unknown) => x is RegExp = is (Re)
+export const isRegexp = is (Re)
 
 /**
  * Whether a value is a set.
@@ -121,11 +119,11 @@ export const isRegexp: (x: unknown) => x is RegExp = is (Re)
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.isSet(new Set()) // => true
- * P.isSet('Set') // => false
+ * P.isSet (new Set ()) // => true
+ * P.isSet ('Set') // => false
  * ```
  */
-export const isSet: (x: unknown) => x is Set<unknown> = is (Sets)
+export const isSet = is (Sets)
 
 /**
  * Whether a value is a string.
@@ -133,11 +131,11 @@ export const isSet: (x: unknown) => x is Set<unknown> = is (Sets)
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.isString('a') // => true
- * P.isString(1) // => false
+ * P.isString ('a') // => true
+ * P.isString (1) // => false
  * ```
  */
-export const isString: (x: unknown) => x is string = is (Str)
+export const isString = is (Str)
 
 /**
  * Checks for a plain object with `Object.prototype` or `null` as its prototype.
@@ -145,12 +143,12 @@ export const isString: (x: unknown) => x is string = is (Str)
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.isStrMap({ a: 1 }) // => true
- * P.isStrMap([1]) // => false
- * P.isStrMap(null) // => false
+ * P.isStrMap ({ a: 1 }) // => true
+ * P.isStrMap ([1]) // => false
+ * P.isStrMap (null) // => false
  * ```
  */
-export const isStrMap: (x: unknown) => x is StrMap<unknown> = is (StrMap)
+export const isStrMap = is (StrMap)
 
 /**
  * Whether a value is an either.
@@ -158,13 +156,11 @@ export const isStrMap: (x: unknown) => x is StrMap<unknown> = is (StrMap)
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.isEither(P.nothing()) // => true
- * P.isEither({ a: 1 }) // => false
+ * P.isEither (P.nothing ()) // => true
+ * P.isEither ({ a: 1 }) // => false
  * ```
  */
-export const isEither: (x: unknown) => x is Either<unknown, unknown> = is (
-  Either,
-)
+export const isEither = is (Either)
 
 /**
  * Whether a value is an equivalence.
@@ -172,13 +168,11 @@ export const isEither: (x: unknown) => x is Either<unknown, unknown> = is (
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.isEquivalence(P.equivalence(() => true)) // => true
- * P.isEquivalence({ a: 1 }) // => false
+ * P.isEquivalence (P.equivalence (() => true)) // => true
+ * P.isEquivalence ({ a: 1 }) // => false
  * ```
  */
-export const isEquivalence: (x: unknown) => x is Equivalence<unknown> = is (
-  Equivalence,
-)
+export const isEquivalence = is (Equivalence)
 
 /**
  * Whether a value is an identity.
@@ -186,13 +180,11 @@ export const isEquivalence: (x: unknown) => x is Equivalence<unknown> = is (
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.isIdentity(P.identity(1)) // => true
- * P.isIdentity({ a: 1 }) // => false
+ * P.isIdentity (P.identity (1)) // => true
+ * P.isIdentity ({ a: 1 }) // => false
  * ```
  */
-export const isIdentity: (x: unknown) => x is Identity<unknown> = is (
-  Identity,
-)
+export const isIdentity = is (Identity)
 
 /**
  * Whether a value is a maybe.
@@ -200,13 +192,11 @@ export const isIdentity: (x: unknown) => x is Identity<unknown> = is (
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.isMaybe(P.just(1)) // => true
- * P.isMaybe({ a: 1 }) // => false
+ * P.isMaybe (P.just (1)) // => true
+ * P.isMaybe ({ a: 1 }) // => false
  * ```
  */
-export const isMaybe: (x: unknown) => x is Maybe<unknown> = is (
-  Maybe,
-)
+export const isMaybe = is (Maybe)
 
 /**
  * Whether a value is a pair.
@@ -214,13 +204,11 @@ export const isMaybe: (x: unknown) => x is Maybe<unknown> = is (
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.isPair(P.pair(1, 2)) // => true
- * P.isPair([1, 2]) // => false
+ * P.isPair (P.pair (1, 2)) // => true
+ * P.isPair ([1, 2]) // => false
  * ```
  */
-export const isPair: (x: unknown) => x is Pair<unknown, unknown> = is (
-  Pair,
-)
+export const isPair = is (Pair)
 
 /**
  * Whether a value is a predicate.
@@ -228,10 +216,8 @@ export const isPair: (x: unknown) => x is Pair<unknown, unknown> = is (
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.isPredicate(P.predicate(() => true)) // => true
- * P.isPredicate(() => true) // => false
+ * P.isPredicate (P.predicate (() => true)) // => true
+ * P.isPredicate (() => true) // => false
  * ```
  */
-export const isPredicate: (x: unknown) => x is Predicate<unknown> = is (
-  Predicate,
-)
+export const isPredicate = is (Predicate)

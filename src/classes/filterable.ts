@@ -1,9 +1,4 @@
-/**
- * Operations and types for keeping or discarding contained values.
- */
-
 import type { KindOf, MatchableIn, SlotAOf, SlotBOf } from '../core/kind.ts'
-import type { Instances } from '../core/named.ts'
 import type { Kind, Shape } from '../core/shape.ts'
 import type { Either } from '../data/either.ts'
 import type { Maybe } from '../data/maybe.ts'
@@ -18,69 +13,38 @@ import { Sets } from '../natives/set.ts'
 import { StrMap } from '../natives/strmap.ts'
 import { map } from './functor.ts'
 
-/**
- * Implement these methods on a custom value to support keeping or discarding contained values.
- */
+/** Implement these methods on a custom value to support keeping or discarding contained values. */
 export interface FilterableMethods<S, A, B = never> {
-  /**
-   * Keeps only values that pass the predicate.
-   */
+  /** Keeps only values that pass the predicate. */
   filter(p: (a: A) => boolean): S
 }
 
-/**
- * Operations for keeping or discarding contained values on values described by `S`.
- */
+/** Operations for keeping or discarding contained values on values described by `S`. */
 export interface FilterableDict<S extends Shape> {
-  /**
-   * Keeps only values that pass the predicate.
-   */
+  /** Keeps only values that pass the predicate. */
   filter<A, B>(fa: Kind<S, A, B>, p: (a: A) => boolean): Kind<S, A, B>
 }
 
-/**
- * Names of the operations in `FilterableDict`.
- */
+/** Names of the operations in `FilterableDict`. */
 export type FilterableKeys = keyof FilterableDict<Shape> & string
 
-/**
- * Native generic types accepted by the `Filterable` constraint.
- */
+/** Native generic types accepted by the `Filterable` constraint. */
 export interface FilterableShapes {
-  /**
-   * The shape used for `Array` values.
-   */
   readonly Array: ArrayShape
-  /**
-   * The shape used for `Set` values.
-   */
   readonly Set: SetShape
-  /**
-   * The shape used for `Map` values.
-   */
   readonly Map: MapShape
-  /**
-   * The shape used for `StrMap` values.
-   */
   readonly StrMap: StrMapShape
 }
 
-/**
- * A constraint for values that support keeping or discarding contained values.
- */
+/** A constraint for values that support keeping or discarding contained values. */
 export type Filterable<S, A = SlotAOf<S>, B = SlotBOf<S>> =
   | FilterableMethods<S, A, B>
   | MatchableIn<FilterableShapes, A, B>
 
 type FilterableDicts = <S extends Shape>(s: S) => FilterableDict<S>
 
-/**
- * Native implementations of this module's operations, keyed by type name.
- */
-export const filterableNatives: Instances<
-  FilterableDicts,
-  FilterableShapes
-> = lazily<FilterableDicts, FilterableShapes> ({
+/** Native implementations of this module's operations, keyed by type name. */
+export const filterableNatives = lazily<FilterableDicts, FilterableShapes> ({
   Array: () => Arr,
   Set: () => Sets,
   Map: () => Maps,
@@ -93,14 +57,12 @@ export const filterableNatives: Instances<
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.filter((n: number) => n % 2 === 0)([1, 2, 3, 4]) // => [2, 4]
- * P.filter((n: number) => n > 1)({ a: 1, b: 2 }) // => { b: 2 }
- * P.filter((n: number) => n > 1)(P.just(1)) // => Nothing
+ * P.filter ((n: number) => n % 2 === 0) ([1, 2, 3, 4]) // => [2, 4]
+ * P.filter ((n: number) => n > 1) ({ a: 1, b: 2 }) // => { b: 2 }
+ * P.filter ((n: number) => n > 1) (P.just (1)) // => Nothing
  * ```
  */
-export function filter<A>(
-  p: (a: A) => boolean,
-): <F extends Filterable<F, A>>(fa: F) => KindOf<F, A> {
+export function filter<A>(p: (a: A) => boolean) {
   return <F extends Filterable<F, A>>(fa: F) =>
     dispatch ('filter', 'Filterable', filterableNatives, fa, p) as KindOf<F, A>
 }
@@ -120,13 +82,11 @@ const requireFilterable = (op: string, fa: unknown): void => {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.reject((n: number) => n % 2 === 0)([1, 2, 3, 4]) // => [1, 3]
- * P.reject((n: number) => n > 1)(P.just(2)) // => Nothing
+ * P.reject ((n: number) => n % 2 === 0) ([1, 2, 3, 4]) // => [1, 3]
+ * P.reject ((n: number) => n > 1) (P.just (2)) // => Nothing
  * ```
  */
-export function reject<A>(
-  p: (a: A) => boolean,
-): <F extends Filterable<F, A>>(fa: F) => KindOf<F, A> {
+export function reject<A>(p: (a: A) => boolean) {
   return <F extends Filterable<F, A>>(fa: F) => {
     requireFilterable ('reject', fa)
     return filter<A> ((a: A) => !p (a)) (fa as never) as KindOf<F, A>
@@ -154,15 +114,13 @@ const mapKeepBranch = (
  * import * as P from '@algosail/ply'
  *
  * const tenfold = (n: number): Maybe<number> =>
- *   n % 2 === 0 ? P.just(n * 10) : P.nothing()
+ *   n % 2 === 0 ? P.just (n * 10) : P.nothing ()
  *
- * P.filterMap(tenfold)([1, 2, 3, 4]) // => [20, 40]
- * P.filterMap(tenfold)({ a: 1, b: 2 }) // => { b: 20 }
+ * P.filterMap (tenfold) ([1, 2, 3, 4]) // => [20, 40]
+ * P.filterMap (tenfold) ({ a: 1, b: 2 }) // => { b: 20 }
  * ```
  */
-export function filterMap<A, B>(
-  f: (a: A) => Maybe<B>,
-): <F extends Filterable<F, A>>(fa: F) => KindOf<F, B> {
+export function filterMap<A, B>(f: (a: A) => Maybe<B>) {
   return <F extends Filterable<F, A>>(fa: F) =>
     mapKeepBranch ('filterMap', fa, f, 'just', 'value') as KindOf<F, B>
 }
@@ -173,15 +131,13 @@ export function filterMap<A, B>(
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.partition((n: number) => n % 2 === 0)([1, 2, 3, 4])
+ * P.partition ((n: number) => n % 2 === 0) ([1, 2, 3, 4])
  * // => [[2, 4], [1, 3]]
- * P.partition((n: number) => n > 1)({ a: 1, b: 2 })
+ * P.partition ((n: number) => n > 1) ({ a: 1, b: 2 })
  * // => [{ b: 2 }, { a: 1 }]
  * ```
  */
-export function partition<A>(
-  p: (a: A) => boolean,
-): <F extends Filterable<F, A>>(fa: F) => [KindOf<F, A>, KindOf<F, A>] {
+export function partition<A>(p: (a: A) => boolean) {
   return <F extends Filterable<F, A>>(fa: F): [KindOf<F, A>, KindOf<F, A>] => {
     requireFilterable ('partition', fa)
     return [
@@ -199,14 +155,12 @@ export function partition<A>(
  * import * as P from '@algosail/ply'
  *
  * const big = (n: number): Either<string, number> =>
- *   n > 2 ? P.right(n) : P.left(String(n))
+ *   n > 2 ? P.right (n) : P.left (String (n))
  *
- * P.partitionMap(big)([1, 2, 3, 4]) // => [['1', '2'], [3, 4]]
+ * P.partitionMap (big) ([1, 2, 3, 4]) // => [['1', '2'], [3, 4]]
  * ```
  */
-export function partitionMap<A, E, R>(
-  f: (a: A) => Either<E, R>,
-): <F extends Filterable<F, A>>(fa: F) => [KindOf<F, E>, KindOf<F, R>] {
+export function partitionMap<A, E, R>(f: (a: A) => Either<E, R>) {
   return <F extends Filterable<F, A>>(fa: F): [KindOf<F, E>, KindOf<F, R>] => [
     mapKeepBranch ('partitionMap', fa, f, 'left', 'value') as KindOf<F, E>,
     mapKeepBranch ('partitionMap', fa, f, 'right', 'value') as KindOf<F, R>,

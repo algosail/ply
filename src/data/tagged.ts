@@ -1,10 +1,4 @@
-/**
- * Match tagged union values with a handler for each variant.
- */
-
-/**
- * A handler for every tag in a union.
- */
+/** A handler for every tag in a union. */
 export type Cases<T extends { readonly tag: string }, B> = {
   readonly [K in T['tag']]: (t: Extract<T, { readonly tag: K }>) => B
 }
@@ -19,16 +13,14 @@ export type Cases<T extends { readonly tag: string }, B> = {
  *   | { readonly tag: 'circle'; readonly r: number }
  *   | { readonly tag: 'square'; readonly side: number }
  *
- * const area = P.cases<Shape, number>({
+ * const area = P.cases<Shape, number> ({
  *   circle: (c) => Math.PI * c.r * c.r,
  *   square: (s) => s.side * s.side,
  * })
  *
- * area({ tag: 'square', side: 3 }) // => 9
+ * area ({ tag: 'square', side: 3 }) // => 9
  * ```
  */
-export function cases<T extends { readonly tag: string }, B>(
-  branches: Cases<T, B>,
-): (t: T) => B {
-  return (t) => (branches[t.tag as T['tag']] as (x: T) => B) (t)
+export function cases<T extends { readonly tag: string }, B>(branches: Cases<T, B>) {
+  return (t: T): B => (branches[t.tag as T['tag']] as (x: T) => B) (t)
 }

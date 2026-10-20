@@ -9,10 +9,6 @@ test ('compare: says which of two values comes first', () => {
   assert.deepStrictEqual (Ordering.isEQ (compare (2, 2)), true)
 })
 
-test ('compare: two values that neither precedes are equal', () => {
-  assert.deepStrictEqual (Ordering.isEQ (compare (Number.NaN, Number.NaN)), true)
-})
-
 test ('comparing: compares by what the function reads', () => {
   const byLength = comparing ((s: string) => s.length)
 

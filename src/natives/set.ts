@@ -14,31 +14,15 @@ import type { Matchable, Shape } from '../core/shape.ts'
 import { equals } from '../classes/setoid.ts'
 import { show } from '../classes/show.ts'
 
-/**
- * The shape for sets.
- */
+/** The shape for sets. */
 export interface SetShape extends Shape<'Set'>, Matchable {
-  /**
-   * The value type produced when this shape's type arguments are supplied.
-   */
   readonly out: Set<this['slotA']>
-  /**
-   * The accepted input form of this shape, including readonly inputs when supported.
-   */
   readonly like: Set<this['slotA']>
-  /**
-   * The contained value type inferred from `val`.
-   */
   readonly readA: this['val'] extends Set<infer A> ? A : never
-  /**
-   * The secondary type inferred from `val`, or `never` when unused.
-   */
   readonly readB: never
 }
 
-/**
- * The type of the `Sets` representative.
- */
+/** The type of the `Sets` representative. */
 export type SetTypeRep =
   & NativeTypeRep<SetShape>
   & ApplicativeDict<SetShape>
@@ -55,7 +39,7 @@ export type SetTypeRep =
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.of(P.Sets)(1) // => Set ([1])
+ * P.of (P.Sets) (1) // => Set ([1])
  * ```
  */
 export const Sets: SetTypeRep = {
@@ -90,8 +74,8 @@ export const Sets: SetTypeRep = {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.setFromIterable('aab') // => Set (["a", "b"])
- * P.setFromIterable([1, 1, 2]) // => Set ([1, 2])
+ * P.setFromIterable ('aab') // => Set (["a", "b"])
+ * P.setFromIterable ([1, 1, 2]) // => Set ([1, 2])
  * ```
  */
 export function setFromIterable<A>(xs: Iterable<A>): Set<A> {
@@ -104,12 +88,12 @@ export function setFromIterable<A>(xs: Iterable<A>): Set<A> {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.setDifference(new Set([1, 2, 3]), new Set([2])) // => Set ([1, 3])
- * P.setDifference(new Set([[1], [2]]), new Set([[1]])) // => Set ([[2]])
+ * P.setDifference (new Set ([1, 2, 3])) (new Set ([2])) // => Set ([1, 3])
+ * P.setDifference (new Set ([[1], [2]])) (new Set ([[1]])) // => Set ([[2]])
  * ```
  */
-export function setDifference<A>(a: Set<A>, b: Set<A>): Set<A> {
-  return new Set ([...a].filter ((x) => !setMember (x) (b)))
+export function setDifference<A>(a: Set<A>) {
+  return (b: Set<A>): Set<A> => new Set ([...a].filter ((x) => !setMember (x) (b)))
 }
 
 /**
@@ -118,10 +102,10 @@ export function setDifference<A>(a: Set<A>, b: Set<A>): Set<A> {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.setMember([1])(new Set([[1]])) // => true
- * new Set([[1]]).has([1]) // => false
+ * P.setMember ([1]) (new Set ([[1]])) // => true
+ * new Set ([[1]]).has ([1]) // => false
  * ```
  */
-export function setMember<A>(a: A): (s: Set<A>) => boolean {
-  return (s) => [...s].some ((x) => equals (a as never) (x as never))
+export function setMember<A>(a: A) {
+  return (s: Set<A>): boolean => [...s].some ((x) => equals (a as never) (x as never))
 }

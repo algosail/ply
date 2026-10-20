@@ -1,7 +1,3 @@
-/**
- * Keep two values together.
- */
-
 import type { ApplicativeTypeRep } from '../classes/applicative.ts'
 import type { Apply, ApplyMethods } from '../classes/apply.ts'
 import type { BifunctorMethods } from '../classes/bifunctor.ts'
@@ -25,41 +21,24 @@ import { concat } from '../classes/semigroup.ts'
 import { equals } from '../classes/setoid.ts'
 import { show } from '../classes/show.ts'
 
-/**
- * The shape for Pair.
- */
+/** The shape for Pair. */
 export interface PairShape extends Shape<'Pair'> {
-  /**
-   * How the secondary type is combined: input, output, or an exact shared type.
-   */
   readonly slotBVariance: 'same'
-  /**
-   * The value type produced when this shape's type arguments are supplied.
-   */
   readonly out: Pair<this['slotB'], this['slotA']>
 }
 
-/**
- * The type of the `Pair` representative.
- */
+/** The type of the `Pair` representative. */
 export type PairTypeRep = Satisfies<
   PairStatics & Shaped<PairShape>,
   CheckableTypeRep<PairShape>
 >
 
-/**
- * Static operations provided by the `Pair` representative.
- */
+/** Static operations provided by the `Pair` representative. */
 export interface PairStatics {
-  /**
-   * Checks whether an unknown value belongs to this type.
-   */
   is(value: unknown): value is Pair<unknown, unknown>
 }
 
-/**
- * Methods available on `Pair` values.
- */
+/** Methods available on `Pair` values. */
 export interface PairMethods<L, R>
   extends
     SetoidMethods<Pair<L, R>, R, L>,
@@ -75,95 +54,40 @@ export interface PairMethods<L, R>
     TraversableMethods<Pair<L, R>, R, L>,
     ExtendMethods<Pair<L, R>, R, L>,
     ComonadMethods<Pair<L, R>, R, L> {
-  /**
-   * Declares the type name for inference. No runtime member is required.
-   */
   readonly '@@type': 'Pair'
-  /**
-   * The shape used to type generic operations on this value.
-   */
   readonly _shape: PairShape
-  /**
-   * Declares the contained value type for inference; no runtime member is required.
-   */
-  readonly _A?: (_: never) => R
-  /**
-   * Declares the secondary type for inference; no runtime member is required.
-   */
-  _B?(_: L): void
-  /**
-   * The representative used to construct values of this type.
-   */
   readonly constructor: PairTypeRep
+  readonly _A?: (_: never) => R
+  _B?(_: L): void
 }
 
-/**
- * Two values kept together.
- */
+/** Two values kept together. */
 export class Pair<L, R> implements PairMethods<L, R> {
-  /**
-   * The name used by generic ply operations.
-   */
-  static readonly '@@type' = 'Pair' as const
-  /**
-   * The shape used for type inference; no runtime value is required.
-   */
   declare static readonly _shape: PairShape
+  declare readonly '@@type': 'Pair'
+  declare readonly _shape: PairShape
+  declare readonly ['constructor']: PairTypeRep
+  declare readonly _A?: (_: never) => R
+  declare _B?: PairMethods<L, R>['_B']
 
-  /**
-   * Checks whether a value was created by this class.
-   */
+  static readonly '@@type' = 'Pair' as const
+
   static is(value: unknown): value is Pair<unknown, unknown> {
     return value instanceof Pair
   }
 
-  /**
-   * Declares the type name for inference. No runtime member is required.
-   */
-  declare readonly '@@type': 'Pair'
-  /**
-   * The shape used for type inference; no runtime value is required.
-   */
-  declare readonly _shape: PairShape
-  /**
-   * The contained type used for inference; no runtime member is required.
-   */
-  declare readonly _A?: (_: never) => R
-  /**
-   * The secondary type used for inference; no runtime member is required.
-   */
-  declare _B?: PairMethods<L, R>['_B']
-  /**
-   * The representative used by generic ply operations.
-   */
-  declare readonly ['constructor']: PairTypeRep
-
-  /**
-   * The first value.
-   */
   readonly fst: L
-  /**
-   * The second value.
-   */
   readonly snd: R
-  /**
-   * Keeps two values together.
-   */
+
   constructor(fst: L, snd: R) {
     this.fst = fst
     this.snd = snd
   }
 
-  /**
-   * Transforms the second value.
-   */
   map<B>(f: (a: R) => B): Pair<L, B> {
     return pair (this.fst, f (this.snd))
   }
 
-  /**
-   * Applies the supplied pair’s function and combines the first values.
-   */
   ap<B>(ff: Pair<L, (a: R) => B>): Pair<L, B> {
     return pair (
       concat (ff.fst as never) (this.fst as never) as L,
@@ -171,9 +95,6 @@ export class Pair<L, R> implements PairMethods<L, R> {
     )
   }
 
-  /**
-   * Continues with a new pair, combining the first values.
-   */
   chain<B>(f: (a: R) => Pair<L, B>): Pair<L, B> {
     const that = f (this.snd)
     return pair (
@@ -182,30 +103,18 @@ export class Pair<L, R> implements PairMethods<L, R> {
     )
   }
 
-  /**
-   * Keeps this pair’s first value and the other pair’s second value.
-   */
   compose<K>(that: Pair<R, K>): Pair<L, K> {
     return pair (this.fst, that.snd)
   }
 
-  /**
-   * Transforms the whole pair, preserving its first value.
-   */
   extend<B>(f: (w: Pair<L, R>) => B): Pair<L, B> {
     return pair (this.fst, f (this))
   }
 
-  /**
-   * Returns the second value.
-   */
   extract(): R {
     return this.snd
   }
 
-  /**
-   * Transforms both values with their respective functions.
-   */
   bimap<M, B>(
     f: (l: L) => M,
     g: (a: R) => B,
@@ -213,9 +122,6 @@ export class Pair<L, R> implements PairMethods<L, R> {
     return pair (f (this.fst), g (this.snd))
   }
 
-  /**
-   * Calls the function with the initial accumulator and the second value.
-   */
   reduce<Acc>(
     f: (acc: Acc, a: R) => Acc,
     init: Acc,
@@ -223,9 +129,6 @@ export class Pair<L, R> implements PairMethods<L, R> {
     return f (init, this.snd)
   }
 
-  /**
-   * Transforms the second value with a wrapped computation and collects the result.
-   */
   traverse<G extends Apply<G>>(
     _T: ApplicativeTypeRep<ShapeOf<G>>,
     f: (a: R) => G,
@@ -237,9 +140,6 @@ export class Pair<L, R> implements PairMethods<L, R> {
     >
   }
 
-  /**
-   * Combines the first values and the second values.
-   */
   concat(that: Pair<L, R>): Pair<L, R> {
     return pair (
       concat (this.fst as never) (that.fst as never) as L,
@@ -247,26 +147,17 @@ export class Pair<L, R> implements PairMethods<L, R> {
     )
   }
 
-  /**
-   * Compares the contained values for equality.
-   */
   equals(that: Pair<L, R>): boolean {
     return equals (that.fst as never) (this.fst as never) &&
       equals (that.snd as never) (this.snd as never)
   }
 
-  /**
-   * Checks whether this value is less than or equal to the other.
-   */
   lte(that: Pair<L, R>): boolean {
     return equals (that.fst as never) (this.fst as never)
       ? lte (that.snd as never) (this.snd as never)
       : lte (that.fst as never) (this.fst as never)
   }
 
-  /**
-   * Returns a readable string representation.
-   */
   show(): string {
     return `Pair (${show (this.fst)}) (${show (this.snd)})`
   }
@@ -278,7 +169,7 @@ export class Pair<L, R> implements PairMethods<L, R> {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.pair('log', 1) // => Pair ("log") (1)
+ * P.pair ('log', 1) // => Pair ("log") (1)
  * ```
  */
 export function pair<L, R>(fst: L, snd: R): Pair<L, R> {
@@ -291,7 +182,7 @@ export function pair<L, R>(fst: L, snd: R): Pair<L, R> {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.fst(P.pair('log', 1)) // => 'log'
+ * P.fst (P.pair ('log', 1)) // => 'log'
  * ```
  */
 export function fst<L, R>(p: Pair<L, R>): L {
@@ -304,7 +195,7 @@ export function fst<L, R>(p: Pair<L, R>): L {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.snd(P.pair('log', 1)) // => 1
+ * P.snd (P.pair ('log', 1)) // => 1
  * ```
  */
 export function snd<L, R>(p: Pair<L, R>): R {
@@ -317,7 +208,7 @@ export function snd<L, R>(p: Pair<L, R>): R {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.swap(P.pair('log', 1)) // => Pair (1) ("log")
+ * P.swap (P.pair ('log', 1)) // => Pair (1) ("log")
  * ```
  */
 export function swap<L, R>(p: Pair<L, R>): Pair<R, L> {
@@ -330,7 +221,7 @@ export function swap<L, R>(p: Pair<L, R>): Pair<R, L> {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.diagonal(2) // => Pair (2) (2)
+ * P.diagonal (2) // => Pair (2) (2)
  * ```
  */
 export function diagonal<A>(a: A): Pair<A, A> {
@@ -343,13 +234,11 @@ export function diagonal<A>(a: A): Pair<A, A> {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.uncurry((l: number) => (r: number) => l + r)(P.pair(1, 2)) // => 3
+ * P.uncurry ((l: number) => (r: number) => l + r) (P.pair (1, 2)) // => 3
  * ```
  */
-export function uncurry<L, R, C>(
-  f: (l: L) => (r: R) => C,
-): (p: Pair<L, R>) => C {
-  return (p) => f (p.fst) (p.snd)
+export function uncurry<L, R, C>(f: (l: L) => (r: R) => C) {
+  return (p: Pair<L, R>): C => f (p.fst) (p.snd)
 }
 
 /**
@@ -358,7 +247,7 @@ export function uncurry<L, R, C>(
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.fromTuple(['log', 1] as const) // => Pair ("log") (1)
+ * P.fromTuple (['log', 1] as const) // => Pair ("log") (1)
  * ```
  */
 export function fromTuple<L, R>(t: readonly [L, R]): Pair<L, R> {
@@ -371,7 +260,7 @@ export function fromTuple<L, R>(t: readonly [L, R]): Pair<L, R> {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.toTuple(P.pair('log', 1)) // => ['log', 1]
+ * P.toTuple (P.pair ('log', 1)) // => ['log', 1]
  * ```
  */
 export function toTuple<L, R>(p: Pair<L, R>): [L, R] {

@@ -14,19 +14,12 @@ import { reduce } from '../classes/foldable.ts'
 import { integer } from '../core/domain.ts'
 import { just, nothing } from '../data/maybe.ts'
 
-/**
- * The shape for numbers.
- */
+/** The shape for numbers.  */
 export interface NumShape extends Shape<'Number'> {
-  /**
-   * The value type produced when this shape's type arguments are supplied.
-   */
   readonly out: number
 }
 
-/**
- * The type of the `Num` representative.
- */
+/** The type of the `Num` representative. */
 export type NumTypeRep =
   & NativeTypeRep<NumShape>
   & CheckableDict<NumShape>
@@ -40,15 +33,15 @@ export type NumTypeRep =
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.Num.is(42) // => true
- * P.Num.equals(NaN, NaN) // => true
+ * P.Num.is (42) // => true
+ * P.Num.equals (NaN, NaN) // => true
  * ```
  */
 export const Num: NumTypeRep = {
   '@@type': 'Number' as const,
   _shape: undefined as unknown as NumShape,
   is(x: unknown): x is number {
-    return typeof x === 'number'
+    return typeof x === 'number' && !Number.isNaN (x)
   },
   lte(a: number, b: number): boolean {
     if (Number.isNaN (a)) return Number.isNaN (b)
@@ -69,11 +62,11 @@ export const Num: NumTypeRep = {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.add(1)(1) // => 2
+ * P.add (1) (1) // => 2
  * ```
  */
-export function add(x: number): (y: number) => number {
-  return (y) => x + y
+export function add(x: number) {
+  return (y: number): number => x + y
 }
 
 /**
@@ -82,11 +75,11 @@ export function add(x: number): (y: number) => number {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.map(P.sub(1))([1, 2, 3]) // => [0, 1, 2]
+ * P.map (P.sub (1)) ([1, 2, 3]) // => [0, 1, 2]
  * ```
  */
-export function sub(y: number): (x: number) => number {
-  return (x) => x - y
+export function sub(y: number) {
+  return (x: number): number => x - y
 }
 
 /**
@@ -95,11 +88,11 @@ export function sub(y: number): (x: number) => number {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.mult(4)(2) // => 8
+ * P.mult (4) (2) // => 8
  * ```
  */
-export function mult(x: number): (y: number) => number {
-  return (y) => x * y
+export function mult(x: number) {
+  return (y: number): number => x * y
 }
 
 /**
@@ -108,11 +101,11 @@ export function mult(x: number): (y: number) => number {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.map(P.div(2))([0, 1, 2, 3]) // => [0, 0.5, 1, 1.5]
+ * P.map (P.div (2)) ([0, 1, 2, 3]) // => [0, 0.5, 1, 1.5]
  * ```
  */
-export function div(y: number): (x: number) => number {
-  return (x) => x / y
+export function div(y: number) {
+  return (x: number): number => x / y
 }
 
 /**
@@ -121,12 +114,12 @@ export function div(y: number): (x: number) => number {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.map(P.pow(2))([-3, -2, -1, 0, 1, 2, 3]) // => [9, 4, 1, 0, 1, 4, 9]
- * P.map(P.pow(0.5))([1, 4, 9, 16, 25]) // => [1, 2, 3, 4, 5]
+ * P.map (P.pow (2)) ([-3, -2, -1, 0, 1, 2, 3]) // => [9, 4, 1, 0, 1, 4, 9]
+ * P.map (P.pow (0.5)) ([1, 4, 9, 16, 25]) // => [1, 2, 3, 4, 5]
  * ```
  */
-export function pow(exp: number): (base: number) => number {
-  return (base) => Math.pow (base, exp)
+export function pow(exp: number) {
+  return (base: number): number => Math.pow (base, exp)
 }
 
 /**
@@ -135,8 +128,8 @@ export function pow(exp: number): (base: number) => number {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.negate(12.5) // => -12.5
- * P.negate(-42) // => 42
+ * P.negate (12.5) // => -12.5
+ * P.negate (-42) // => 42
  * ```
  */
 export function negate(n: number): number {
@@ -148,12 +141,12 @@ export function negate(n: number): number {
  * @throws {TypeError} If the input is not an integer.
  * @example
  * ```ts
- * import { assertThrows } from '@std/assert'
  * import * as P from '@algosail/ply'
+ * import { assertThrows } from '@std/assert'
  *
- * P.even(42) // => true
- * P.even(99) // => false
- * assertThrows(() => P.even(2.5), TypeError, 'even: 2.5 is not an integer')
+ * P.even (42) // => true
+ * P.even (99) // => false
+ * assertThrows (() => P.even (2.5), TypeError, 'even: 2.5 is not an integer')
  * ```
  */
 export function even(n: number): boolean {
@@ -166,12 +159,12 @@ export function even(n: number): boolean {
  * @throws {TypeError} If the input is not an integer.
  * @example
  * ```ts
- * import { assertThrows } from '@std/assert'
  * import * as P from '@algosail/ply'
+ * import { assertThrows } from '@std/assert'
  *
- * P.odd(99) // => true
- * P.odd(42) // => false
- * assertThrows(() => P.odd(2.5), TypeError, 'odd: 2.5 is not an integer')
+ * P.odd (99) // => true
+ * P.odd (42) // => false
+ * assertThrows (() => P.odd (2.5), TypeError, 'odd: 2.5 is not an integer')
  * ```
  */
 export function odd(n: number): boolean {
@@ -185,10 +178,10 @@ export function odd(n: number): boolean {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.sum([1, 2, 3, 4, 5]) // => 15
- * P.sum([]) // => 0
- * P.sum(P.just(42)) // => 42
- * P.sum(P.nothing<number>()) // => 0
+ * P.sum ([1, 2, 3, 4, 5]) // => 15
+ * P.sum ([]) // => 0
+ * P.sum (P.just (42)) // => 42
+ * P.sum (P.nothing<number> ()) // => 0
  * ```
  */
 export function sum<F extends Foldable<F, number>>(fa: F): number {
@@ -203,10 +196,10 @@ export function sum<F extends Foldable<F, number>>(fa: F): number {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.product([1, 2, 3, 4, 5]) // => 120
- * P.product([]) // => 1
- * P.product(P.just(42)) // => 42
- * P.product(P.nothing<number>()) // => 1
+ * P.product ([1, 2, 3, 4, 5]) // => 120
+ * P.product ([]) // => 1
+ * P.product (P.just (42)) // => 42
+ * P.product (P.nothing<number> ()) // => 1
  * ```
  */
 export function product<F extends Foldable<F, number>>(fa: F): number {
@@ -221,10 +214,10 @@ export function product<F extends Foldable<F, number>>(fa: F): number {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.mean([1, 2, 3, 4]) // => Just (2.5)
- * P.mean([]) // => Nothing
- * P.mean(P.just(42)) // => Just (42)
- * P.mean(P.nothing<number>()) // => Nothing
+ * P.mean ([1, 2, 3, 4]) // => Just (2.5)
+ * P.mean ([]) // => Nothing
+ * P.mean (P.just (42)) // => Just (42)
+ * P.mean (P.nothing<number> ()) // => Nothing
  * ```
  */
 export function mean<F>(fa: F): Maybe<number> {

@@ -1,9 +1,4 @@
-/**
- * Operations and types for formatting values as strings.
- */
-
 import type { MatchableIn, SlotAOf, SlotBOf } from '../core/kind.ts'
-import type { Instances } from '../core/named.ts'
 import type { Kind, Shape } from '../core/shape.ts'
 import type { ArrayShape } from '../natives/array.ts'
 import type { BigShape } from '../natives/bigint.ts'
@@ -29,90 +24,41 @@ import { Sets } from '../natives/set.ts'
 import { Str } from '../natives/string.ts'
 import { StrMap } from '../natives/strmap.ts'
 
-/**
- * Implement these methods on a custom value to support formatting values as strings.
- */
+/** Implement these methods on a custom value to support formatting values as strings. */
 export interface ShowMethods<S, A, B = never> {
-  /**
-   * Returns a readable string representation.
-   */
+  /** Returns a readable string representation. */
   show(): string
 }
 
-/**
- * Operations for formatting values as strings on values described by `S`.
- */
+/** Operations for formatting values as strings on values described by `S`. */
 export interface ShowDict<S extends Shape> {
-  /**
-   * Returns a readable string representation.
-   */
+  /** Returns a readable string representation. */
   show<A, B>(a: Kind<S, A, B>): string
 }
 
-/**
- * Names of the operations in `ShowDict`.
- */
+/** Names of the operations in `ShowDict`. */
 export type ShowKeys = keyof ShowDict<Shape> & string
 
-/**
- * Native generic types accepted by the `Show` constraint.
- */
+/** Native generic types accepted by the `Show` constraint. */
 export interface ShowShapes {
-  /**
-   * The shape used for `Array` values.
-   */
   readonly Array: ArrayShape
-  /**
-   * The shape used for `Set` values.
-   */
   readonly Set: SetShape
-  /**
-   * The shape used for `Map` values.
-   */
   readonly Map: MapShape
-  /**
-   * The shape used for `StrMap` values.
-   */
   readonly StrMap: StrMapShape
 }
 
-/**
- * Additional scalar types supported by formatting values as strings.
- */
+/** Additional scalar types supported by formatting values as strings. */
 export interface ShowPrimitives {
-  /**
-   * The shape used for `String` values.
-   */
   readonly String: StrShape
-  /**
-   * The shape used for `Number` values.
-   */
   readonly Number: NumShape
-  /**
-   * The shape used for `Boolean` values.
-   */
   readonly Boolean: BoolShape
-  /**
-   * The shape used for `BigInt` values.
-   */
   readonly BigInt: BigShape
-  /**
-   * The shape used for `Date` values.
-   */
   readonly Date: DateShape
-  /**
-   * The shape used for `RegExp` values.
-   */
   readonly RegExp: ReShape
-  /**
-   * The shape used for `Fn` values.
-   */
   readonly Fn: FnShape
 }
 
-/**
- * A constraint for values that support formatting values as strings.
- */
+/** A constraint for values that support formatting values as strings. */
 export type Show<S, A = SlotAOf<S>, B = SlotBOf<S>> =
   | ShowMethods<S, A, B>
   | MatchableIn<ShowShapes, A, B>
@@ -120,13 +66,8 @@ export type Show<S, A = SlotAOf<S>, B = SlotBOf<S>> =
 type ShowNatives = ShowShapes & ShowPrimitives
 type ShowDicts = <S extends Shape>(s: S) => ShowDict<S>
 
-/**
- * Native implementations of this module's operations, keyed by type name.
- */
-export const showNatives: Instances<
-  ShowDicts,
-  ShowNatives
-> = lazily<ShowDicts, ShowNatives> ({
+/** Native implementations of this module's operations, keyed by type name. */
+export const showNatives = lazily<ShowDicts, ShowNatives> ({
   Array: () => Arr,
   Set: () => Sets,
   Map: () => Maps,
@@ -146,10 +87,10 @@ export const showNatives: Instances<
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.show([1, 'a']) // => '[1, "a"]'
- * P.show({ b: 2, a: 1 }) // => '{"a": 1, "b": 2}'
- * P.show(new Set([1, 2])) // => 'Set ([1, 2])'
- * P.show(P.just(1)) // => 'Just (1)'
+ * P.show ([1, 'a']) // => '[1, "a"]'
+ * P.show ({ b: 2, a: 1 }) // => '{"a": 1, "b": 2}'
+ * P.show (new Set ([1, 2])) // => 'Set ([1, 2])'
+ * P.show (P.just (1)) // => 'Just (1)'
  * ```
  */
 export function show(x: unknown): string {

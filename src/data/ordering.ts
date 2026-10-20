@@ -1,45 +1,25 @@
-/**
- * Compare and sort values, including comparisons by multiple keys.
- */
-
 import type { MonoidDict } from '../classes/monoid.ts'
 import type { Nullary } from '../core/shape.ts'
 import { lte } from '../classes/ord.ts'
 
-/**
- * The answer when the first value comes before the second.
- */
+/** The answer when the first value comes before the second. */
 export type LT = { readonly tag: 'LT' }
-/**
- * The answer when neither value comes before the other.
- */
+/** The answer when neither value comes before the other. */
 export type EQ = { readonly tag: 'EQ' }
-/**
- * The answer when the first value comes after the second.
- */
+/** The answer when the first value comes after the second. */
 export type GT = { readonly tag: 'GT' }
 
-/**
- * A comparison result: less than (LT), equal (EQ), or greater than (GT).
- */
+/** A comparison result: less than (LT), equal (EQ), or greater than (GT). */
 export type Ordering = LT | EQ | GT
 
-/**
- * A function that compares two values and says which comes first.
- */
+/** A function that compares two values and says which comes first. */
 export type Comparator<A> = (a: A, b: A) => Ordering
 
-/**
- * The less-than comparison result.
- */
+/** The less-than comparison result. */
 const LT: LT = { tag: 'LT' }
-/**
- * The equal comparison result.
- */
+/** The equal comparison result. */
 const EQ: EQ = { tag: 'EQ' }
-/**
- * The greater-than comparison result.
- */
+/** The greater-than comparison result. */
 const GT: GT = { tag: 'GT' }
 
 /**
@@ -52,13 +32,13 @@ const GT: GT = { tag: 'GT' }
  *   return word.length
  * }
  *
- * const byLength = P.comparing(length)
+ * const byLength = P.comparing (length)
  *
  * function compareWords(a: string, b: string): P.Ordering {
- *   return P.mconcat(P.Ordering)([byLength(a, b), P.compare(a, b)])
+ *   return P.mconcat (P.Ordering) ([byLength (a, b), P.compare (a, b)])
  * }
  *
- * P.sortWith(compareWords)(['bb', 'a', 'ba', 'ab']) // => ['a', 'ab', 'ba', 'bb']
+ * P.sortWith (compareWords) (['bb', 'a', 'ba', 'ab']) // => ['a', 'ab', 'ba', 'bb']
  * ```
  */
 export const Ordering: MonoidDict<Nullary<Ordering>> & {
@@ -145,8 +125,8 @@ export const Ordering: MonoidDict<Nullary<Ordering>> & {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.Ordering.isLT(P.compare(1, 2)) // => true
- * P.Ordering.isEQ(P.compare(Number.NaN, Number.NaN)) // => true
+ * P.Ordering.isLT (P.compare (1, 2)) // => true
+ * P.Ordering.isEQ (P.compare (Number.NaN, Number.NaN)) // => true
  * ```
  */
 export const compare: <A>(a: A, b: A) => Ordering = Ordering.compare
@@ -157,8 +137,8 @@ export const compare: <A>(a: A, b: A) => Ordering = Ordering.compare
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * const byLength = P.comparing((s: string) => s.length)
- * P.Ordering.isLT(byLength('ab', 'cde')) // => true
+ * const byLength = P.comparing ((s: string) => s.length)
+ * P.Ordering.isLT (byLength ('ab', 'cde')) // => true
  * ```
  */
 export const comparing: <A, B>(f: (a: A) => B) => Comparator<A> =
@@ -170,7 +150,7 @@ export const comparing: <A, B>(f: (a: A) => B) => Comparator<A> =
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.sortWith(P.comparing((s: string) => s.length))(['aaa', 'a', 'aa'])
+ * P.sortWith (P.comparing ((s: string) => s.length)) (['aaa', 'a', 'aa'])
  * // => [ "a", "aa", "aaa" ]
  * ```
  */
@@ -183,9 +163,9 @@ export const sortWith: <A>(cmp: Comparator<A>) => (xs: readonly A[]) => A[] =
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.isLT(P.compare(1, 2)) // => true
- * P.isEQ(P.compare(2, 2)) // => true
- * P.isGT(P.compare(2, 1)) // => true
+ * P.isLT (P.compare (1, 2)) // => true
+ * P.isEQ (P.compare (2, 2)) // => true
+ * P.isGT (P.compare (2, 1)) // => true
  * ```
  */
 export const isLT: (o: Ordering) => o is LT = Ordering.isLT

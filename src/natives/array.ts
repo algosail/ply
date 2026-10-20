@@ -1,7 +1,3 @@
-/**
- * Create, search, group, and transform arrays.
- */
-
 import type { AltDict } from '../classes/alt.ts'
 import type {
   ApplicativeDict,
@@ -35,31 +31,15 @@ import { show } from '../classes/show.ts'
 import { integer, integerFrom } from '../core/domain.ts'
 import { just, nothing } from '../data/maybe.ts'
 
-/**
- * The shape for arrays.
- */
+/** The shape for arrays. */
 export interface ArrayShape extends Shape<'Array'>, Matchable {
-  /**
-   * The value type produced when this shape's type arguments are supplied.
-   */
   readonly out: this['slotA'][]
-  /**
-   * The accepted input form of this shape, including readonly inputs when supported.
-   */
   readonly like: readonly this['slotA'][]
-  /**
-   * The contained value type inferred from `val`.
-   */
   readonly readA: this['val'] extends readonly (infer A)[] ? A : never
-  /**
-   * The secondary type inferred from `val`, or `never` when unused.
-   */
   readonly readB: never
 }
 
-/**
- * The type of the `Arr` representative.
- */
+/** The type of the `Arr` representative. */
 export type ArrDict =
   & NativeTypeRep<ArrayShape>
   & AltDict<ArrayShape>
@@ -85,13 +65,14 @@ export type ArrDict =
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.of(P.Arr)(1) // => [1]
- * P.empty(P.Arr) // => []
+ * P.of (P.Arr) (1) // => [1]
+ * P.empty (P.Arr) // => []
  * ```
  */
 export const Arr: ArrDict = {
   '@@type': 'Array' as const,
   _shape: undefined as unknown as ArrayShape,
+
   is(x: unknown): x is unknown[] {
     return Array.isArray (x)
   },
@@ -188,8 +169,8 @@ export const Arr: ArrDict = {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.fromIterable(new Set([1, 2, 2, 3])) // => [1, 2, 3]
- * P.fromIterable('abc') // => ['a', 'b', 'c']
+ * P.fromIterable (new Set ([1, 2, 2, 3])) // => [1, 2, 3]
+ * P.fromIterable ('abc') // => ['a', 'b', 'c']
  * ```
  */
 export function fromIterable<A>(source: Iterable<A>): A[] {
@@ -203,13 +184,13 @@ export function fromIterable<A>(source: Iterable<A>): A[] {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.range(0)(5) // => [0, 1, 2, 3, 4]
- * P.range(3)(3) // => []
+ * P.range (0) (5) // => [0, 1, 2, 3, 4]
+ * P.range (3) (3) // => []
  * ```
  */
-export function range(start: number): (end: number) => number[] {
+export function range(start: number) {
   integer ('range', start)
-  return (end) => {
+  return (end: number): number[] => {
     integer ('range', end)
     return Array.from ({ length: Math.max (0, end - start) }, (_, i) => start + i)
   }
@@ -221,11 +202,11 @@ export function range(start: number): (end: number) => number[] {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.takeWhile((n: number) => n < 3)([1, 2, 3, 1]) // => [1, 2]
+ * P.takeWhile ((n: number) => n < 3) ([1, 2, 3, 1]) // => [1, 2]
  * ```
  */
-export function takeWhile<A>(p: (a: A) => boolean): (xs: readonly A[]) => A[] {
-  return (xs) => {
+export function takeWhile<A>(p: (a: A) => boolean) {
+  return (xs: readonly A[]): A[] => {
     const at = xs.findIndex ((x) => !p (x))
     return at < 0 ? [...xs] : xs.slice (0, at)
   }
@@ -237,11 +218,11 @@ export function takeWhile<A>(p: (a: A) => boolean): (xs: readonly A[]) => A[] {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.dropWhile((n: number) => n < 3)([1, 2, 3, 1]) // => [3, 1]
+ * P.dropWhile ((n: number) => n < 3) ([1, 2, 3, 1]) // => [3, 1]
  * ```
  */
-export function dropWhile<A>(p: (a: A) => boolean): (xs: readonly A[]) => A[] {
-  return (xs) => {
+export function dropWhile<A>(p: (a: A) => boolean) {
+  return (xs: readonly A[]): A[] => {
     const at = xs.findIndex ((x) => !p (x))
     return at < 0 ? [] : xs.slice (at)
   }
@@ -254,12 +235,12 @@ export function dropWhile<A>(p: (a: A) => boolean): (xs: readonly A[]) => A[] {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.chunksOf(2)([1, 2, 3, 4, 5]) // => [[1, 2], [3, 4], [5]]
+ * P.chunksOf (2) ([1, 2, 3, 4, 5]) // => [[1, 2], [3, 4], [5]]
  * ```
  */
-export function chunksOf(n: number): <A>(xs: readonly A[]) => A[][] {
+export function chunksOf(n: number) {
   integerFrom ('chunksOf', 1, n)
-  return (xs) => {
+  return <A>(xs: readonly A[]): A[][] => {
     return range (0) (Math.ceil (xs.length / n))
       .map ((i) => xs.slice (i * n, i * n + n))
   }
@@ -271,12 +252,12 @@ export function chunksOf(n: number): <A>(xs: readonly A[]) => A[][] {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.find((n: number) => n % 2 === 0)([1, 2, 3, 4]) // => Just (2)
- * P.find((n: number) => n > 9)([1, 2]) // => Nothing
+ * P.find ((n: number) => n % 2 === 0) ([1, 2, 3, 4]) // => Just (2)
+ * P.find ((n: number) => n > 9) ([1, 2]) // => Nothing
  * ```
  */
-export function find<A>(p: (a: A) => boolean): (xs: readonly A[]) => Maybe<A> {
-  return (xs) => {
+export function find<A>(p: (a: A) => boolean) {
+  return (xs: readonly A[]): Maybe<A> => {
     for (const x of xs) {
       if (p (x)) return just (x)
     }
@@ -290,15 +271,13 @@ export function find<A>(p: (a: A) => boolean): (xs: readonly A[]) => Maybe<A> {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * const tenfoldEven = (n: number) => n % 2 === 0 ? P.just(n * 10) : P.nothing()
+ * const tenfoldEven = (n: number) => n % 2 === 0 ? P.just (n * 10) : P.nothing ()
  *
- * P.findMap(tenfoldEven)([1, 2, 3, 4]) // => Just (20)
+ * P.findMap (tenfoldEven) ([1, 2, 3, 4]) // => Just (20)
  * ```
  */
-export function findMap<A, B>(
-  f: (a: A) => Maybe<B>,
-): (xs: readonly A[]) => Maybe<B> {
-  return (xs) => {
+export function findMap<A, B>(f: (a: A) => Maybe<B>) {
+  return (xs: readonly A[]): Maybe<B> => {
     for (const x of xs) {
       const r = f (x)
       if (r.tag === 'just') return r
@@ -314,13 +293,13 @@ export function findMap<A, B>(
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.index(1)(['a', 'b', 'c']) // => Just ('b')
- * P.index(9)(['a']) // => Nothing
+ * P.index (1) (['a', 'b', 'c']) // => Just ('b')
+ * P.index (9) (['a']) // => Nothing
  * ```
  */
-export function index(i: number): <A>(xs: readonly A[]) => Maybe<A> {
+export function index(i: number) {
   integer ('index', i)
-  return (xs) => {
+  return <A>(xs: readonly A[]): Maybe<A> => {
     if (i >= 0 && i < xs.length) return just (xs[i])
     return nothing ()
   }
@@ -332,14 +311,12 @@ export function index(i: number): <A>(xs: readonly A[]) => Maybe<A> {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.findIndex((n: number) => n > 1)([1, 2, 3]) // => Just (1)
- * P.findIndex((n: number) => n > 9)([1, 2, 3]) // => Nothing
+ * P.findIndex ((n: number) => n > 1) ([1, 2, 3]) // => Just (1)
+ * P.findIndex ((n: number) => n > 9) ([1, 2, 3]) // => Nothing
  * ```
  */
-export function findIndex<A>(
-  p: (a: A) => boolean,
-): (xs: readonly A[]) => Maybe<number> {
-  return (xs) => {
+export function findIndex<A>(p: (a: A) => boolean) {
+  return (xs: readonly A[]): Maybe<number> => {
     const at = xs.findIndex ((x) => p (x))
     return at < 0 ? nothing<number> () : just (at)
   }
@@ -351,14 +328,12 @@ export function findIndex<A>(
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.zipWith((a: number, b: number) => a + b)([1, 2, 3])([10, 20])
+ * P.zipWith ((a: number, b: number) => a + b) ([1, 2, 3]) ([10, 20])
  * // => [11, 22]
  * ```
  */
-export function zipWith<A, B, C>(
-  f: (a: A, b: B) => C,
-): (as: readonly A[]) => (bs: readonly B[]) => C[] {
-  return (as) => (bs) => {
+export function zipWith<A, B, C>(f: (a: A, b: B) => C) {
+  return (as: readonly A[]) => (bs: readonly B[]): C[] => {
     const n = Math.min (as.length, bs.length)
     const out = []
     for (let i = 0; i < n; i++) out.push (f (as[i], bs[i]))
@@ -372,10 +347,10 @@ export function zipWith<A, B, C>(
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.zip([1, 2])(['a', 'b', 'c']) // => [[1, 'a'], [2, 'b']]
+ * P.zip ([1, 2]) (['a', 'b', 'c']) // => [[1, 'a'], [2, 'b']]
  * ```
  */
-export function zip<A>(as: readonly A[]): <B>(bs: readonly B[]) => [A, B][] {
+export function zip<A>(as: readonly A[]) {
   return <B>(bs: readonly B[]): [A, B][] => {
     return zipWith<A, B, [A, B]> ((a, b) => [a, b]) (as) (bs)
   }
@@ -387,14 +362,14 @@ export function zip<A>(as: readonly A[]): <B>(bs: readonly B[]) => [A, B][] {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.nub([1, 1, 2, 1, 3]) // => [1, 2, 3]
- * P.nub([[1], [1], [2]]) // => [[1], [2]]
+ * P.nub ([1, 1, 2, 1, 3]) // => [1, 2, 3]
+ * P.nub ([[1], [1], [2]]) // => [[1], [2]]
  * ```
  */
 export function nub<A>(xs: readonly A[]): A[] {
   return xs.reduce (
-    (kept: A[], x) =>
-      kept.some ((k) => equals (k, x)) ? kept : (kept.push (x), kept),
+    (kept: A[], x) => kept.some
+      ((k) => equals (k, x)) ? kept : (kept.push (x), kept),
     [],
   )
 }
@@ -407,16 +382,14 @@ export function nub<A>(xs: readonly A[]): A[] {
  *
  * const sameLength = (a: string, b: string) => a.length === b.length
  *
- * P.nubBy(sameLength)(['a', 'b', 'cc']) // => ['a', 'cc']
+ * P.nubBy (sameLength) (['a', 'b', 'cc']) // => ['a', 'cc']
  * ```
  */
-export function nubBy<A>(
-  same: (a: A, b: A) => boolean,
-): (xs: readonly A[]) => A[] {
-  return (xs) => {
+export function nubBy<A>(same: (a: A, b: A) => boolean) {
+  return (xs: readonly A[]): A[] => {
     return xs.reduce (
-      (kept: A[], x) =>
-        kept.some ((k) => same (k, x)) ? kept : (kept.push (x), kept),
+      (kept: A[], x) => kept.some
+        ((k) => same (k, x)) ? kept : (kept.push (x), kept),
       [],
     )
   }
@@ -428,17 +401,15 @@ export function nubBy<A>(
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * const describe = P.array('empty')((h: number) => (t: number[]) =>
- *   `${h} then ${P.show(t)}`)
+ * const describe = P.array ('empty') ((h: number) => (t: number[]) =>
+ *   `${h} then ${P.show (t)}`)
  *
- * describe([1, 2, 3]) // => '1 then [2, 3]'
- * describe([]) // => 'empty'
+ * describe ([1, 2, 3]) // => '1 then [2, 3]'
+ * describe ([]) // => 'empty'
  * ```
  */
-export function array<B>(
-  onNil: B,
-): <A>(onCons: (head: A) => (tail: A[]) => B) => (xs: readonly A[]) => B {
-  return (onCons) => (xs) =>
+export function array<B>(onNil: B) {
+  return <A>(onCons: (head: A) => (tail: A[]) => B) => (xs: readonly A[]): B =>
     xs.length === 0 ? onNil : onCons (xs[0]) (xs.slice (1))
 }
 
@@ -450,15 +421,13 @@ export function array<B>(
  * import * as P from '@algosail/ply'
  *
  * const countdown = (n: number): Maybe<Pair<number, number>> =>
- *   n === 0 ? P.nothing() : P.just(P.pair(n, n - 1))
+ *   n === 0 ? P.nothing () : P.just (P.pair (n, n - 1))
  *
- * P.unfold(countdown)(3) // => [3, 2, 1]
+ * P.unfold (countdown) (3) // => [3, 2, 1]
  * ```
  */
-export function unfold<A, B>(
-  f: (seed: B) => Maybe<Pair<A, B>>,
-): (start: B) => A[] {
-  return (start) => {
+export function unfold<A, B>(f: (seed: B) => Maybe<Pair<A, B>>) {
+  return (start: B): A[] => {
     const out: A[] = []
     let seed = start
     while (true) {
@@ -476,14 +445,12 @@ export function unfold<A, B>(
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.groupBy((a: number) => (b: number) => a === b)([1, 1, 2, 1])
+ * P.groupBy ((a: number) => (b: number) => a === b) ([1, 1, 2, 1])
  * // => [[1, 1], [2], [1]]
  * ```
  */
-export function groupBy<A>(
-  same: (a: A) => (b: A) => boolean,
-): (xs: readonly A[]) => A[][] {
-  return (xs) => {
+export function groupBy<A>(same: (a: A) => (b: A) => boolean) {
+  return (xs: readonly A[]): A[][] => {
     if (xs.length === 0) return []
     let leader = xs[0]
     let active = [leader]
@@ -509,14 +476,12 @@ export function groupBy<A>(
  * import * as P from '@algosail/ply'
  *
  * const countdown = (n: number): Maybe<Pair<number, number>> =>
- *   n === 0 ? P.nothing() : P.just(P.pair(n, n - 1))
+ *   n === 0 ? P.nothing () : P.just (P.pair (n, n - 1))
  *
- * P.unfoldr(countdown)(3) // => [3, 2, 1]
+ * P.unfoldr (countdown) (3) // => [3, 2, 1]
  * ```
  * @see {@link unfold}
  */
-export function unfoldr<A, B>(
-  f: (b: B) => Maybe<Pair<A, B>>,
-): (start: B) => A[] {
-  return (start) => unfold (f) (start)
+export function unfoldr<A, B>(f: (b: B) => Maybe<Pair<A, B>>) {
+  return (start: B): A[] => unfold (f) (start)
 }

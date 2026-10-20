@@ -9,19 +9,12 @@ import type { ShowDict } from '../classes/show.ts'
 import type { NativeTypeRep } from '../core/named.ts'
 import type { Shape } from '../core/shape.ts'
 
-/**
- * The shape for bigints.
- */
+/** The shape for bigints. */
 export interface BigShape extends Shape<'BigInt'> {
-  /**
-   * The value type produced when this shape's type arguments are supplied.
-   */
   readonly out: bigint
 }
 
-/**
- * The type of the `Big` representative.
- */
+/** The type of the `Big` representative. */
 export type BigDict =
   & NativeTypeRep<BigShape>
   & CheckableDict<BigShape>
@@ -35,8 +28,8 @@ export type BigDict =
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.Big.is(42n) // => true
- * P.Big.lte(1n, 2n) // => true
+ * P.Big.is (42n) // => true
+ * P.Big.lte (1n, 2n) // => true
  * ```
  */
 export const Big: BigDict = {

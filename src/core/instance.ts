@@ -1,7 +1,3 @@
-/**
- * Look up and call operations on native and custom values.
- */
-
 import type { DictsOf, Instances } from './named.ts'
 import { Arr } from '../natives/array.ts'
 import { Big } from '../natives/bigint.ts'
@@ -16,36 +12,30 @@ import { Str } from '../natives/string.ts'
 import { StrMap } from '../natives/strmap.ts'
 import { taggedName } from './named.ts'
 
-/**
- * Accepts a table of operations keyed by native type name.
- */
+/** Accepts a table of operations keyed by native type name. */
 export type NativeTable = object
 
-/**
- * Extracts the operation names available in a native table.
- */
+/** Extracts the operation names available in a native table. */
 export type OpsOf<N extends NativeTable> = Extract<keyof N[keyof N], string>
 
 /**
  * Creates a table whose entries are obtained by calling their supplied getters.
  * @example
  * ```ts
- * import type { ArrayShape } from '../natives/array.ts'
  * import type { FunctorDict } from '../classes/functor.ts'
+ * import type { ArrayShape } from '../natives/array.ts'
  * import type { Shape } from './shape.ts'
  * import { Arr } from '../natives/array.ts'
  * import { lazily } from './instance.ts'
  *
  * type Dicts = <S extends Shape>(s: S) => FunctorDict<S>
  *
- * const natives = lazily<Dicts, { Array: ArrayShape }>({ Array: () => Arr })
- * natives.Array.map([1, 2, 3], (n: number) => n + 1) // => [2, 3, 4]
+ * const natives = lazily<Dicts, { Array: ArrayShape }> ({ Array: () => Arr })
+ * natives.Array.map ([1, 2, 3], (n: number) => n + 1) // => [2, 3, 4]
  * ```
  */
 export function lazily<D extends DictsOf, Shapes>(
-  cells: NoInfer<
-    { readonly [U in keyof Shapes]: () => Instances<D, Shapes>[U] }
-  >,
+  cells: NoInfer<{ readonly [U in keyof Shapes]: () => Instances<D, Shapes>[U] }>,
 ): Instances<D, Shapes> {
   const table = {} as Record<string, unknown>
   for (const name of Object.keys (cells)) {
@@ -87,11 +77,11 @@ const natives = () =>
  * import { just } from '../data/maybe.ts'
  * import { nameOf } from './instance.ts'
  *
- * nameOf([1, 2]) // => 'Array'
- * nameOf(just(1)) // => 'Maybe'
- * nameOf({ a: 1 }) // => 'StrMap'
- * nameOf(null) // => 'Null'
- * nameOf(Symbol()) // => 'Unknown'
+ * nameOf ([1, 2]) // => 'Array'
+ * nameOf (just (1)) // => 'Maybe'
+ * nameOf ({ a: 1 }) // => 'StrMap'
+ * nameOf (null) // => 'Null'
+ * nameOf (Symbol ()) // => 'Unknown'
  * ```
  */
 export function nameOf(x: unknown): string {
@@ -121,9 +111,9 @@ const dictIn = (
  *
  * const inc = ((n: number) => n + 1) as never
  *
- * const mapArray = opIn(functorNatives, [1, 2, 3], 'map')
- * mapArray?.([1, 2, 3] as never, inc) // => [2, 3, 4]
- * opIn(functorNatives, 42, 'map') // => undefined
+ * const mapArray = opIn (functorNatives, [1, 2, 3], 'map')
+ * mapArray?. ([1, 2, 3] as never, inc) // => [2, 3, 4]
+ * opIn (functorNatives, 42, 'map') // => undefined
  * ```
  */
 export function opIn(
@@ -157,9 +147,9 @@ export function opIn(
  *
  * const inc = (n: number) => n + 1
  *
- * dispatch('map', 'Functor', functorNatives, [1, 2, 3], inc) // => [2, 3, 4]
- * assertThrows(
- *   () => dispatch('map', 'Functor', functorNatives, 42, inc),
+ * dispatch ('map', 'Functor', functorNatives, [1, 2, 3], inc) // => [2, 3, 4]
+ * assertThrows (
+ *   () => dispatch ('map', 'Functor', functorNatives, 42, inc),
  *   TypeError,
  *   'map: Number has no Functor',
  * )
@@ -189,9 +179,9 @@ export function dispatch<N extends NativeTable>(
  * import { just } from '../data/maybe.ts'
  * import { hasMethod } from './instance.ts'
  *
- * hasMethod(just(1), 'map') // => true
- * hasMethod([1, 2], 'map') // => true
- * hasMethod(1, 'map') // => false
+ * hasMethod (just (1), 'map') // => true
+ * hasMethod ([1, 2], 'map') // => true
+ * hasMethod (1, 'map') // => false
  * ```
  */
 export function hasMethod<M extends string>(
@@ -206,16 +196,16 @@ export function hasMethod<M extends string>(
  * Finds a static operation on a representative or in a native table.
  * @example
  * ```ts
+ * import { applicativeNatives } from '../classes/applicative.ts'
+ * import { monoidNatives } from '../classes/monoid.ts'
  * import { Maybe } from '../data/maybe.ts'
  * import { Arr } from '../natives/array.ts'
  * import { Str } from '../natives/string.ts'
- * import { applicativeNatives } from '../classes/applicative.ts'
- * import { monoidNatives } from '../classes/monoid.ts'
  * import { typeRepIn } from './instance.ts'
  *
- * typeRepIn(applicativeNatives, Arr, 'of')?.(9 as never) // => [9]
- * typeRepIn(applicativeNatives, Maybe, 'of')?.(9 as never) // => Just (9)
- * typeRepIn(monoidNatives, Str, 'empty')?.() // => ''
+ * typeRepIn (applicativeNatives, Arr, 'of')?. (9 as never) // => [9]
+ * typeRepIn (applicativeNatives, Maybe, 'of')?. (9 as never) // => Just (9)
+ * typeRepIn (monoidNatives, Str, 'empty')?. () // => ''
  * ```
  */
 export function typeRepIn(
@@ -233,9 +223,7 @@ export function typeRepIn(
 
 function staticOf(value: unknown, name: string): unknown {
   const ctor = (value as { constructor?: unknown })?.constructor
-  if (
-    ctor === null || (typeof ctor !== 'function' && typeof ctor !== 'object')
-  ) {
+  if (ctor === null || (typeof ctor !== 'function' && typeof ctor !== 'object')) {
     return undefined
   }
   const rep = ctor as unknown as Record<string, unknown>
@@ -249,14 +237,14 @@ function staticOf(value: unknown, name: string): unknown {
  * @example
  * ```ts
  * import { assertThrows } from '@std/assert'
- * import { just } from '../data/maybe.ts'
  * import { applicativeNatives } from '../classes/applicative.ts'
+ * import { just } from '../data/maybe.ts'
  * import { ofIn } from './instance.ts'
  *
- * ofIn(applicativeNatives, [1, 2])(9) // => [9]
- * ofIn(applicativeNatives, just(1))(9) // => Just (9)
- * assertThrows(
- *   () => ofIn(applicativeNatives, 42)(9),
+ * ofIn (applicativeNatives, [1, 2]) (9) // => [9]
+ * ofIn (applicativeNatives, just (1)) (9) // => Just (9)
+ * assertThrows (
+ *   () => ofIn (applicativeNatives, 42) (9),
  *   TypeError,
  *   'of: Number has no Applicative',
  * )
@@ -281,8 +269,8 @@ export function ofIn(
  * import { monoidNatives } from '../classes/monoid.ts'
  * import { emptyIn } from './instance.ts'
  *
- * emptyIn(monoidNatives, [1, 2])() // => []
- * emptyIn(monoidNatives, 'text')() // => ''
+ * emptyIn (monoidNatives, [1, 2]) () // => []
+ * emptyIn (monoidNatives, 'text') () // => ''
  * ```
  */
 export function emptyIn(

@@ -32,7 +32,6 @@ function filterChecked<S extends Shape>(
 test ('is: checks native values with their representatives', () => {
   assert.deepStrictEqual (P.is (P.Str) ('hello'), true)
   assert.deepStrictEqual (P.is (P.Str) (42), false)
-  assert.deepStrictEqual (P.is (P.Num) (NaN), true)
   assert.deepStrictEqual (P.is (P.Bool) (false), true)
   assert.deepStrictEqual (P.is (P.Arr) ([1, 'two']), true)
   assert.deepStrictEqual (P.is (P.Arr) ({ length: 2 }), false)

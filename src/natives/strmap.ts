@@ -22,39 +22,21 @@ import { hasName } from '../core/named.ts'
 import { just, nothing } from '../data/maybe.ts'
 import { pair } from '../data/pair.ts'
 
-/**
- * The shape for records.
- */
+/** The shape for records. */
 export interface StrMapShape extends Shape<'StrMap'>, Matchable {
-  /**
-   * The value type produced when this shape's type arguments are supplied.
-   */
   readonly out: Record<string, this['slotA']>
-  /**
-   * The accepted input form of this shape, including readonly inputs when supported.
-   */
   readonly like: Record<string, this['slotA']>
-  /**
-   * The contained value type inferred from `val`.
-   */
-  readonly readA: this['val'] extends Record<string, infer A> ? A
-    : this['val'] extends Record<string, unknown>
+  readonly readA: this['val'] extends Record<string, infer A>
+    ? A : this['val'] extends Record<string, unknown>
       ? NonNullable<this['val'][keyof this['val']]>
-    : never
-  /**
-   * The secondary type inferred from `val`, or `never` when unused.
-   */
+      : never
   readonly readB: never
 }
 
-/**
- * A record of string keys with values of type `A`.
- */
+/** A record of string keys with values of type `A`. */
 export type StrMap<A> = Record<string, A>
 
-/**
- * The type of the `StrMap` representative.
- */
+/** The type of the `StrMap` representative. */
 export type StrMapDict =
   & NativeTypeRep<StrMapShape>
   & AltDict<StrMapShape>
@@ -74,8 +56,8 @@ export type StrMapDict =
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.empty(P.StrMap) // => {}
- * P.StrMap.is({ name: 'Ada' }) // => true
+ * P.empty (P.StrMap) // => {}
+ * P.StrMap.is ({ name: 'Ada' }) // => true
  * ```
  */
 export const StrMap: StrMapDict = {
@@ -139,12 +121,13 @@ export const StrMap: StrMapDict = {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.lookup('a')({ a: 1 }) // => Just (1)
- * P.lookup('z')({ a: 1 }) // => Nothing
+ * P.lookup ('a') ({ a: 1 }) // => Just (1)
+ * P.lookup ('z') ({ a: 1 }) // => Nothing
  * ```
  */
-export function lookup(k: string): <A>(m: StrMap<A>) => Maybe<A> {
-  return (m) => Object.hasOwn (m, k) ? just (m[k]) : nothing ()
+export function lookup(k: string) {
+  return <A>(m: StrMap<A>): Maybe<A> =>
+    Object.hasOwn (m, k) ? just (m[k]) : nothing ()
 }
 
 /**
@@ -153,11 +136,11 @@ export function lookup(k: string): <A>(m: StrMap<A>) => Maybe<A> {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.has('a')({ a: 1 }) // => true
+ * P.has ('a') ({ a: 1 }) // => true
  * ```
  */
-export function has(k: string): <A>(m: StrMap<A>) => boolean {
-  return (m) => Object.hasOwn (m, k)
+export function has(k: string) {
+  return <A>(m: StrMap<A>): boolean => Object.hasOwn (m, k)
 }
 
 /**
@@ -166,14 +149,12 @@ export function has(k: string): <A>(m: StrMap<A>) => boolean {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.getPath(['a', 'b'])({ a: { b: 1 } }) // => Just (1)
- * P.getPath(['a', 'z'])({ a: { b: 1 } }) // => Nothing
+ * P.getPath (['a', 'b']) ({ a: { b: 1 } }) // => Just (1)
+ * P.getPath (['a', 'z']) ({ a: { b: 1 } }) // => Nothing
  * ```
  */
-export function getPath(
-  path: readonly string[],
-): (o: StrMap<unknown>) => Maybe<unknown> {
-  return (o) => {
+export function getPath(path: readonly string[]) {
+  return <A = unknown>(o: StrMap<unknown>): Maybe<A> => {
     let cur: unknown = o
     for (const k of path) {
       if (cur === null || cur === undefined || typeof cur !== 'object') {
@@ -182,7 +163,7 @@ export function getPath(
       if (!Object.hasOwn (cur, k)) return nothing ()
       cur = (cur as StrMap<unknown>)[k]
     }
-    return just (cur)
+    return just (cur as A)
   }
 }
 
@@ -192,13 +173,11 @@ export function getPath(
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.hasPath(['a', 'b'])({ a: { b: 1 } }) // => true
+ * P.hasPath (['a', 'b']) ({ a: { b: 1 } }) // => true
  * ```
  */
-export function hasPath(
-  path: readonly string[],
-): (o: StrMap<unknown>) => boolean {
-  return (o) => getPath (path) (o).tag === 'just'
+export function hasPath(path: readonly string[]) {
+  return (o: StrMap<unknown>): boolean => getPath (path) (o).tag === 'just'
 }
 
 /**
@@ -207,7 +186,7 @@ export function hasPath(
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.keys({ b: 2, a: 1 }) // => ['b', 'a']
+ * P.keys ({ b: 2, a: 1 }) // => ['b', 'a']
  * ```
  */
 export function keys(m: StrMap<unknown>): string[] {
@@ -220,7 +199,7 @@ export function keys(m: StrMap<unknown>): string[] {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.values({ b: 2, a: 1 }) // => [2, 1]
+ * P.values ({ b: 2, a: 1 }) // => [2, 1]
  * ```
  */
 export function values<A>(m: StrMap<A>): A[] {
@@ -233,7 +212,7 @@ export function values<A>(m: StrMap<A>): A[] {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.pairs({ b: 2, a: 1 }) // => [Pair ('b') (2), Pair ('a') (1)]
+ * P.pairs ({ b: 2, a: 1 }) // => [Pair ('b') (2), Pair ('a') (1)]
  * ```
  */
 export function pairs<A>(m: StrMap<A>): Pair<string, A>[] {
@@ -246,7 +225,7 @@ export function pairs<A>(m: StrMap<A>): Pair<string, A>[] {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.sortedKeys({ b: 2, a: 1 }) // => ['a', 'b']
+ * P.sortedKeys ({ b: 2, a: 1 }) // => ['a', 'b']
  * ```
  */
 export function sortedKeys(m: StrMap<unknown>): string[] {
@@ -259,7 +238,7 @@ export function sortedKeys(m: StrMap<unknown>): string[] {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.sortedValues({ b: 2, a: 1 }) // => [1, 2]
+ * P.sortedValues ({ b: 2, a: 1 }) // => [1, 2]
  * ```
  */
 export function sortedValues<A>(m: StrMap<A>): A[] {
@@ -272,7 +251,7 @@ export function sortedValues<A>(m: StrMap<A>): A[] {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.sortedPairs({ b: 2, a: 1 }) // => [Pair ('a') (1), Pair ('b') (2)]
+ * P.sortedPairs ({ b: 2, a: 1 }) // => [Pair ('a') (1), Pair ('b') (2)]
  * ```
  */
 export function sortedPairs<A>(m: StrMap<A>): Pair<string, A>[] {
@@ -285,7 +264,7 @@ export function sortedPairs<A>(m: StrMap<A>): Pair<string, A>[] {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.singleton('a', 1) // => { a: 1 }
+ * P.singleton ('a', 1) // => { a: 1 }
  * ```
  */
 export function singleton<A>(k: string, a: A): StrMap<A> {
@@ -298,7 +277,7 @@ export function singleton<A>(k: string, a: A): StrMap<A> {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.fromPairs([P.pair('a', 1), P.pair('b', 2)]) // => { a: 1, b: 2 }
+ * P.fromPairs ([P.pair ('a', 1), P.pair ('b', 2)]) // => { a: 1, b: 2 }
  * ```
  */
 export function fromPairs<A>(ps: Iterable<Pair<string, A>>): StrMap<A> {
@@ -313,12 +292,12 @@ export function fromPairs<A>(ps: Iterable<Pair<string, A>>): StrMap<A> {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.insert('b')(2)({ a: 1 }) // => { a: 1, b: 2 }
- * P.insert('a')(9)({ a: 1 }) // => { a: 9 }
+ * P.insert ('b') (2) ({ a: 1 }) // => { a: 1, b: 2 }
+ * P.insert ('a') (9) ({ a: 1 }) // => { a: 9 }
  * ```
  */
-export function insert(k: string): <A>(v: A) => (m: StrMap<A>) => StrMap<A> {
-  return (v) => (m) => ({ ...m, [k]: v })
+export function insert(k: string) {
+  return <A>(v: A) => (m: StrMap<A>): StrMap<A> => ({ ...m, [k]: v })
 }
 
 function isPlainObject(x: unknown): x is StrMap<unknown> {

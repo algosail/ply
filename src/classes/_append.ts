@@ -1,7 +1,3 @@
-/**
- * Operations and types for appending and prepending values.
- */
-
 import type {
   Assert,
   KindOf,
@@ -24,46 +20,29 @@ import { ofIn } from '../core/instance.ts'
 import { applicativeNatives } from './applicative.ts'
 import { concat } from './semigroup.ts'
 
-/**
- * Operations for appending and prepending values on values described by `S`.
- */
+/** Operations for appending and prepending values on values described by `S`. */
 export interface ApplicativeSemigroupDict<S extends Shape>
   extends ApplicativeDict<S>, SemigroupDict<S> {}
 
-/**
- * Names of the operations in `ApplicativeSemigroupDict`.
- */
+/** Names of the operations in `ApplicativeSemigroupDict`. */
 export type ApplicativeSemigroupKeys =
   & keyof ApplicativeSemigroupDict<Shape>
   & string
 
-/**
- * Native generic types accepted by the `ApplicativeSemigroup` constraint.
- */
+/** Native generic types accepted by the `ApplicativeSemigroup` constraint. */
 export interface ApplicativeSemigroupShapes {
-  /**
-   * The shape used for `Array` values.
-   */
   readonly Array: ArrayShape
 }
 
-/**
- * Checks that the declared native types also satisfy the parent capabilities.
- */
-export type _BuildableUnderApplicative = Assert<
-  SubclassOf<ApplicativeSemigroupShapes, ApplicativeShapes>
->
+/** Checks that the declared native types also satisfy the parent capabilities. */
+export type _BuildableUnderApplicative =
+  Assert<SubclassOf<ApplicativeSemigroupShapes, ApplicativeShapes>>
 
-/**
- * Checks that the declared native types also satisfy the parent capabilities.
- */
-export type _BuildableUnderSemigroup = Assert<
-  SubclassOf<ApplicativeSemigroupShapes, SemigroupShapes>
->
+/**  Checks that the declared native types also satisfy the parent capabilities. */
+export type _BuildableUnderSemigroup =
+  Assert<SubclassOf<ApplicativeSemigroupShapes, SemigroupShapes>>
 
-/**
- * A constraint for values that support appending and prepending values.
- */
+/** A constraint for values that support appending and prepending values. */
 export type ApplicativeSemigroup<S, A = SlotAOf<S>, B = SlotBOf<S>> =
   | (
     & ApplyMethods<S, A, B>
@@ -82,14 +61,10 @@ export type ApplicativeSemigroup<S, A = SlotAOf<S>, B = SlotBOf<S>> =
  * P.append ('!') (P.right<number, string> ('ab')) // => Right ("ab!")
  * ```
  */
-export function append<A>(
-  a: A,
-): <F extends ApplicativeSemigroup<F, A>>(fa: F) => KindOf<F, A> {
+export function append<A>(a: A) {
   return <F extends ApplicativeSemigroup<F, A>>(fa: F) =>
-    concat (fa as never) (ofIn (applicativeNatives, fa) (a) as never) as KindOf<
-      F,
-      A
-    >
+    concat (fa as never)
+           (ofIn (applicativeNatives, fa) (a) as never) as KindOf<F, A>
 }
 
 /**
@@ -98,16 +73,12 @@ export function append<A>(
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.prepend(0)([1, 2]) // => [0, 1, 2]
- * P.prepend('>')(P.right<number, string>('ab')) // => Right (">ab")
+ * P.prepend (0) ([1, 2]) // => [0, 1, 2]
+ * P.prepend ('>') (P.right<number, string> ('ab')) // => Right (">ab")
  * ```
  */
-export function prepend<A>(
-  a: A,
-): <F extends ApplicativeSemigroup<F, A>>(fa: F) => KindOf<F, A> {
+export function prepend<A>(a: A) {
   return <F extends ApplicativeSemigroup<F, A>>(fa: F) =>
-    concat (ofIn (applicativeNatives, fa) (a) as never) (fa as never) as KindOf<
-      F,
-      A
-    >
+    concat (ofIn (applicativeNatives, fa) (a) as never)
+           (fa as never) as KindOf<F, A>
 }

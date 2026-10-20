@@ -14,31 +14,15 @@ import { show } from '../classes/show.ts'
 import { just, nothing } from '../data/maybe.ts'
 import { fromTuple, toTuple } from '../data/pair.ts'
 
-/**
- * The shape for maps.
- */
+/** The shape for maps. */
 export interface MapShape extends Shape<'Map'>, Matchable {
-  /**
-   * The value type produced when this shape's type arguments are supplied.
-   */
   readonly out: Map<this['slotB'], this['slotA']>
-  /**
-   * The accepted input form of this shape, including readonly inputs when supported.
-   */
   readonly like: Map<unknown, this['slotA']>
-  /**
-   * The contained value type inferred from `val`.
-   */
   readonly readA: this['val'] extends Map<unknown, infer V> ? V : never
-  /**
-   * The secondary type inferred from `val`, or `never` when unused.
-   */
   readonly readB: this['val'] extends Map<infer K, unknown> ? K : never
 }
 
-/**
- * The type of the `Maps` representative.
- */
+/** The type of the `Maps` representative. */
 export type MapsDict =
   & NativeTypeRep<MapShape>
   & CheckableDict<MapShape>
@@ -52,7 +36,7 @@ export type MapsDict =
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.Maps.map(new Map([['a', 1]]), (n: number) => n + 1)
+ * P.Maps.map (new Map ([['a', 1]]), (n: number) => n + 1)
  * // => Map ([['a', 2]])
  * ```
  */
@@ -79,7 +63,7 @@ export const Maps: MapsDict = {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.mapFromPairs([P.pair('a', 1), P.pair('b', 2)])
+ * P.mapFromPairs ([P.pair ('a', 1), P.pair ('b', 2)])
  * // => Map ([["a", 1], ["b", 2]])
  * ```
  */
@@ -93,11 +77,11 @@ export function mapFromPairs<K, V>(ps: Iterable<Pair<K, V>>): Map<K, V> {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.mapLookup('a')(new Map([['a', 1]])) // => Just (1)
- * P.mapLookup('z')(new Map([['a', 1]])) // => Nothing
+ * P.mapLookup ('a') (new Map ([['a', 1]])) // => Just (1)
+ * P.mapLookup ('z') (new Map ([['a', 1]])) // => Nothing
  * ```
  */
-export function mapLookup<K>(k: K): <V>(m: ReadonlyMap<K, V>) => Maybe<V> {
+export function mapLookup<K>(k: K) {
   return <V>(m: ReadonlyMap<K, V>): Maybe<V> =>
     m.has (k) ? just (m.get (k) as V) : nothing ()
 }
@@ -108,7 +92,7 @@ export function mapLookup<K>(k: K): <V>(m: ReadonlyMap<K, V>) => Maybe<V> {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.mapKeys(new Map([['a', 1], ['b', 2]])) // => ['a', 'b']
+ * P.mapKeys (new Map ([['a', 1], ['b', 2]])) // => ['a', 'b']
  * ```
  */
 export function mapKeys<K, V>(m: ReadonlyMap<K, V>): K[] {
@@ -121,7 +105,7 @@ export function mapKeys<K, V>(m: ReadonlyMap<K, V>): K[] {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.mapValues(new Map([['a', 1], ['b', 2]])) // => [1, 2]
+ * P.mapValues (new Map ([['a', 1], ['b', 2]])) // => [1, 2]
  * ```
  */
 export function mapValues<K, V>(m: ReadonlyMap<K, V>): V[] {
@@ -134,7 +118,7 @@ export function mapValues<K, V>(m: ReadonlyMap<K, V>): V[] {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.mapPairs(new Map([['a', 1], ['b', 2]]))
+ * P.mapPairs (new Map ([['a', 1], ['b', 2]]))
  * // => [Pair ("a") (1), Pair ("b") (2)]
  * ```
  */
@@ -148,7 +132,7 @@ export function mapPairs<K, V>(m: ReadonlyMap<K, V>): Pair<K, V>[] {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.mapDifference(new Map([['a', 1], ['b', 2]]), new Map([['a', 0]]))
+ * P.mapDifference (new Map ([['a', 1], ['b', 2]]), new Map ([['a', 0]]))
  * // => Map ([["b", 2]])
  * ```
  */

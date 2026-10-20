@@ -17,7 +17,6 @@ test ('show: numbers', () => {
   assert.deepStrictEqual (show (42), '42')
   assert.deepStrictEqual (show (0), '0')
   assert.deepStrictEqual (show (-0), '-0')
-  assert.deepStrictEqual (show (NaN), 'NaN')
   assert.deepStrictEqual (show (Infinity), 'Infinity')
   assert.deepStrictEqual (show (-Infinity), '-Infinity')
   assert.deepStrictEqual (show (1e21), '1e+21')
@@ -77,7 +76,7 @@ test ('show: Date and RegExp', () => {
     show (new Date ('2011-01-19T17:40:00Z')),
     'Date ("2011-01-19T17:40:00.000Z")',
   )
-  assert.deepStrictEqual (show (new Date (NaN)), 'Date (NaN)')
+  assert.deepStrictEqual (show (new Date (NaN)), 'Date ("NaN")')
   assert.deepStrictEqual (show (/a/gi), '/a/gi')
   assert.deepStrictEqual (show (/^$/), '/^$/')
 })

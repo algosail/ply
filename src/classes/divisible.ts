@@ -1,7 +1,3 @@
-/**
- * Operations and types for combining rules for separate parts of an input.
- */
-
 import type {
   Assert,
   KindOf,
@@ -21,37 +17,25 @@ import type {
 } from './contravariant.ts'
 import { dispatch, lazily, nameOf, typeRepIn } from '../core/instance.ts'
 
-/**
- * The static `conquer` operation required from a custom type representative.
- */
+/** The static `conquer` operation required from a custom type representative. */
 export interface ConquerSig<S extends Shape, B, M extends string> {
-  /**
-   * Creates a rule that always passes.
-   */
+  /** Creates a rule that always passes. */
   conquer<A>(): Superclass<S, M, Kind<S, A, B>>
 }
 
-/**
- * Implement these methods on a custom value to support combining rules for separate parts of an input.
- */
+/** Implement these methods on a custom value to support combining rules for separate parts of an input. */
 export interface DivisibleMethods<S, A, B = never>
   extends ContravariantMethods<S, A, B> {
-  /**
-   * Splits an input into two parts and combines the rules for those parts.
-   */
+  /** Splits an input into two parts and combines the rules for those parts. */
   divide<C, X>(
     split: (x: X) => readonly [B, C],
     that: KindOf<S, A, C>,
   ): KindOf<S, A, X>
 }
 
-/**
- * Operations for combining rules for separate parts of an input on values described by `S`.
- */
+/** Operations for combining rules for separate parts of an input on values described by `S`. */
 export interface DivisibleDict<S extends Shape> {
-  /**
-   * Splits an input into two parts and combines the rules for those parts.
-   */
+  /** Splits an input into two parts and combines the rules for those parts. */
   divide<A, B, C, X>(
     fb: Kind<S, A, B>,
     split: (x: X) => readonly [B, C],
@@ -59,49 +43,29 @@ export interface DivisibleDict<S extends Shape> {
   ): Kind<S, A, X>
 }
 
-/**
- * Names of the operations in `DivisibleDict`.
- */
+/** Names of the operations in `DivisibleDict`. */
 export type DivisibleKeys = keyof DivisibleDict<Shape> & string
 
-/**
- * Native generic types accepted by the `Divisible` constraint.
- */
+/** Native generic types accepted by the `Divisible` constraint. */
 export interface DivisibleShapes {}
 
-/**
- * Checks that the declared native types also satisfy the parent capabilities.
- */
-export type _DivisibleUnderContravariant = Assert<
-  SubclassOf<DivisibleShapes, ContravariantShapes>
->
+/** Checks that the declared native types also satisfy the parent capabilities. */
+export type _DivisibleUnderContravariant =
+  Assert<SubclassOf<DivisibleShapes, ContravariantShapes>>
 
-/**
- * A constraint for values that support combining rules for separate parts of an input.
- */
+/** A constraint for values that support combining rules for separate parts of an input. */
 export type Divisible<S, A = SlotAOf<S>, B = SlotBOf<S>> =
   | DivisibleMethods<S, A, B>
   | MatchableIn<DivisibleShapes, A, B>
 
-/**
- * A type representative accepted by `conquer`.
- */
-export type DivisibleTypeRep<S extends Shape, B = never> = RepIn<
-  S,
-  B,
-  DivisibleShapes,
-  ConquerSig<S, B, ContravariantKeys>
->
+/** A type representative accepted by `conquer`. */
+export type DivisibleTypeRep<S extends Shape, B = never> =
+  RepIn<S, B, DivisibleShapes, ConquerSig<S, B, ContravariantKeys>>
 
 type DivisibleDicts = <S extends Shape>(s: S) => DivisibleDict<S>
 
-/**
- * Native implementations of this module's operations, keyed by type name.
- */
-export const divisibleNatives: Instances<
-  DivisibleDicts,
-  DivisibleShapes
-> = lazily<DivisibleDicts, DivisibleShapes> ({})
+/** Native implementations of this module's operations, keyed by type name. */
+export const divisibleNatives: Instances<DivisibleDicts, DivisibleShapes> = {}
 
 /**
  * Splits each input into two parts and checks each part with its own rule.
@@ -111,12 +75,12 @@ export const divisibleNatives: Instances<
  *
  * type Order = { name: string; total: number }
  *
- * const long = P.predicate((s: string) => s.length > 3)
- * const big = P.predicate((n: number) => n > 10)
- * const ok = P.divide((o: Order) => [o.name, o.total] as const)(long)(big)
+ * const long = P.predicate ((s: string) => s.length > 3)
+ * const big = P.predicate ((n: number) => n > 10)
+ * const ok = P.divide ((o: Order) => [o.name, o.total] as const) (long) (big)
  *
- * ok({ name: 'hello', total: 20 }) // => true
- * ok({ name: 'hi', total: 20 }) // => false
+ * ok ({ name: 'hello', total: 20 }) // => true
+ * ok ({ name: 'hi', total: 20 }) // => false
  * ```
  */
 export function divide<B, C, X>(
@@ -142,8 +106,8 @@ export function divide<B, C, X>(
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.conquer(P.Predicate)(0) // => true
- * P.conquer(P.Predicate)('anything') // => true
+ * P.conquer (P.Predicate) (0) // => true
+ * P.conquer (P.Predicate) ('anything') // => true
  * ```
  */
 export function conquer<S extends Shape, B, A = never>(

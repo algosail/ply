@@ -1,11 +1,5 @@
-/**
- * Describe custom generic types and build value types from their shapes.
- */
-
 declare const why: unique symbol
-/**
- * Carries a readable error message when a type constraint cannot be satisfied.
- */
+/** Carries a readable error message when a type constraint cannot be satisfied. */
 export interface Fail<M extends string> {
   readonly [why]: M
 }
@@ -14,7 +8,7 @@ export interface Fail<M extends string> {
  * Describes how to build a generic value type.
  * @example
  * ```ts
- * import type { Shape, Kind } from './shape.ts'
+ * import type { Kind, Shape } from './shape.ts'
  *
  * type Box<A> = { readonly value: A }
  *
@@ -26,25 +20,15 @@ export interface Fail<M extends string> {
  * ```
  */
 export interface Shape<Name extends string = string> {
-  /**
-   * The unique name of the type described by this shape.
-   */
+  /** The unique name of the type described by this shape. */
   readonly name: Name
-  /**
-   * The contained value type, or a function's output type.
-   */
+  /** The contained value type, or a function's output type. */
   readonly slotA: unknown
-  /**
-   * The secondary type, such as a map key or function input.
-   */
+  /** The secondary type, such as a map key or function input. */
   readonly slotB: unknown
-  /**
-   * The value type produced when this shape's type arguments are supplied.
-   */
+  /** The value type produced when this shape's type arguments are supplied. */
   readonly out: unknown
-  /**
-   * How the secondary type is combined: input, output, or an exact shared type.
-   */
+  /** How the secondary type is combined: input, output, or an exact shared type. */
   readonly slotBVariance?: 'in' | 'out' | 'same'
 }
 
@@ -60,22 +44,19 @@ export interface Shape<Name extends string = string> {
  * type Arrow = Kind<FnShape, number, string> // => (i: string) => number
  * ```
  */
-export type Kind<S extends Shape, A, B> =
-  (S & { readonly slotA: A; readonly slotB: B })['out']
+export type Kind<S extends Shape, A, B> = (S & { readonly slotA: A; readonly slotB: B })['out']
 
 /**
  * Describes a fixed type that does not use either type argument.
  * @example
  * ```ts
- * import type { Nullary, Kind } from './shape.ts'
+ * import type { Kind, Nullary } from './shape.ts'
  *
  * type Big = Kind<Nullary<bigint>, string, number> // => bigint
  * ```
  */
 export interface Nullary<T> extends Shape {
-  /**
-   * The value type produced when this shape's type arguments are supplied.
-   */
+  /** The value type produced when this shape's type arguments are supplied. */
   readonly out: T
 }
 
@@ -97,37 +78,27 @@ export interface Nullary<T> extends Shape {
  * ```
  */
 export interface Shaped<S extends Shape> {
-  /**
-   * The shape used to type generic operations on this value.
-   */
+  /** The shape used to type generic operations on this value. */
   readonly _shape: S
-  /**
-   * The name used to recognize this type in ply operations.
-   */
+  /** The name used to recognize this type in ply operations. */
   readonly '@@type': NameOf<S>
 }
 
-/**
- * Declares the value and secondary types of a custom generic value.
- */
+/** Declares the value and secondary types of a custom generic value. */
 export interface Slotted<A, B = never> {
-  /**
-   * Declares the contained value type for inference; no runtime member is required.
-   */
+  /** Declares the contained value type for inference; no runtime member is required. */
   readonly _A?: (_: never) => A
-  /**
-   * Declares the secondary type for inference; no runtime member is required.
-   */
+  /** Declares the secondary type for inference; no runtime member is required. */
   _B?(_: B): void
 }
 
-type NameOf<S extends Shape> = Shape extends S ? string
-  : string extends S['name'] ? Fail<'Shape must name the type'>
-  : S['name']
+type NameOf<S extends Shape> = Shape extends S
+  ? string
+  : string extends S['name']
+    ? Fail<'Shape must name the type'>
+    : S['name']
 
-/**
- * A named generic value with value type `A` and secondary type `B`.
- */
+/** A named generic value with value type `A` and secondary type `B`. */
 export type AnyKind<A = unknown, B = unknown> = Shaped<Shape> & Slotted<A, B>
 
 /**
@@ -141,9 +112,7 @@ export type AnyKind<A = unknown, B = unknown> = Shaped<Shape> & Slotted<A, B>
  * ```
  */
 export interface Widened {
-  /**
-   * The accepted input form of this shape, including readonly inputs when supported.
-   */
+  /** The accepted input form of this shape, including readonly inputs when supported. */
   readonly like: unknown
 }
 
@@ -158,16 +127,10 @@ export interface Widened {
  * ```
  */
 export interface Matchable extends Widened {
-  /**
-   * The value type from which to infer the type arguments.
-   */
+  /** The value type from which to infer the type arguments. */
   readonly val: unknown
-  /**
-   * The contained value type inferred from `val`.
-   */
+  /** The contained value type inferred from `val`. */
   readonly readA: unknown
-  /**
-   * The secondary type inferred from `val`, or `never` when unused.
-   */
+  /** The secondary type inferred from `val`, or `never` when unused. */
   readonly readB: unknown
 }

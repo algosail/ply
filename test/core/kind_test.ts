@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import type {
+  ApplicableAs,
+  ArgOfSlotA,
   BothB,
   Assert as KindAssert,
   KindLike,
@@ -259,6 +261,25 @@ export type _ReturnOfSlotA = [
   Assert<Exact<ReturnOfSlotA<((a: number) => string)[]>, string>>,
   Assert<Exact<ReturnOfSlotA<Set<(a: number) => boolean>>, boolean>>,
   Assert<Exact<ReturnOfSlotA<number[]>, never>>,
+]
+
+export type _ArgOfSlotA = [
+  Assert<Exact<ArgOfSlotA<((a: number) => string)[]>, number>>,
+  Assert<Exact<ArgOfSlotA<Set<(a: string) => boolean>>, string>>,
+  Assert<Exact<ArgOfSlotA<number[]>, never>>,
+]
+
+export type _ApplicableAs = [
+  Assert<Exact<ApplicableAs<number[], ((a: number) => string)[]>, unknown>>,
+  Assert<Exact<ApplicableAs<number[], ((a: number | string) => string)[]>, unknown>>,
+  Assert<Exact<ApplicableAs<never[], ((a: number) => string)[]>, unknown>>,
+  Assert<Exact<ApplicableAs<number[], never[]>, unknown>>,
+  Assert<
+    Exact<
+      ApplicableAs<string[], ((a: number) => string)[]>,
+      Fail<'ap needs the wrapped values to be accepted by the wrapped functions'>
+    >
+  >,
 ]
 
 export type _SubclassOf = [

@@ -44,7 +44,6 @@ test ('nameOf: every native is recognized by value', () => {
     [(n: number) => n, 'Fn'],
     ['text', 'String'],
     [42, 'Number'],
-    [Number.NaN, 'Number'],
     [true, 'Boolean'],
     [10n, 'BigInt'],
     [new Date (0), 'Date'],

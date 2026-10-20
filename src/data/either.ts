@@ -1,18 +1,3 @@
-/**
- * Handle success and failure as values with `Right` and `Left`.
- * @example
- * ```ts
- * import * as P from '@algosail/ply'
- *
- * const positive = P.eitherFromPredicate(
- *   (n: number) => n > 0,
- *   () => 'Must be positive',
- * )
- * positive(3) // => Right (3)
- * positive(-1) // => Left ("Must be positive")
- * ```
- */
-
 import type { AltMethods } from '../classes/alt.ts'
 import type { ApplicativeTypeRep } from '../classes/applicative.ts'
 import type { Apply, ApplyMethods } from '../classes/apply.ts'
@@ -39,79 +24,41 @@ import { equals } from '../classes/setoid.ts'
 import { show } from '../classes/show.ts'
 import { just, nothing } from './maybe.ts'
 
-/**
- * A result containing an error of type `E` in `Left`, or a value of type `A` in `Right`.
- */
+/** A result containing an error of type `E` in `Left`, or a value of type `A` in `Right`. */
 export type Either<E, A> = Left<E, A> | Right<E, A>
 
-/**
- * The error or alternative branch of an `Either`.
- */
+/** The error or alternative branch of an `Either`. */
 export interface Left<E, A> extends EitherMethods<E, A> {
-  /**
-   * Identifies this branch for narrowing with a tag check.
-   */
   readonly tag: 'left'
-  /**
-   * The error value.
-   */
   readonly value: E
 }
 
-/**
- * The success branch of an `Either`.
- */
+/** The success branch of an `Either`. */
 export interface Right<E, A> extends EitherMethods<E, A> {
-  /**
-   * Identifies this branch for narrowing with a tag check.
-   */
   readonly tag: 'right'
-  /**
-   * The contained value.
-   */
   readonly value: A
 }
 
-/**
- * The shape for Either.
- */
+/** The shape for Either. */
 export interface EitherShape extends Shape<'Either'> {
-  /**
-   * The value type produced when this shape's type arguments are supplied.
-   */
   readonly out: Either<this['slotB'], this['slotA']>
 }
 
-/**
- * The type of the `Either` representative.
- */
+/** The type of the `Either` representative. */
 export type EitherTypeRep = Satisfies<
   EitherStatics & Shaped<EitherShape>,
   & ApplicativeTypeRep<EitherShape, unknown>
   & CheckableTypeRep<EitherShape>
 >
 
-/**
- * Static operations provided by the `Either` representative.
- */
+/** Static operations provided by the `Either` representative. */
 export interface EitherStatics {
-  /**
-   * Checks whether an unknown value belongs to this type.
-   */
   is(value: unknown): value is Either<unknown, unknown>
-  /**
-   * Creates a `Left` value.
-   */
   left<E, A>(e: E): Either<E, A>
-  /**
-   * Creates a `Right` value.
-   */
   of<E, A>(a: A): Either<E, A>
 }
 
-/**
- * Methods available on `Either` values.
- */
+/** Methods available on `Either` values. */
 export interface EitherMethods<E, A>
   extends
     SetoidMethods<Either<E, A>, A, E>,
@@ -125,29 +72,11 @@ export interface EitherMethods<E, A>
     BifunctorMethods<Either<E, A>, A, E>,
     FoldableMethods<Either<E, A>, A, E>,
     TraversableMethods<Either<E, A>, A, E> {
-  /**
-   * Declares the type name for inference. No runtime member is required.
-   */
   readonly '@@type': 'Either'
-  /**
-   * The shape used to type generic operations on this value.
-   */
   readonly _shape: EitherShape
-  /**
-   * Declares the contained value type for inference; no runtime member is required.
-   */
   readonly _A?: (_: never) => A
-  /**
-   * Declares the secondary type for inference; no runtime member is required.
-   */
   _B?(_: E): void
-  /**
-   * The representative used to construct values of this type.
-   */
   readonly constructor: EitherTypeRep
-  /**
-   * Calls the handler for the active branch and returns its result.
-   */
   match<B>(onLeft: (e: E) => B, onRight: (a: A) => B): B
 }
 
@@ -157,14 +86,20 @@ export interface EitherMethods<E, A>
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.Either.left('missing') // => Left ("missing")
- * P.of(P.Either)(1) // => Right (1)
+ * P.Either.left ('missing') // => Left ("missing")
+ * P.of (P.Either) (1) // => Right (1)
  * ```
  */
 export const Either: EitherTypeRep = class <E, A, Tag extends 'left' | 'right'>
   implements EitherMethods<E, A> {
-  static readonly '@@type' = 'Either' as const
   declare static readonly _shape: EitherShape
+  declare readonly '@@type': 'Either'
+  declare readonly _shape: EitherShape
+  declare readonly ['constructor']: EitherTypeRep
+  declare readonly _A?: (_: never) => A
+  declare _B?: EitherMethods<E, A>['_B']
+
+  static readonly '@@type' = 'Either' as const
 
   static is = (value: unknown): value is Either<unknown, unknown> =>
     value instanceof this
@@ -175,14 +110,9 @@ export const Either: EitherTypeRep = class <E, A, Tag extends 'left' | 'right'>
   static left = <E, A>(error: E): Either<E, A> =>
     new this<E, A, 'left'> ('left', error)
 
-  declare readonly '@@type': 'Either'
-  declare readonly _shape: EitherShape
-  declare readonly _A?: (_: never) => A
-  declare _B?: EitherMethods<E, A>['_B']
-  declare readonly ['constructor']: EitherTypeRep
-
   readonly tag: Tag
   readonly value: Tag extends 'left' ? E : A
+
   constructor(tag: Tag, value: Tag extends 'left' ? E : A) {
     this.tag = tag
     this.value = value
@@ -310,7 +240,7 @@ export const Either: EitherTypeRep = class <E, A, Tag extends 'left' | 'right'>
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.left('boom') // => Left ("boom")
+ * P.left ('boom') // => Left ("boom")
  * ```
  */
 export function left<E, A>(e: E): Either<E, A> {
@@ -323,7 +253,7 @@ export function left<E, A>(e: E): Either<E, A> {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.right(1) // => Right (1)
+ * P.right (1) // => Right (1)
  * ```
  */
 export function right<E, A>(a: A): Either<E, A> {
@@ -336,8 +266,8 @@ export function right<E, A>(a: A): Either<E, A> {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.isLeft(P.left('boom')) // => true
- * P.isLeft(P.right(1)) // => false
+ * P.isLeft (P.left ('boom')) // => true
+ * P.isLeft (P.right (1)) // => false
  * ```
  */
 export function isLeft<E, A>(e: Either<E, A>): e is Left<E, A> {
@@ -350,8 +280,8 @@ export function isLeft<E, A>(e: Either<E, A>): e is Left<E, A> {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.isRight(P.right(1)) // => true
- * P.isRight(P.left('boom')) // => false
+ * P.isRight (P.right (1)) // => true
+ * P.isRight (P.left ('boom')) // => false
  * ```
  */
 export function isRight<E, A>(e: Either<E, A>): e is Right<E, A> {
@@ -371,13 +301,10 @@ const branch = (tag: 'left' | 'right') => (fe: unknown): unknown =>
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.lefts([P.left('a'), P.right(1), P.left('b')]) // => ['a', 'b']
+ * P.lefts ([P.left ('a'), P.right (1), P.left ('b')]) // => ['a', 'b']
  * ```
  */
 export function lefts<E, A>(fe: readonly Either<E, A>[]): E[]
-/**
- * Keeps and unwraps `Left` values, discarding `Right` values.
- */
 export function lefts<F extends Filterable<F>>(fe: F): KindOf<F, unknown>
 export function lefts(fe: any): any {
   return branch ('left') (fe)
@@ -389,13 +316,10 @@ export function lefts(fe: any): any {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.rights([P.left('a'), P.right(1), P.left('b')]) // => [1]
+ * P.rights ([P.left ('a'), P.right (1), P.left ('b')]) // => [1]
  * ```
  */
 export function rights<E, A>(fe: readonly Either<E, A>[]): A[]
-/**
- * Keeps and unwraps `Right` values, discarding `Left` values.
- */
 export function rights<F extends Filterable<F>>(fe: F): KindOf<F, unknown>
 export function rights(fe: any): any {
   return branch ('right') (fe)
@@ -407,14 +331,12 @@ export function rights(fe: any): any {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.encase(JSON.parse)('[1, 2]') // => Right ([1, 2])
- * P.isLeft(P.encase(JSON.parse)('{')) // => true
+ * P.encase (JSON.parse) ('[1, 2]') // => Right ([1, 2])
+ * P.isLeft (P.encase (JSON.parse) ('{')) // => true
  * ```
  */
-export function encase<Args extends unknown[], B>(
-  f: (...args: Args) => B,
-): (...args: Args) => Either<unknown, B> {
-  return (...args) => {
+export function encase<Args extends unknown[], B>(f: (...args: Args) => B) {
+  return (...args: Args): Either<unknown, B> => {
     try {
       return right<unknown, B> (f (...args))
     } catch (e) {
@@ -429,14 +351,12 @@ export function encase<Args extends unknown[], B>(
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.either((e: string) => 'err ' + e)((n: number) => 'n ' + n)(P.right(1))
+ * P.either ((e: string) => 'err ' + e) ((n: number) => 'n ' + n) (P.right (1))
  * // => 'n 1'
  * ```
  */
-export function either<E, B>(
-  onLeft: (e: E) => B,
-): <A>(onRight: (a: A) => B) => (e: Either<E, A>) => B {
-  return (onRight) => (e) => e.match (onLeft, onRight)
+export function either<E, B>(onLeft: (e: E) => B) {
+  return <A>(onRight: (a: A) => B) => (e: Either<E, A>): B => e.match (onLeft, onRight)
 }
 
 /**
@@ -445,12 +365,12 @@ export function either<E, B>(
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.fromRight(0)(P.right(1)) // => 1
- * P.fromRight(0)(P.left<string, number>('boom')) // => 0
+ * P.fromRight (0) (P.right (1)) // => 1
+ * P.fromRight (0) (P.left<string, number> ('boom')) // => 0
  * ```
  */
-export function fromRight<A>(d: A): <E>(e: Either<E, A>) => A {
-  return (e) => e.match (() => d, (a) => a)
+export function fromRight<A>(d: A) {
+  return <E>(e: Either<E, A>): A => e.match (() => d, (a) => a)
 }
 
 /**
@@ -459,12 +379,12 @@ export function fromRight<A>(d: A): <E>(e: Either<E, A>) => A {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.fromLeft('none')(P.left('boom')) // => 'boom'
- * P.fromLeft('none')(P.right<string, number>(1)) // => 'none'
+ * P.fromLeft ('none') (P.left ('boom')) // => 'boom'
+ * P.fromLeft ('none') (P.right<string, number> (1)) // => 'none'
  * ```
  */
-export function fromLeft<E>(d: E): <A>(e: Either<E, A>) => E {
-  return (e) => e.match ((l) => l, () => d)
+export function fromLeft<E>(d: E) {
+  return <A>(e: Either<E, A>): E => e.match ((l) => l, () => d)
 }
 
 /**
@@ -473,8 +393,8 @@ export function fromLeft<E>(d: E): <A>(e: Either<E, A>) => E {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.fromEither(P.left(1)) // => 1
- * P.fromEither(P.right(2)) // => 2
+ * P.fromEither (P.left (1)) // => 1
+ * P.fromEither (P.right (2)) // => 2
  * ```
  */
 export function fromEither<A>(e: Either<A, A>): A {
@@ -487,12 +407,12 @@ export function fromEither<A>(e: Either<A, A>): A {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.tagBy((n: number) => n > 0)(1) // => Right (1)
- * P.tagBy((n: number) => n > 0)(-1) // => Left (-1)
+ * P.tagBy ((n: number) => n > 0) (1) // => Right (1)
+ * P.tagBy ((n: number) => n > 0) (-1) // => Left (-1)
  * ```
  */
-export function tagBy<A>(p: (a: A) => boolean): (a: A) => Either<A, A> {
-  return (a) => p (a) ? right (a) : left (a)
+export function tagBy<A>(p: (a: A) => boolean) {
+  return (a: A): Either<A, A> => p (a) ? right (a) : left (a)
 }
 
 /**
@@ -501,13 +421,11 @@ export function tagBy<A>(p: (a: A) => boolean): (a: A) => Either<A, A> {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.eitherFromNullable(() => 'missing')(null) // => Left ("missing")
- * P.eitherFromNullable(() => 'missing')(1) // => Right (1)
+ * P.eitherFromNullable (() => 'missing') (null) // => Left ("missing")
+ * P.eitherFromNullable (() => 'missing') (1) // => Right (1)
  * ```
  */
-export function eitherFromNullable<E>(
-  onNull: () => E,
-): <A>(a: A | null | undefined) => Either<E, A> {
+export function eitherFromNullable<E>(onNull: () => E) {
   return <A>(a: A | null | undefined): Either<E, A> =>
     a === null || a === undefined ? left<E, A> (onNull ()) : right<E, A> (a)
 }
@@ -518,18 +436,18 @@ export function eitherFromNullable<E>(
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * const positive = P.eitherFromPredicate(
+ * const positive = P.eitherFromPredicate (
  *   (n: number) => n > 0,
  *   (n: number) => n + ' is not positive',
  * )
- * positive(1) // => Right (1)
- * positive(-1) // => Left ("-1 is not positive")
+ * positive (1) // => Right (1)
+ * positive (-1) // => Left ("-1 is not positive")
  * ```
  */
 export function eitherFromPredicate<E, A>(
   p: (a: A) => boolean,
   onFail: (a: A) => E,
-): (a: A) => Either<E, A> {
+) {
   return (a: A): Either<E, A> => p (a) ? right<E, A> (a) : left<E, A> (onFail (a))
 }
 
@@ -539,8 +457,8 @@ export function eitherFromPredicate<E, A>(
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.eitherSwap(P.left('boom')) // => Right ("boom")
- * P.eitherSwap(P.right(1)) // => Left (1)
+ * P.eitherSwap (P.left ('boom')) // => Right ("boom")
+ * P.eitherSwap (P.right (1)) // => Left (1)
  * ```
  */
 export function eitherSwap<E, A>(e: Either<E, A>): Either<A, E> {
@@ -556,8 +474,8 @@ export function eitherSwap<E, A>(e: Either<E, A>): Either<A, E> {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.eitherToMaybe(P.right(1)) // => Just (1)
- * P.eitherToMaybe(P.left('boom')) // => Nothing
+ * P.eitherToMaybe (P.right (1)) // => Just (1)
+ * P.eitherToMaybe (P.left ('boom')) // => Nothing
  * ```
  */
 export function eitherToMaybe<E, A>(e: Either<E, A>): Maybe<A> {

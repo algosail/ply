@@ -535,6 +535,8 @@ test ('ap and lift types: reject mixed Array and Set wrappers', () => {
   const arr = [1, 2]
   const set = new Set ([3])
 
+  // @ts-expect-error functions of number against strings
+  const _apWrongArg = () => ap ([(a: number) => a + 1]) (['a', 'a'])
   // @ts-expect-error functions from an Array, a value from a Set
   const _apMixed = () => ap (arrOfFns) (set)
   // @ts-expect-error and the same the other way round

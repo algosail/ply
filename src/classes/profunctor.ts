@@ -1,69 +1,38 @@
-/**
- * Operations and types for adapting inputs and outputs.
- */
-
 import type { KindOf, MatchableIn, SlotAOf, SlotBOf } from '../core/kind.ts'
-import type { Instances } from '../core/named.ts'
 import type { Kind, Shape } from '../core/shape.ts'
 import type { FnShape } from '../natives/function.ts'
 import { dispatch, lazily } from '../core/instance.ts'
 import { Fn } from '../natives/function.ts'
 
-/**
- * Implement these methods on a custom value to support adapting inputs and outputs.
- */
+/** Implement these methods on a custom value to support adapting inputs and outputs. */
 export interface ProfunctorMethods<S, A, B = never> {
-  /**
-   * Transforms inputs with `f` and outputs with `g`.
-   */
+  /** Transforms inputs with `f` and outputs with `g`. */
   promap<X, Y>(f: (y: Y) => B, g: (a: A) => X): KindOf<S, X, Y>
 }
 
-/**
- * Operations for adapting inputs and outputs on values described by `S`.
- */
+/** Operations for adapting inputs and outputs on values described by `S`. */
 export interface ProfunctorDict<S extends Shape> {
-  /**
-   * Transforms inputs with `f` and outputs with `g`.
-   */
-  promap<A, B, X, Y>(
-    fa: Kind<S, A, B>,
-    f: (y: Y) => B,
-    g: (a: A) => X,
-  ): Kind<S, X, Y>
+  /** Transforms inputs with `f` and outputs with `g`. */
+  promap<A, B, X, Y>(fa: Kind<S, A, B>, f: (y: Y) => B, g: (a: A) => X): Kind<S, X, Y>
 }
 
-/**
- * Names of the operations in `ProfunctorDict`.
- */
+/** Names of the operations in `ProfunctorDict`. */
 export type ProfunctorKeys = keyof ProfunctorDict<Shape> & string
 
-/**
- * Native generic types accepted by the `Profunctor` constraint.
- */
+/** Native generic types accepted by the `Profunctor` constraint. */
 export interface ProfunctorShapes {
-  /**
-   * The shape used for `Fn` values.
-   */
   readonly Fn: FnShape
 }
 
-/**
- * A constraint for values that support adapting inputs and outputs.
- */
+/** A constraint for values that support adapting inputs and outputs. */
 export type Profunctor<S, A = SlotAOf<S>, B = SlotBOf<S>> =
   | ProfunctorMethods<S, A, B>
   | MatchableIn<ProfunctorShapes, A, B>
 
 type ProfunctorDicts = <S extends Shape>(s: S) => ProfunctorDict<S>
 
-/**
- * Native implementations of this module's operations, keyed by type name.
- */
-export const profunctorNatives: Instances<
-  ProfunctorDicts,
-  ProfunctorShapes
-> = lazily<ProfunctorDicts, ProfunctorShapes> ({
+/** Native implementations of this module's operations, keyed by type name. */
+export const profunctorNatives = lazily<ProfunctorDicts, ProfunctorShapes> ({
   Fn: () => Fn,
 })
 
@@ -75,22 +44,14 @@ export const profunctorNatives: Instances<
  *
  * const step = (n: number) => n + 1
  *
- * P.promap((s: string) => s.length)((n: number) => n > 3)(step)('abc')
+ * P.promap ((s: string) => s.length) ((n: number) => n > 3) (step) ('abc')
  * // => true
- * P.promap((s: string) => s.length)((n: number) => n > 3)(step)('ab')
+ * P.promap ((s: string) => s.length) ((n: number) => n > 3) (step) ('ab')
  * // => false
  * ```
  */
-export function promap<M, I>(
-  f: (m: M) => I,
-): <O, B>(
-  g: (o: O) => B,
-) => <F extends Profunctor<F, O, I> | ((i: I) => O)>(fa: F) => KindOf<F, B, M> {
+export function promap<M, I>(f: (m: M) => I) {
   return <O, B>(g: (o: O) => B) =>
   <F extends Profunctor<F, O, I> | ((i: I) => O)>(fa: F) =>
-    dispatch ('promap', 'Profunctor', profunctorNatives, fa, f, g) as KindOf<
-      F,
-      B,
-      M
-    >
+    dispatch ('promap', 'Profunctor', profunctorNatives, fa, f, g) as KindOf<F, B, M>
 }

@@ -1,7 +1,3 @@
-/**
- * Operations and types for transforming both sides with `bimap`.
- */
-
 import type {
   Assert,
   KindOf,
@@ -15,60 +11,37 @@ import type { Kind, Shape } from '../core/shape.ts'
 import type { FunctorDict, FunctorMethods, FunctorShapes } from './functor.ts'
 import { dispatch } from '../core/instance.ts'
 
-/**
- * Implement these methods on a custom value to support transforming both sides with `bimap`.
- */
+/** Implement these methods on a custom value to support transforming both sides with `bimap`. */
 export interface BifunctorMethods<S, A, B = never>
   extends FunctorMethods<S, A, B> {
-  /**
-   * Transforms the left side with `f` and the right side with `g`.
-   */
+  /** Transforms the left side with `f` and the right side with `g`. */
   bimap<X, Y>(f: (b: B) => Y, g: (a: A) => X): KindOf<S, X, Y>
 }
 
-/**
- * Operations for transforming both sides with `bimap` on values described by `S`.
- */
+/** Operations for transforming both sides with `bimap` on values described by `S`. */
 export interface BifunctorDict<S extends Shape> extends FunctorDict<S> {
-  /**
-   * Transforms the left side with `f` and the right side with `g`.
-   */
-  bimap<A, B, X, Y>(
-    fa: Kind<S, A, B>,
-    f: (b: B) => Y,
-    g: (a: A) => X,
-  ): Kind<S, X, Y>
+  /** Transforms the left side with `f` and the right side with `g`. */
+  bimap<A, B, X, Y>(fa: Kind<S, A, B>, f: (b: B) => Y, g: (a: A) => X): Kind<S, X, Y>
 }
 
-/**
- * Names of the operations in `BifunctorDict`.
- */
+/** Names of the operations in `BifunctorDict`. */
 export type BifunctorKeys = keyof BifunctorDict<Shape> & string
 
-/**
- * Native generic types accepted by the `Bifunctor` constraint.
- */
+/** Native generic types accepted by the `Bifunctor` constraint. */
 export type BifunctorShapes = Record<never, never>
 
-/**
- * Checks that the declared native types also satisfy the parent capabilities.
- */
-export type _BifunctorUnderFunctor = Assert<
-  SubclassOf<BifunctorShapes, FunctorShapes>
->
+/** Checks that the declared native types also satisfy the parent capabilities. */
+export type _BifunctorUnderFunctor =
+  Assert<SubclassOf<BifunctorShapes, FunctorShapes>>
 
-/**
- * A constraint for values that support transforming both sides with `bimap`.
- */
+/** A constraint for values that support transforming both sides with `bimap`. */
 export type Bifunctor<S, A = SlotAOf<S>, B = SlotBOf<S>> =
   | BifunctorMethods<S, A, B>
   | MatchableIn<BifunctorShapes, A, B>
 
 type BifunctorDicts = <S extends Shape>(s: S) => BifunctorDict<S>
 
-/**
- * Native implementations of this module's operations, keyed by type name.
- */
+/** Native implementations of this module's operations, keyed by type name. */
 export const bifunctorNatives: Instances<BifunctorDicts, BifunctorShapes> = {}
 
 /**
@@ -77,26 +50,19 @@ export const bifunctorNatives: Instances<BifunctorDicts, BifunctorShapes> = {}
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * const f = P.bimap((e: string) => e.length)((n: number) => n + 1)
- * f(P.right<string, number>(1)) // => Right (2)
- * f(P.left<string, number>('no')) // => Left (2)
+ * const f = P.bimap ((e: string) => e.length) ((n: number) => n + 1)
+ * f (P.right<string, number> (1)) // => Right (2)
+ * f (P.left<string, number> ('no')) // => Left (2)
  *
- * P.bimap((l: string) => l.toUpperCase())((n: number) => n + 1)(
- *   P.pair('log', 1),
- * ) // => Pair ("LOG") (2)
+ * P.bimap ((l: string) => l.toUpperCase ())
+ *         ((n: number) => n + 1)
+ *         (P.pair ('log', 1))
+ * // => Pair ("LOG") (2)
  * ```
  */
-export function bimap<B, Y>(
-  f: (b: B) => Y,
-): <A, X>(
-  g: (a: A) => X,
-) => <F extends Bifunctor<F, A, B>>(fa: F) => KindOf<F, X, Y> {
+export function bimap<B, Y>(f: (b: B) => Y) {
   return <A, X>(g: (a: A) => X) => <F extends Bifunctor<F, A, B>>(fa: F) =>
-    dispatch ('bimap', 'Bifunctor', bifunctorNatives, fa, f, g) as KindOf<
-      F,
-      X,
-      Y
-    >
+    dispatch ('bimap', 'Bifunctor', bifunctorNatives, fa, f, g) as KindOf<F, X, Y>
 }
 
 /**
@@ -105,25 +71,12 @@ export function bimap<B, Y>(
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * const shout = P.mapLeft((e: string) => e.toUpperCase())
- * shout(P.left<string, number>('no')) // => Left ("NO")
- * shout(P.right<string, number>(1)) // => Right (1)
+ * const shout = P.mapLeft ((e: string) => e.toUpperCase ())
+ * shout (P.left<string, number> ('no')) // => Left ("NO")
+ * shout (P.right<string, number> (1)) // => Right (1)
  * ```
  */
-export function mapLeft<B, Y>(
-  f: (b: B) => Y,
-): <F extends Bifunctor<F, SlotAOf<F>, B>>(fa: F) => KindOf<F, SlotAOf<F>, Y> {
+export function mapLeft<B, Y>(f: (b: B) => Y) {
   return <F extends Bifunctor<F, SlotAOf<F>, B>>(fa: F) =>
-    dispatch (
-      'bimap',
-      'Bifunctor',
-      bifunctorNatives,
-      fa,
-      f,
-      (a: unknown) => a,
-    ) as KindOf<
-      F,
-      SlotAOf<F>,
-      Y
-    >
+    dispatch ('bimap', 'Bifunctor', bifunctorNatives, fa, f, (a: unknown) => a) as KindOf<F, SlotAOf<F>, Y>
 }

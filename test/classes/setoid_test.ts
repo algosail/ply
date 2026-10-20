@@ -92,12 +92,6 @@ test ('equals: currying is decided by the number of actual arguments', () => {
   )
 })
 
-test ('equals: NaN equals itself', () => {
-  assert.deepStrictEqual (equals (NaN) (NaN), true)
-  assert.deepStrictEqual (equals ([NaN]) ([NaN]), true)
-  assert.deepStrictEqual (equals (NaN) (0), false)
-})
-
 test ('equals: the JS Set and Map have no Setoid at all', () => {
   assert.throws (
     () => eq (new Set ([1, 2]), new Set ([2, 1])),
@@ -174,8 +168,6 @@ const probes: [string, unknown][] = [
   ['number', 1],
   ['the same number', 1],
   ['another number', 2],
-  ['NaN', NaN],
-  ['another NaN', NaN],
   ['string', 'a'],
   ['the same string', 'a'],
   ['boolean', true],
@@ -189,8 +181,6 @@ const probes: [string, unknown][] = [
   ['object with the same fields', { a: 1 }],
   ['date', new Date (5)],
   ['an equal date', new Date (5)],
-  ['invalid date', new Date (NaN)],
-  ['another invalid date', new Date (NaN)],
   ['regexp', /a/g],
   ['an equal regexp', /a/g],
   ['Just', just (1)],

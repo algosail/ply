@@ -1,7 +1,3 @@
-/**
- * Infer and replace the type arguments of native or custom generic values.
- */
-
 import type { ArrayShape } from '../natives/array.ts'
 import type { FnShape } from '../natives/function.ts'
 import type { MapShape } from '../natives/map.ts'
@@ -58,9 +54,7 @@ export type KindLike<S, A, B> = S extends Widened
  */
 export type MatchableName = keyof Matchables
 
-/**
- * Shapes of native generic types whose type arguments ply can infer.
- */
+/** Shapes of native generic types whose type arguments ply can infer. */
 export type MatchableShapes = Matchables[MatchableName]
 
 /**
@@ -81,9 +75,11 @@ export type MatchableIn<Shapes, A, B = never> = {
 
 type MatchedShape<F> = MatchShape<F, MatchableShapes>
 type MatchShape<F, S> = S extends Matchable
-  ? unknown extends KindLike<S, unknown, unknown> ? never
-  : [F] extends [KindLike<S, unknown, unknown>] ? S
-  : never
+  ? unknown extends KindLike<S, unknown, unknown>
+    ? never
+    : [F] extends [KindLike<S, unknown, unknown>]
+      ? S
+      : never
   : never
 
 /**
@@ -99,14 +95,17 @@ type MatchShape<F, S> = S extends Matchable
  */
 export type ShapeOf<F> = F extends Shaped<Shape> ? F['_shape'] : MatchedShape<F>
 
-type SlotOf<F, K extends 'readA' | 'readB', P extends '_A' | '_B'> = F extends
-  Shaped<Shape> ? PhantomOf<F, P>
-  : [MatchedShape<F>] extends [never] ? PhantomOf<F, P>
-  : Sub<MatchedShape<F>, { readonly val: F }, K>
+type SlotOf<F, K extends 'readA' | 'readB', P extends '_A' | '_B'> = F extends Shaped<Shape>
+  ? PhantomOf<F, P>
+  : [MatchedShape<F>] extends [never]
+    ? PhantomOf<F, P>
+    : Sub<MatchedShape<F>, { readonly val: F }, K>
 
 type PhantomOf<F, P extends '_A' | '_B'> = P extends '_B'
-  ? F extends { [K in P]?: (_: infer B) => void } ? B : never
-  : F extends { readonly [K in P]?: (_: never) => infer A } ? A
+  ? F extends { [K in P]?: (_: infer B) => void }
+    ? B : never
+  : F extends { readonly [K in P]?: (_: never) => infer A }
+  ? A
   : never
 
 /**
@@ -166,11 +165,13 @@ export type KindOf<F, A, B = SlotBOf<F>> = F extends Shaped<Shape>
  */
 export type MemberOf<L extends Shape> = L extends Widened
   ? KindLike<L, unknown, unknown>
-  : Kind<L, unknown, L['slotBVariance'] extends 'in' ? never : unknown>
+  : Kind<L, unknown, L['slotBVariance'] extends 'in'
+    ? never : unknown>
 
-type AtBy<S, A, B> = [S] extends [never] ? never
-  : [S] extends [Shape] ? Kind<S, A, B>
-  : never
+type AtBy<S, A, B> = [S] extends [never]
+  ? never
+  : [S] extends [Shape]
+    ? Kind<S, A, B> : never
 
 /**
  * Combines secondary type arguments when combining two wrapped values.
@@ -186,9 +187,10 @@ type AtBy<S, A, B> = [S] extends [never] ? never
  * ```
  */
 export type BothB<F, B1, B2> =
-  Exclude<ShapeOf<F>['slotBVariance'], undefined> extends 'in' ? B1 & B2
-    : Exclude<ShapeOf<F>['slotBVariance'], undefined> extends 'same' ? B1
-    : B1 | B2
+  Exclude<ShapeOf<F>['slotBVariance'], undefined> extends 'in'
+    ? B1 & B2
+    : Exclude<ShapeOf<F>['slotBVariance'], undefined> extends 'same'
+      ? B1 : B1 | B2
 
 /**
  * Constrains two values to use the same wrapper for `ap` or `chain`.
@@ -204,28 +206,19 @@ export type BothB<F, B1, B2> =
  */
 export type SameTypeAs<Other, Anchor> = [ShapeOf<Other>] extends [never]
   ? unknown
-  : [ShapeOf<Anchor>] extends [never] ? unknown
-  : [ShapeOf<Other>] extends [ShapeOf<Anchor>] ? SameSlotBAs<Other, Anchor>
-  : Fail<
-    `ap and chain need one and the same type on both sides: ${NameOfShape<
-      ShapeOf<Anchor>
-    >} against ${NameOfShape<ShapeOf<Other>>}`
-  >
+  : [ShapeOf<Anchor>] extends [never]
+    ? unknown
+    : [ShapeOf<Other>] extends [ShapeOf<Anchor>]
+      ? SameSlotBAs<Other, Anchor>
+      : Fail<`ap and chain need one and the same type on both sides: ${NameOfShape<ShapeOf<Anchor>>} against ${NameOfShape<ShapeOf<Other>>}`>
 
 type SameSlotBAs<Other, Anchor> =
   Exclude<ShapeOf<Anchor>['slotBVariance'], undefined> extends 'same'
     ? [SlotBOf<Other>] extends [SlotBOf<Anchor>]
-      ? [SlotBOf<Anchor>] extends [SlotBOf<Other>] ? unknown
-      : Fail<
-        `${NameOfShape<
-          ShapeOf<Anchor>
-        >} uses its second slot rather than carrying it, so both sides must agree`
-      >
-    : Fail<
-      `${NameOfShape<
-        ShapeOf<Anchor>
-      >} uses its second slot rather than carrying it, so both sides must agree`
-    >
+      ? [SlotBOf<Anchor>] extends [SlotBOf<Other>]
+        ? unknown
+        : Fail<`${NameOfShape<ShapeOf<Anchor>>} uses its second slot rather than carrying it, so both sides must agree`>
+      : Fail<`${NameOfShape<ShapeOf<Anchor>>} uses its second slot rather than carrying it, so both sides must agree`>
     : unknown
 
 /**
@@ -243,36 +236,40 @@ type SameSlotBAs<Other, Anchor> =
  */
 export type ComposableWith<First, Second> = [ShapeOf<First>] extends [never]
   ? unknown
-  : [ShapeOf<Second>] extends [never] ? unknown
-  : [ShapeOf<First>] extends [ShapeOf<Second>] ? JointOf<First, Second>
-  : Fail<
-    `compose needs both arrows in one category: ${NameOfShape<
-      ShapeOf<First>
-    >} against ${NameOfShape<ShapeOf<Second>>}`
-  >
+  : [ShapeOf<Second>] extends [never]
+    ? unknown
+    : [ShapeOf<First>] extends [ShapeOf<Second>]
+      ? JointOf<First, Second>
+      : Fail<`compose needs both arrows in one category: ${NameOfShape<ShapeOf<First>>} against ${NameOfShape<ShapeOf<Second>>}`>
 
 type JointOf<First, Second> =
   Exclude<ShapeOf<Second>['slotBVariance'], undefined> extends 'in'
-    ? [SlotAOf<First>] extends [SlotBOf<Second>] ? unknown
-    : Fail<
-      'compose needs the ends to meet: what the first arrow gives is not accepted by the second'
-    >
+    ? [SlotAOf<First>] extends [SlotBOf<Second>]
+      ? unknown
+      : Fail<'compose needs the ends to meet: what the first arrow gives is not accepted by the second'>
     : [SlotAOf<First>] extends [SlotBOf<Second>]
-      ? [SlotBOf<Second>] extends [SlotAOf<First>] ? unknown
-      : Fail<
-        `${NameOfShape<
-          ShapeOf<Second>
-        >} does not merely consume the joint, so both ends must agree`
-      >
-    : Fail<
-      `${NameOfShape<
-        ShapeOf<Second>
-      >} does not merely consume the joint, so both ends must agree`
-    >
+      ? [SlotBOf<Second>] extends [SlotAOf<First>]
+        ? unknown
+        : Fail<`${NameOfShape<ShapeOf<Second>>} does not merely consume the joint, so both ends must agree`>
+      : Fail<`${NameOfShape<ShapeOf<Second>>} does not merely consume the joint, so both ends must agree`>
 
-type NameOfShape<S> = [S] extends [never] ? 'nothing'
-  : S extends Shape ? S['name']
-  : 'nothing'
+type NameOfShape<S> = [S] extends [never]
+  ? 'nothing'
+  : S extends Shape
+    ? S['name'] : 'nothing'
+
+/**
+ * Extracts the argument type of a contained function.
+ * @example
+ * ```ts
+ * import type { ArgOfSlotA } from './kind.ts'
+ *
+ * type In = ArgOfSlotA<((a: number) => string)[]> // => number
+ * type None = ArgOfSlotA<number[]> // => never
+ * ```
+ */
+export type ArgOfSlotA<F> = SlotAOf<F> extends (a: infer A) => unknown
+  ? A : never
 
 /**
  * Extracts the return type of a contained function.
@@ -284,8 +281,26 @@ type NameOfShape<S> = [S] extends [never] ? 'nothing'
  * type None = ReturnOfSlotA<number[]> // => never
  * ```
  */
-export type ReturnOfSlotA<G> = SlotAOf<G> extends (a: never) => infer B ? B
-  : never
+export type ReturnOfSlotA<G> = SlotAOf<G> extends (a: never) => infer B
+  ? B : never
+
+/**
+ * Constrains wrapped values to be accepted by wrapped functions for `ap`.
+ * @example
+ * ```ts
+ * import type { ApplicableAs } from './kind.ts'
+ *
+ * type Ok = ApplicableAs<number[], ((a: number) => string)[]> // => unknown
+ * type No = ApplicableAs<string[], ((a: number) => string)[]>
+ * // => Fail<'ap needs the wrapped values to be accepted by the wrapped functions'>
+ * ```
+ */
+export type ApplicableAs<Values, Functions> =
+  [ArgOfSlotA<Functions>] extends [never]
+    ? unknown
+    : [SlotAOf<Values>] extends [ArgOfSlotA<Functions>]
+      ? unknown
+      : Fail<'ap needs the wrapped values to be accepted by the wrapped functions'>
 
 /**
  * Describes a named representative for a shape and optional secondary type.
@@ -315,7 +330,8 @@ export interface TypeRepBase<S extends Shape, B = never>
  * ```
  */
 export type RepIn<S extends Shape, B, Shapes, Sig> =
-  [Extract<Shapes[keyof Shapes], S>] extends [never] ? TypeRepBase<S, B> & Sig
+  [Extract<Shapes[keyof Shapes], S>] extends [never]
+    ? TypeRepBase<S, B> & Sig
     : TypeRepBase<S, B>
 
 /**
@@ -348,14 +364,10 @@ export type Assert<T extends true> = T
  */
 export type SubclassOf<Child, Parent> =
   [Exclude<keyof Child, keyof Parent>] extends [never]
-    ? Child extends Pick<Parent, keyof Child & keyof Parent> ? true
-    : Fail<'Shape of form type in superclass is different'>
-    : Fail<
-      `Type without superclass: ${Extract<
-        Exclude<keyof Child, keyof Parent>,
-        string
-      >}`
-    >
+    ? Child extends Pick<Parent, keyof Child & keyof Parent>
+      ? true
+      : Fail<'Shape of form type in superclass is different'>
+    : Fail<`Type without superclass: ${Extract<Exclude<keyof Child, keyof Parent>, string>}`>
 
 type Missing<S extends Shape, Method extends string> = Exclude<
   Method,
@@ -375,7 +387,8 @@ type Missing<S extends Shape, Method extends string> = Exclude<
  * ```
  */
 export type Superclass<S extends Shape, Method extends string, R> =
-  [Missing<S, Method>] extends [never] ? R
+  [Missing<S, Method>] extends [never]
+    ? R
     : Fail<`Type ${S['name']} does not implement ${Missing<S, Method>}`>
 
 /**

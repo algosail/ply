@@ -1,7 +1,3 @@
-/**
- * Operations and types for slicing, sorting, and rebuilding collections.
- */
-
 import type {
   Assert,
   KindOf,
@@ -36,53 +32,33 @@ import { monoidNatives } from './monoid.ts'
 import { lte } from './ord.ts'
 import { concat } from './semigroup.ts'
 
-/**
- * Operations for slicing, sorting, and rebuilding collections on values described by `S`.
- */
+/** Operations for slicing, sorting, and rebuilding collections on values described by `S`. */
 export interface ApplicativeFoldableMonoidDict<S extends Shape>
   extends ApplicativeSemigroupDict<S>, FoldableDict<S>, MonoidDict<S> {}
 
-/**
- * Names of the operations in `ApplicativeFoldableMonoidDict`.
- */
+/** Names of the operations in `ApplicativeFoldableMonoidDict`. */
 export type ApplicativeFoldableMonoidKeys =
   & keyof ApplicativeFoldableMonoidDict<Shape>
   & string
 
-/**
- * Native generic types accepted by the `ApplicativeFoldableMonoid` constraint.
- */
+/** Native generic types accepted by the `ApplicativeFoldableMonoid` constraint. */
 export interface ApplicativeFoldableMonoidShapes {
-  /**
-   * The shape used for `Array` values.
-   */
   readonly Array: ArrayShape
 }
 
-/**
- * Checks that the declared native types also satisfy the parent capabilities.
- */
-export type _RebuildableUnderBuildable = Assert<
-  SubclassOf<ApplicativeFoldableMonoidShapes, ApplicativeSemigroupShapes>
->
+/** Checks that the declared native types also satisfy the parent capabilities. */
+export type _RebuildableUnderBuildable =
+  Assert<SubclassOf<ApplicativeFoldableMonoidShapes, ApplicativeSemigroupShapes>>
 
-/**
- * Checks that the declared native types also satisfy the parent capabilities.
- */
-export type _RebuildableUnderFoldable = Assert<
-  SubclassOf<ApplicativeFoldableMonoidShapes, FoldableShapes>
->
+/** Checks that the declared native types also satisfy the parent capabilities. */
+export type _RebuildableUnderFoldable =
+  Assert<SubclassOf<ApplicativeFoldableMonoidShapes, FoldableShapes>>
 
-/**
- * Checks that the declared native types also satisfy the parent capabilities.
- */
-export type _RebuildableUnderMonoid = Assert<
-  SubclassOf<ApplicativeFoldableMonoidShapes, MonoidShapes>
->
+/** Checks that the declared native types also satisfy the parent capabilities. */
+export type _RebuildableUnderMonoid =
+  Assert<SubclassOf<ApplicativeFoldableMonoidShapes, MonoidShapes>>
 
-/**
- * A constraint for values that support slicing, sorting, and rebuilding collections.
- */
+/** A constraint for values that support slicing, sorting, and rebuilding collections. */
 export type ApplicativeFoldableMonoid<S, A = SlotAOf<S>, B = SlotBOf<S>> =
   | (
     & FoldableMethods<S, A, B>
@@ -104,12 +80,11 @@ const rebuild = (sample: unknown, xs: readonly unknown[]): unknown => {
   )
 }
 
-const comparing =
-  (key: (a: unknown) => unknown) => (a: unknown, b: unknown) => {
-    const ka = key (a), kb = key (b)
-    const le = (x: unknown, y: unknown) => lte (y as never) (x as never)
-    return le (ka, kb) ? (le (kb, ka) ? 0 : -1) : 1
-  }
+const comparing = (key: (a: unknown) => unknown) => (a: unknown, b: unknown) => {
+  const ka = key (a), kb = key (b)
+  const le = (x: unknown, y: unknown) => lte (y as never) (x as never)
+  return le (ka, kb) ? (le (kb, ka) ? 0 : -1) : 1
+}
 
 /**
  * Returns a collection with its values in reverse order, without changing the input.
@@ -117,16 +92,11 @@ const comparing =
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.reverse([1, 2, 3]) // => [3, 2, 1]
+ * P.reverse ([1, 2, 3]) // => [3, 2, 1]
  * ```
  */
 export function reverse<A>(fa: readonly A[]): A[]
-/**
- * Returns a collection with its values in reverse order, without changing the input.
- */
-export function reverse<F extends ApplicativeFoldableMonoid<F>>(
-  fa: F,
-): KindOf<F, SlotAOf<F>>
+export function reverse<F extends ApplicativeFoldableMonoid<F>>(fa: F): KindOf<F, SlotAOf<F>>
 export function reverse(fa: unknown): unknown {
   if (Array.isArray (fa)) return [...fa].reverse ()
   return rebuild (fa, elementsOf (fa).reverse ())
@@ -138,17 +108,12 @@ export function reverse(fa: unknown): unknown {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.sort([3, 1, 2]) // => [1, 2, 3]
- * P.sort(['pear', 'fig', 'apple']) // => ['apple', 'fig', 'pear']
+ * P.sort ([3, 1, 2]) // => [1, 2, 3]
+ * P.sort (['pear', 'fig', 'apple']) // => ['apple', 'fig', 'pear']
  * ```
  */
 export function sort<A>(fa: readonly A[]): A[]
-/**
- * Returns values in ascending order using ply's ordering, without changing the input.
- */
-export function sort<F extends ApplicativeFoldableMonoid<F>>(
-  fa: F,
-): KindOf<F, SlotAOf<F>>
+export function sort<F extends ApplicativeFoldableMonoid<F>>(fa: F): KindOf<F, SlotAOf<F>>
 export function sort(fa: unknown): unknown {
   const cmp = comparing ((x: unknown) => x)
   if (Array.isArray (fa)) return [...fa].sort (cmp)
@@ -161,13 +126,11 @@ export function sort(fa: unknown): unknown {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.sortBy((s: string) => s.length)(['pear', 'fig', 'apple'])
+ * P.sortBy ((s: string) => s.length) (['pear', 'fig', 'apple'])
  * // => ['fig', 'pear', 'apple']
  * ```
  */
-export function sortBy<A>(
-  f: (a: A) => unknown,
-): <F extends ApplicativeFoldableMonoid<F, A>>(fa: F) => KindOf<F, A> {
+export function sortBy<A>(f: (a: A) => unknown) {
   return <F extends ApplicativeFoldableMonoid<F, A>>(fa: F) => {
     const cmp = comparing (f as (a: unknown) => unknown)
     if (Array.isArray (fa)) return [...fa].sort (cmp) as KindOf<F, A>
@@ -180,10 +143,9 @@ interface Slice {
   <F extends ApplicativeFoldableMonoid<F>>(fa: F): Maybe<KindOf<F, SlotAOf<F>>>
 }
 
-const sliced = (
-  fa: unknown,
-  at: (len: number) => [number, number] | undefined,
-): unknown => {
+type At = (len: number) => [number, number] | undefined
+
+const sliced = (fa: unknown, at: At): unknown => {
   const xs = elementsOf (fa)
   const span = at (xs.length)
   if (span === undefined) return nothing ()
@@ -196,18 +158,18 @@ const sliced = (
  * @throws {TypeError} If `n` is not an integer.
  * @example
  * ```ts
- * import { assertThrows } from '@std/assert'
  * import * as P from '@algosail/ply'
+ * import { assertThrows } from '@std/assert'
  *
- * P.take(2)([1, 2, 3]) // => Just ([1, 2])
- * P.take(5)([1, 2, 3]) // => Nothing
- * assertThrows(() => P.take(1.5), TypeError, 'take: 1.5 is not an integer')
+ * P.take (2) ([1, 2, 3]) // => Just ([1, 2])
+ * P.take (5) ([1, 2, 3]) // => Nothing
+ * assertThrows (() => P.take (1.5), TypeError, 'take: 1.5 is not an integer')
  * ```
  */
 export function take(n: number): Slice {
   integer ('take', n)
-  return ((fa: unknown) =>
-    sliced (fa, (len) => n < 0 || n > len ? undefined : [0, n])) as Slice
+  const at: At = (len) => n < 0 || n > len ? undefined : [0, n]
+  return ((fa: unknown) => sliced (fa, at)) as Slice
 }
 
 /**
@@ -217,14 +179,14 @@ export function take(n: number): Slice {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.drop(1)([1, 2, 3]) // => Just ([2, 3])
- * P.drop(5)([1, 2, 3]) // => Nothing
+ * P.drop (1) ([1, 2, 3]) // => Just ([2, 3])
+ * P.drop (5) ([1, 2, 3]) // => Nothing
  * ```
  */
 export function drop(n: number): Slice {
   integer ('drop', n)
-  return ((fa: unknown) =>
-    sliced (fa, (len) => n < 0 || n > len ? undefined : [n, len])) as Slice
+  const at: At = (len) => n < 0 || n > len ? undefined : [n, len]
+  return ((fa: unknown) => sliced (fa, at)) as Slice
 }
 
 /**
@@ -234,14 +196,14 @@ export function drop(n: number): Slice {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.takeLast(2)([1, 2, 3]) // => Just ([2, 3])
- * P.takeLast(5)([1, 2, 3]) // => Nothing
+ * P.takeLast (2) ([1, 2, 3]) // => Just ([2, 3])
+ * P.takeLast (5) ([1, 2, 3]) // => Nothing
  * ```
  */
 export function takeLast(n: number): Slice {
   integer ('takeLast', n)
-  return ((fa: unknown) =>
-    sliced (fa, (len) => n < 0 || n > len ? undefined : [len - n, len])) as Slice
+  const at: At = (len) => n < 0 || n > len ? undefined : [len - n, len]
+  return ((fa: unknown) => sliced (fa, at)) as Slice
 }
 
 /**
@@ -251,14 +213,15 @@ export function takeLast(n: number): Slice {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.dropLast(1)([1, 2, 3]) // => Just ([1, 2])
- * P.dropLast(5)([1, 2, 3]) // => Nothing
+ * P.dropLast (1) ([1, 2, 3]) // => Just ([1, 2])
+ * P.dropLast (5) ([1, 2, 3]) // => Nothing
  * ```
  */
 export function dropLast(n: number): Slice {
   integer ('dropLast', n)
-  return ((fa: unknown) =>
-    sliced (fa, (len) => n < 0 || n > len ? undefined : [0, len - n])) as Slice
+  const at = (len: number): [number, number] | undefined =>
+    n < 0 || n > len ? undefined : [0, len - n]
+  return ((fa: unknown) => sliced (fa, at)) as Slice
 }
 
 /**
@@ -267,19 +230,15 @@ export function dropLast(n: number): Slice {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.tail([1, 2, 3]) // => Just ([2, 3])
- * P.tail([]) // => Nothing
+ * P.tail ([1, 2, 3]) // => Just ([2, 3])
+ * P.tail ([]) // => Nothing
  * ```
  */
 export function tail<A>(xs: readonly A[]): Maybe<A[]>
-/**
- * Returns all values except the first, wrapped in `Just`.
- */
-export function tail<F extends ApplicativeFoldableMonoid<F>>(
-  fa: F,
-): Maybe<KindOf<F, SlotAOf<F>>>
+export function tail<F extends ApplicativeFoldableMonoid<F>>(fa: F): Maybe<KindOf<F, SlotAOf<F>>>
 export function tail(fa: unknown): unknown {
-  return sliced (fa, (len) => len === 0 ? undefined : [1, len])
+  const at: At = (len) => len === 0 ? undefined : [1, len]
+  return sliced (fa, at)
 }
 
 /**
@@ -288,17 +247,13 @@ export function tail(fa: unknown): unknown {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.init([1, 2, 3]) // => Just ([1, 2])
- * P.init([]) // => Nothing
+ * P.init ([1, 2, 3]) // => Just ([1, 2])
+ * P.init ([]) // => Nothing
  * ```
  */
 export function init<A>(xs: readonly A[]): Maybe<A[]>
-/**
- * Returns all values except the last, wrapped in `Just`.
- */
-export function init<F extends ApplicativeFoldableMonoid<F>>(
-  fa: F,
-): Maybe<KindOf<F, SlotAOf<F>>>
+export function init<F extends ApplicativeFoldableMonoid<F>>(fa: F): Maybe<KindOf<F, SlotAOf<F>>>
 export function init(fa: unknown): unknown {
-  return sliced (fa, (len) => len === 0 ? undefined : [0, len - 1])
+  const at: At = (len) => len === 0 ? undefined : [0, len - 1]
+  return sliced (fa, at)
 }
