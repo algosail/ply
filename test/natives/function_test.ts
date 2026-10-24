@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import type { Maybe } from '../../src/data/maybe.ts'
+import type { StrMap } from '../../src/natives/strmap.ts'
 import { reverse, tail } from '../../src/classes/_rebuild.ts'
 import { of } from '../../src/classes/applicative.ts'
 import { ap } from '../../src/classes/apply.ts'
@@ -9,11 +10,12 @@ import { chain } from '../../src/classes/chain.ts'
 import { contramap } from '../../src/classes/contravariant.ts'
 import { head, toArray } from '../../src/classes/foldable.ts'
 import { map } from '../../src/classes/functor.ts'
+import { gte, lte } from '../../src/classes/ord.ts'
 import { promap } from '../../src/classes/profunctor.ts'
 import { concat } from '../../src/classes/semigroup.ts'
 import { compose } from '../../src/classes/semigroupoid.ts'
 import { show } from '../../src/classes/show.ts'
-import { just, nothing } from '../../src/data/maybe.ts'
+import { fromPredicate, just, nothing } from '../../src/data/maybe.ts'
 import {
   curry2,
   curry3,
@@ -30,6 +32,8 @@ import {
   tap,
 } from '../../src/natives/function.ts'
 import { add, sub } from '../../src/natives/number.ts'
+import { trim } from '../../src/natives/string.ts'
+import { lookup } from '../../src/natives/strmap.ts'
 
 test ('K: creates a function that always returns the supplied value', () => {
   assert.deepStrictEqual (K ('foo') ('bar'), 'foo')
@@ -72,35 +76,31 @@ test ('on: both sides go through one and the same preparation', () => {
 })
 
 test ('pipe: runs functions from left to right', () => {
-  assert.deepStrictEqual (pipe ([add (1), Math.sqrt, sub (1)]) (99), 9)
+  assert.deepStrictEqual (pipe (add (1), Math.sqrt, sub (1)) (99), 9)
 })
 
 test ('pipe: the links go left to right', () => {
-  const trail = pipe ([
+  const trail = pipe (
     (s: unknown) => `${s}a`,
     (s: unknown) => `${s}b`,
     (s: unknown) => `${s}c`,
-  ]) ('')
+  ) ('')
 
   assert.deepStrictEqual (trail, 'abc')
 })
 
 test ('pipe: an empty pipeline is the identity', () => {
-  assert.deepStrictEqual (pipe ([]) (7), 7)
-  assert.deepStrictEqual (pipe ([]) ('string'), 'string')
-})
-
-test ('pipe: any Foldable will do, not only an array', () => {
-  assert.deepStrictEqual (pipe ({ 1: add (1), 2: doubleNumber }) (10), 22)
+  assert.deepStrictEqual (pipe () (7), 7)
+  assert.deepStrictEqual (pipe () ('string'), 'string')
 })
 
 test ('pipeK: chains wrapped computations from left to right', () => {
-  assert.deepStrictEqual (pipeK ([tail, tail, head]) (just ([1, 2, 3, 4])), just (3))
+  assert.deepStrictEqual (pipeK (tail, tail, head) (just ([1, 2, 3, 4])), just (3))
 })
 
 test ('pipeK: an empty pipeline is the identity', () => {
-  assert.deepStrictEqual (pipeK ([]) (just (7)), just (7))
-  assert.deepStrictEqual (pipeK ([]) ([1, 2]), [1, 2])
+  assert.deepStrictEqual (pipeK () (just (7)), just (7))
+  assert.deepStrictEqual (pipeK () ([1, 2]), [1, 2])
 })
 
 test ('pipeK: works in any monad, not only in Maybe', () => {
@@ -108,9 +108,9 @@ test ('pipeK: works in any monad, not only in Maybe', () => {
     return [n, n]
   }
 
-  assert.deepStrictEqual (pipeK ([(n: number) => [n, n + 1]]) ([1, 10]), [1, 2, 10, 11])
+  assert.deepStrictEqual (pipeK ((n: number) => [n, n + 1]) ([1, 10]), [1, 2, 10, 11])
   assert.deepStrictEqual (
-    pipeK ([repeatNumber, (n: number) => [n + 1]]) ([1]),
+    pipeK (repeatNumber, (n: number) => [n + 1]) ([1]),
     [2, 2],
   )
 })
@@ -259,7 +259,7 @@ test ('Fn.show: formats values as readable strings', () => {
 })
 
 test ('pipe: passes only the value to Number.parseInt', () => {
-  assert.deepStrictEqual (pipe ([Number.parseInt]) ('11'), 11)
+  assert.deepStrictEqual (pipe (Number.parseInt) ('11'), 11)
   assert.deepStrictEqual (map (T ('11') as never) ([Number.parseInt] as never), [11])
 })
 
@@ -369,22 +369,6 @@ test ('I: returns its argument unchanged', () => {
   assert.deepStrictEqual (I (o) === o, true)
 })
 
-test ('pipe: a set of links is refused', () => {
-  assert.throws (
-    () => pipe (new Set ([add (1), sub (1)]) as never) (10),
-    (error: unknown) => error instanceof TypeError && error.message.includes ('reduce: Set has no Foldable'),
-  )
-  assert.throws (
-    () => pipe (new Set ([add (1), doubleNumber]) as never) (10),
-    (error: unknown) => error instanceof TypeError && error.message.includes ('reduce: Set has no Foldable'),
-  )
-  assert.throws (
-    () => pipeK (new Set ([tail, head]) as never) (just ([1, 2])),
-    (error: unknown) => error instanceof TypeError && error.message.includes ('reduce: Set has no Foldable'),
-  )
-  assert.deepStrictEqual (pipe ([...new Set ([add (1), doubleNumber])]) (10), 22)
-})
-
 test ('counterexample: a Set pipeline would expose insertion order', () => {
   const f = add (1)
   const g = doubleNumber
@@ -396,17 +380,11 @@ test ('counterexample: a Set pipeline would expose insertion order', () => {
   assert.deepStrictEqual ([...reversed], [g, f])
   assert.deepStrictEqual ([...forward].reduce ((x, h) => h (x), 10), 22)
   assert.deepStrictEqual ([...reversed].reduce ((x, h) => h (x), 10), 21)
-  for (const fs of [forward, reversed]) {
-    assert.throws (
-      () => pipe (fs as never) (10),
-      (error: unknown) => error instanceof TypeError && error.message.includes ('reduce: Set has no Foldable'),
-    )
-  }
 })
 
 test ('pipeK: skips later callbacks after Nothing', () => {
-  assert.deepStrictEqual (pipeK ([tail, head]) (just ([1])), nothing ())
-  assert.deepStrictEqual (pipeK ([tail, tail, head]) (nothing<number[]> ()), nothing ())
+  assert.deepStrictEqual (pipeK (tail, head) (just ([1])), nothing ())
+  assert.deepStrictEqual (pipeK (tail, tail, head) (nothing<number[]> ()), nothing ())
 })
 
 test ('Fn as Reader: one environment for the whole computation', () => {
@@ -433,13 +411,9 @@ test ('Fn does not support Foldable', () => {
   )
 })
 
-test ('pipe and pipeK demand from the type exactly what was promised', () => {
+test ('pipeK: the wrapped input must support chain', () => {
   assert.throws (
-    () => pipe (42 as never) (1),
-    (error: unknown) => error instanceof TypeError && error.message.includes ('reduce: Number has no Foldable'),
-  )
-  assert.throws (
-    () => pipeK ([increment]) (42 as never),
+    () => pipeK (increment) (42 as never),
     (error: unknown) => error instanceof TypeError && error.message.includes ('chain: Number has no Chain'),
   )
 })
@@ -485,7 +459,7 @@ test ('pipe: each function receives only the previous result', () => {
     return 2
   }
 
-  pipe ([first, second]) (1)
+  pipe (first, second) (1)
 
   assert.deepStrictEqual (firstCalls, [[1]])
   assert.deepStrictEqual (secondCalls, [[1]])
@@ -505,7 +479,7 @@ test ('pipeK: each function receives only the previous result', () => {
     return just (2)
   }
 
-  pipeK ([first, second]) (just (0))
+  pipeK (first, second) (just (0))
 
   assert.deepStrictEqual (firstCalls, [[0]])
   assert.deepStrictEqual (secondCalls, [[1]])
@@ -637,23 +611,21 @@ test ('Fn.compose: passes only the preceding function’s result', () => {
 
 test ('pipe: the input must fit the first step', () => {
   // @ts-expect-error the pipeline starts at a number
-  const _text = () => pipe ([add (1), Math.sqrt]) ('99')
+  const _text = () => pipe (add (1), Math.sqrt) ('99')
 
   assert.deepStrictEqual (typeof _text, 'function')
 })
 
 test ('pipeK: the steps must all use one and the same wrapper', () => {
-  const mixed = [(n: number) => just (n), (n: number) => [n]] as const
   // @ts-expect-error the second step leaves Maybe for Array
-  const _mixed = () => pipeK (mixed) (just (1))
+  const _mixed = () => pipeK ((n: number) => just (n), (n: number) => [n]) (just (1))
 
   assert.deepStrictEqual (typeof _mixed, 'function')
 })
 
 test ('pipeK: the input must use the wrapper of the steps', () => {
-  const steps = [(n: number) => just (n + 1)] as const
   // @ts-expect-error an array is not a Maybe
-  const _array = () => pipeK (steps) ([1, 2])
+  const _array = () => pipeK ((n: number) => just (n + 1)) ([1, 2])
 
   assert.deepStrictEqual (typeof _array, 'function')
 })
@@ -693,11 +665,11 @@ type Exact<A, B> = (<T>() => T extends A ? 1 : 2) extends
 
 type Assert<T extends true> = T
 
-const unchanged = pipe ([]) (7)
+const unchanged = pipe () (7)
 
-const counted = pipe ([(s: string) => s.length, add (1)])
+const counted = pipe ((s: string) => s.length, add (1))
 
-const tenSteps = pipe ([
+const tenSteps = pipe (
   add (1),
   (n: number) => `${n}`,
   (s: string) => s.length,
@@ -708,9 +680,9 @@ const tenSteps = pipe ([
   (s: string) => s.length,
   sub (1),
   (n: number) => `${n}`,
-])
+)
 
-const elevenSteps = pipe ([
+pipe (
   add (1),
   (n: number) => `${n}`,
   (s: string) => s.length,
@@ -721,28 +693,40 @@ const elevenSteps = pipe ([
   (s: string) => s.length,
   sub (1),
   add (1),
+  // @ts-expect-error ten steps is the longest pipeline
   (n: number) => `${n}`,
-])
+)
 
-const shown = pipeK ([
+const lengthOf = (str: string) => str.length
+
+const named = pipe (
+  lookup ('name')<string>,
+  map (trim),
+  pipeK (
+    fromPredicate (pipe (lengthOf, gte (1))),
+    fromPredicate (pipe (lengthOf, lte (32))),
+  ),
+)
+
+const shown = pipeK (
   (n: number) => just (n + 1),
   (n: number) => just (`${n}`),
-]) (just (1))
+) (just (1))
 
-const spread = pipeK ([(n: number) => [n, n + 1]]) ([1, 10])
+const spread = pipeK ((n: number) => [n, n + 1]) ([1, 10])
 
-const configured = pipeK ([
+const configured = pipeK (
   (n: number) => (cfg: { a: number }) => n + cfg.a,
   (n: number) => (cfg: { b: number }) => n * cfg.b,
-]) ((cfg: { c: number }) => cfg.c)
+) ((cfg: { c: number }) => cfg.c)
 
-const untracked = pipeK ([tail, tail, head]) (just ([1, 2, 3, 4]))
+const untracked = pipeK (tail, tail, head) (just ([1, 2, 3, 4]))
 
 export type _Pipe = [
   Assert<Exact<typeof unchanged, 7>>,
   Assert<Exact<typeof counted, (x: string) => number>>,
   Assert<Exact<ReturnType<typeof tenSteps>, string>>,
-  Assert<Exact<ReturnType<typeof elevenSteps>, unknown>>,
+  Assert<Exact<typeof named, (x: StrMap<string>) => Maybe<string>>>,
 ]
 
 export type _PipeK = [
@@ -754,7 +738,7 @@ export type _PipeK = [
       (i: { c: number } & { a: number } & { b: number }) => number
     >
   >,
-  Assert<Exact<typeof untracked, unknown>>,
+  Assert<Exact<typeof untracked, Maybe<unknown>>>,
 ]
 
 const increment = (n: number) => n + 1

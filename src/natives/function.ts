@@ -208,9 +208,9 @@ type BothBs<F, B, Gs extends readonly unknown[]> = Gs extends
   ? BothBs<F, BothB<F, B, SlotBOf<G>>, Rest>
   : B
 
-type PipedK<A, Gs extends readonly unknown[]> = <
-  F extends Chain<F, A> & SameTypesAs<F, Gs>,
->(mx: F) => KindOf<F, SlotAOf<LastOf<Gs>>, BothBs<F, SlotBOf<F>, Gs>>
+type PipedK<A, Gs extends readonly unknown[]> =
+  <F extends Chain<F, A> & SameTypesAs<F, Gs>>(mx: F) =>
+    KindOf<F, SlotAOf<LastOf<Gs>>, BothBs<F, SlotBOf<F>, Gs>>
 
 const foldFns = (
   fs: Foldable<unknown, AnyFn>,
@@ -230,82 +230,71 @@ const chainWith = (f: Fn<unknown, unknown>) => (mx: unknown): unknown =>
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.pipe ([P.add (1), Math.sqrt, P.sub (1)]) (99) // => 9
- * P.pipe ([(s: string) => s.length, P.add (1)]) ('abc') // => 4
+ * P.pipe (P.add (1), Math.sqrt, P.sub (1)) (99) // => 9
+ * P.pipe ((s: string) => s.length, P.add (1)) ('abc') // => 4
  * ```
  */
-export function pipe(fs: readonly []): <A>(x: A) => A
-export function pipe<A, B>(fs: readonly [Fn<A, B>]): (x: A) => B
+export function pipe(): <A>(a: A) => A
+export function pipe<A, B>(ab: Fn<A, B>): (a: A) => B
 export function pipe<A, B, C>(
-  fs: readonly [Fn<A, B>, Fn<B, C>],
-): (x: A) => C
+  ab: Fn<A, B>, bc: Fn<B, C>,
+): (a: A) => C
 export function pipe<A, B, C, D>(
-  fs: readonly [Fn<A, B>, Fn<B, C>, Fn<C, D>],
-): (x: A) => D
+  ab: Fn<A, B>, bc: Fn<B, C>, cd: Fn<C, D>,
+): (a: A) => D
 export function pipe<A, B, C, D, E>(
-  fs: readonly [Fn<A, B>, Fn<B, C>, Fn<C, D>, Fn<D, E>],
-): (x: A) => E
+  ab: Fn<A, B>, bc: Fn<B, C>, cd: Fn<C, D>, de: Fn<D, E>,
+): (a: A) => E
 export function pipe<A, B, C, D, E, F>(
-  fs: readonly [Fn<A, B>, Fn<B, C>, Fn<C, D>, Fn<D, E>, Fn<E, F>],
-): (x: A) => F
+  ab: Fn<A, B>, bc: Fn<B, C>, cd: Fn<C, D>, de: Fn<D, E>, ef: Fn<E, F>,
+): (a: A) => F
 export function pipe<A, B, C, D, E, F, G>(
-  fs: readonly [Fn<A, B>, Fn<B, C>, Fn<C, D>, Fn<D, E>, Fn<E, F>, Fn<F, G>],
-): (x: A) => G
+  ab: Fn<A, B>, bc: Fn<B, C>, cd: Fn<C, D>, de: Fn<D, E>, ef: Fn<E, F>, fg: Fn<F, G>,
+): (a: A) => G
 export function pipe<A, B, C, D, E, F, G, H>(
-  fs: readonly [
-    Fn<A, B>,
-    Fn<B, C>,
-    Fn<C, D>,
-    Fn<D, E>,
-    Fn<E, F>,
-    Fn<F, G>,
-    Fn<G, H>,
-  ],
-): (x: A) => H
+  ab: Fn<A, B>,
+  bc: Fn<B, C>,
+  cd: Fn<C, D>,
+  de: Fn<D, E>,
+  ef: Fn<E, F>,
+  fg: Fn<F, G>,
+  gh: Fn<G, H>,
+): (a: A) => H
 export function pipe<A, B, C, D, E, F, G, H, I>(
-  fs: readonly [
-    Fn<A, B>,
-    Fn<B, C>,
-    Fn<C, D>,
-    Fn<D, E>,
-    Fn<E, F>,
-    Fn<F, G>,
-    Fn<G, H>,
-    Fn<H, I>,
-  ],
-): (x: A) => I
+  ab: Fn<A, B>,
+  bc: Fn<B, C>,
+  cd: Fn<C, D>,
+  de: Fn<D, E>,
+  ef: Fn<E, F>,
+  fg: Fn<F, G>,
+  gh: Fn<G, H>,
+  hi: Fn<H, I>,
+): (a: A) => I
 export function pipe<A, B, C, D, E, F, G, H, I, J>(
-  fs: readonly [
-    Fn<A, B>,
-    Fn<B, C>,
-    Fn<C, D>,
-    Fn<D, E>,
-    Fn<E, F>,
-    Fn<F, G>,
-    Fn<G, H>,
-    Fn<H, I>,
-    Fn<I, J>,
-  ],
-): (x: A) => J
+  ab: Fn<A, B>,
+  bc: Fn<B, C>,
+  cd: Fn<C, D>,
+  de: Fn<D, E>,
+  ef: Fn<E, F>,
+  fg: Fn<F, G>,
+  gh: Fn<G, H>,
+  hi: Fn<H, I>,
+  ij: Fn<I, J>,
+): (a: A) => J
 export function pipe<A, B, C, D, E, F, G, H, I, J, K>(
-  fs: readonly [
-    Fn<A, B>,
-    Fn<B, C>,
-    Fn<C, D>,
-    Fn<D, E>,
-    Fn<E, F>,
-    Fn<F, G>,
-    Fn<G, H>,
-    Fn<H, I>,
-    Fn<I, J>,
-    Fn<J, K>,
-  ],
-): (x: A) => K
-export function pipe(
-  fs: Foldable<unknown, AnyFn>,
-): <B = unknown>(x: unknown) => B
-export function pipe(fs: Foldable<unknown, AnyFn>): (x: never) => unknown {
-  return (x: unknown): unknown => foldFns (fs, (acc, f) => f (acc), x)
+  ab: Fn<A, B>,
+  bc: Fn<B, C>,
+  cd: Fn<C, D>,
+  de: Fn<D, E>,
+  ef: Fn<E, F>,
+  fg: Fn<F, G>,
+  gh: Fn<G, H>,
+  hi: Fn<H, I>,
+  ij: Fn<I, J>,
+  jk: Fn<J, K>,
+): (a: A) => K
+export function pipe(...fns: AnyFn[]) {
+  return <A = unknown, B = unknown>(x: A): B => foldFns (fns, (acc, f) => f (acc), x) as B
 }
 
 /**
@@ -314,100 +303,85 @@ export function pipe(fs: Foldable<unknown, AnyFn>): (x: never) => unknown {
  * ```ts
  * import * as P from '@algosail/ply'
  *
- * P.pipeK ([P.tail, P.tail, P.head]) (P.just ([1, 2, 3, 4])) // => Just (3)
+ * P.pipeK (P.tail, P.tail, P.head) (P.just ([1, 2, 3, 4])) // => Just (3)
  * ```
  */
-export function pipeK(fs: readonly []): <F>(mx: F) => F
-export function pipeK<A, G1>(fs: readonly [Fn<A, G1>]): PipedK<A, [G1]>
+export function pipeK(): <F>(mx: F) => F
+export function pipeK<A, G1>(g1: Fn<A, G1>): PipedK<A, [G1]>
 export function pipeK<A, G1, G2>(
-  fs: readonly [Fn<A, G1>, Fn<SlotAOf<G1>, G2>],
+  g1: Fn<A, G1>, g2: Fn<SlotAOf<G1>, G2>,
 ): PipedK<A, [G1, G2]>
 export function pipeK<A, G1, G2, G3>(
-  fs: readonly [Fn<A, G1>, Fn<SlotAOf<G1>, G2>, Fn<SlotAOf<G2>, G3>],
+  g1: Fn<A, G1>,
+  g2: Fn<SlotAOf<G1>, G2>,
+  g3: Fn<SlotAOf<G2>, G3>,
 ): PipedK<A, [G1, G2, G3]>
 export function pipeK<A, G1, G2, G3, G4>(
-  fs: readonly [
-    Fn<A, G1>,
-    Fn<SlotAOf<G1>, G2>,
-    Fn<SlotAOf<G2>, G3>,
-    Fn<SlotAOf<G3>, G4>,
-  ],
+  g1: Fn<A, G1>,
+  g2: Fn<SlotAOf<G1>, G2>,
+  g3: Fn<SlotAOf<G2>, G3>,
+  g4: Fn<SlotAOf<G3>, G4>,
 ): PipedK<A, [G1, G2, G3, G4]>
 export function pipeK<A, G1, G2, G3, G4, G5>(
-  fs: readonly [
-    Fn<A, G1>,
-    Fn<SlotAOf<G1>, G2>,
-    Fn<SlotAOf<G2>, G3>,
-    Fn<SlotAOf<G3>, G4>,
-    Fn<SlotAOf<G4>, G5>,
-  ],
+  g1: Fn<A, G1>,
+  g2: Fn<SlotAOf<G1>, G2>,
+  g3: Fn<SlotAOf<G2>, G3>,
+  g4: Fn<SlotAOf<G3>, G4>,
+  g5: Fn<SlotAOf<G4>, G5>,
 ): PipedK<A, [G1, G2, G3, G4, G5]>
 export function pipeK<A, G1, G2, G3, G4, G5, G6>(
-  fs: readonly [
-    Fn<A, G1>,
-    Fn<SlotAOf<G1>, G2>,
-    Fn<SlotAOf<G2>, G3>,
-    Fn<SlotAOf<G3>, G4>,
-    Fn<SlotAOf<G4>, G5>,
-    Fn<SlotAOf<G5>, G6>,
-  ],
+  g1: Fn<A, G1>,
+  g2: Fn<SlotAOf<G1>, G2>,
+  g3: Fn<SlotAOf<G2>, G3>,
+  g4: Fn<SlotAOf<G3>, G4>,
+  g5: Fn<SlotAOf<G4>, G5>,
+  g6: Fn<SlotAOf<G5>, G6>,
 ): PipedK<A, [G1, G2, G3, G4, G5, G6]>
 export function pipeK<A, G1, G2, G3, G4, G5, G6, G7>(
-  fs: readonly [
-    Fn<A, G1>,
-    Fn<SlotAOf<G1>, G2>,
-    Fn<SlotAOf<G2>, G3>,
-    Fn<SlotAOf<G3>, G4>,
-    Fn<SlotAOf<G4>, G5>,
-    Fn<SlotAOf<G5>, G6>,
-    Fn<SlotAOf<G6>, G7>,
-  ],
+  g1: Fn<A, G1>,
+  g2: Fn<SlotAOf<G1>, G2>,
+  g3: Fn<SlotAOf<G2>, G3>,
+  g4: Fn<SlotAOf<G3>, G4>,
+  g5: Fn<SlotAOf<G4>, G5>,
+  g6: Fn<SlotAOf<G5>, G6>,
+  g7: Fn<SlotAOf<G6>, G7>,
 ): PipedK<A, [G1, G2, G3, G4, G5, G6, G7]>
 export function pipeK<A, G1, G2, G3, G4, G5, G6, G7, G8>(
-  fs: readonly [
-    Fn<A, G1>,
-    Fn<SlotAOf<G1>, G2>,
-    Fn<SlotAOf<G2>, G3>,
-    Fn<SlotAOf<G3>, G4>,
-    Fn<SlotAOf<G4>, G5>,
-    Fn<SlotAOf<G5>, G6>,
-    Fn<SlotAOf<G6>, G7>,
-    Fn<SlotAOf<G7>, G8>,
-  ],
+  g1: Fn<A, G1>,
+  g2: Fn<SlotAOf<G1>, G2>,
+  g3: Fn<SlotAOf<G2>, G3>,
+  g4: Fn<SlotAOf<G3>, G4>,
+  g5: Fn<SlotAOf<G4>, G5>,
+  g6: Fn<SlotAOf<G5>, G6>,
+  g7: Fn<SlotAOf<G6>, G7>,
+  g8: Fn<SlotAOf<G7>, G8>,
 ): PipedK<A, [G1, G2, G3, G4, G5, G6, G7, G8]>
 export function pipeK<A, G1, G2, G3, G4, G5, G6, G7, G8, G9>(
-  fs: readonly [
-    Fn<A, G1>,
-    Fn<SlotAOf<G1>, G2>,
-    Fn<SlotAOf<G2>, G3>,
-    Fn<SlotAOf<G3>, G4>,
-    Fn<SlotAOf<G4>, G5>,
-    Fn<SlotAOf<G5>, G6>,
-    Fn<SlotAOf<G6>, G7>,
-    Fn<SlotAOf<G7>, G8>,
-    Fn<SlotAOf<G8>, G9>,
-  ],
+  g1: Fn<A, G1>,
+  g2: Fn<SlotAOf<G1>, G2>,
+  g3: Fn<SlotAOf<G2>, G3>,
+  g4: Fn<SlotAOf<G3>, G4>,
+  g5: Fn<SlotAOf<G4>, G5>,
+  g6: Fn<SlotAOf<G5>, G6>,
+  g7: Fn<SlotAOf<G6>, G7>,
+  g8: Fn<SlotAOf<G7>, G8>,
+  g9: Fn<SlotAOf<G8>, G9>,
 ): PipedK<A, [G1, G2, G3, G4, G5, G6, G7, G8, G9]>
 export function pipeK<A, G1, G2, G3, G4, G5, G6, G7, G8, G9, G10>(
-  fs: readonly [
-    Fn<A, G1>,
-    Fn<SlotAOf<G1>, G2>,
-    Fn<SlotAOf<G2>, G3>,
-    Fn<SlotAOf<G3>, G4>,
-    Fn<SlotAOf<G4>, G5>,
-    Fn<SlotAOf<G5>, G6>,
-    Fn<SlotAOf<G6>, G7>,
-    Fn<SlotAOf<G7>, G8>,
-    Fn<SlotAOf<G8>, G9>,
-    Fn<SlotAOf<G9>, G10>,
-  ],
+  g1: Fn<A, G1>,
+  g2: Fn<SlotAOf<G1>, G2>,
+  g3: Fn<SlotAOf<G2>, G3>,
+  g4: Fn<SlotAOf<G3>, G4>,
+  g5: Fn<SlotAOf<G4>, G5>,
+  g6: Fn<SlotAOf<G5>, G6>,
+  g7: Fn<SlotAOf<G6>, G7>,
+  g8: Fn<SlotAOf<G7>, G8>,
+  g9: Fn<SlotAOf<G8>, G9>,
+  g10: Fn<SlotAOf<G9>, G10>,
 ): PipedK<A, [G1, G2, G3, G4, G5, G6, G7, G8, G9, G10]>
-export function pipeK(
-  fs: Foldable<unknown, AnyFn>,
-): <B = unknown>(mx: unknown) => B
-export function pipeK(fs: Foldable<unknown, AnyFn>): (mx: never) => unknown {
-  return (mx: unknown): unknown =>
-    foldFns (fs, (acc, f) => chainWith (f) (acc), mx)
+export function pipeK(...fns: AnyFn[]) {
+  return <F = unknown, B = unknown>(mx: F): B =>
+    foldFns (fns, (acc, f) => chainWith (f) (acc), mx) as B
 }
 
 /**
